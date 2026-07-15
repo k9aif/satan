@@ -196,6 +196,7 @@ async def fire(
     result = run_pipeline(payload)
     result["source"]        = source
     result["document_size"] = len(document_text)
+    result["is_evil"]       = CORPUS[corpus_key]["evil"] if corpus_key and corpus_key in CORPUS else True
 
     _run_history.append(result)
     log.info("[Satan] fire result: status=%s depth=%s", result["status"], result["penetration_depth"])
