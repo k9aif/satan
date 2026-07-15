@@ -2,6 +2,7 @@
 
 import logging
 import os
+import requests
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
@@ -14,6 +15,15 @@ log = logging.getLogger("k9x_satan.app")
 app = FastAPI(title="K9x Satan", version="1.0.0")
 
 _run_history: list = []
+
+# ── LLM config (in-memory, persists per server session) ──────────────────────
+
+_llm_config = {
+    "provider":  os.environ.get("SATAN_LLM_PROVIDER", "ollama"),
+    "base_url":  os.environ.get("SATAN_LLM_BASE_URL", "http://localhost:11434"),
+    "model":     os.environ.get("SATAN_LLM_MODEL", ""),
+    "connected": False,
+}
 
 # ── Pre-built poisonous document corpus ──────────────────────────────────────
 
@@ -219,6 +229,75 @@ def clear_history():
 @app.get("/api/health")
 def health():
     return {"status": "running", "corpus_size": len(CORPUS)}
+
+
+# ── LLM Config API ────────────────────────────────────────────────────────────
+
+class LLMConfigRequest(BaseModel):
+    provider: str
+    base_url: str
+    model: str
+
+@app.get("/api/llm/config")
+def get_llm_config():
+    return _llm_config
+
+@app.post("/api/llm/config")
+def set_llm_config(req: LLMConfigRequest):
+    _llm_config["provider"]  = req.provider
+    _llm_config["base_url"]  = req.base_url.rstrip("/")
+    _llm_config["model"]     = req.model
+    _llm_config["connected"] = False
+    log.info("[Satan] LLM config updated: provider=%s base_url=%s model=%s",
+             req.provider, req.base_url, req.model)
+    return _llm_config
+
+@app.get("/api/llm/models")
+def list_llm_models():
+    """Probe the configured provider for available models."""
+    base_url = _llm_config.get("base_url", "").rstrip("/")
+    provider = _llm_config.get("provider", "ollama")
+    if not base_url:
+        raise HTTPException(status_code=400, detail="base_url not configured")
+    try:
+        if provider in ("ollama", "lm-studio", "openai-compatible"):
+            resp = requests.get(f"{base_url}/api/tags", timeout=5)
+            if resp.ok:
+                data = resp.json()
+                models = [m["name"] for m in data.get("models", [])]
+                return {"models": models}
+            resp2 = requests.get(f"{base_url}/v1/models", timeout=5)
+            if resp2.ok:
+                data2 = resp2.json()
+                models2 = [m["id"] for m in data2.get("data", [])]
+                return {"models": models2}
+        raise HTTPException(status_code=502, detail=f"Cannot reach {base_url}")
+    except requests.exceptions.ConnectionError:
+        raise HTTPException(status_code=502, detail=f"Cannot connect to {base_url}")
+    except requests.exceptions.Timeout:
+        raise HTTPException(status_code=504, detail=f"Timeout connecting to {base_url}")
+
+@app.post("/api/llm/test")
+def test_llm_connection():
+    """Quick connectivity check — tries /api/tags then /v1/models."""
+    base_url = _llm_config.get("base_url", "").rstrip("/")
+    if not base_url:
+        raise HTTPException(status_code=400, detail="base_url not configured")
+    try:
+        for path in ["/api/tags", "/v1/models"]:
+            try:
+                r = requests.get(f"{base_url}{path}", timeout=4)
+                if r.ok:
+                    _llm_config["connected"] = True
+                    log.info("[Satan] LLM connection OK at %s%s", base_url, path)
+                    return {"connected": True, "base_url": base_url}
+            except Exception:
+                pass
+        _llm_config["connected"] = False
+        return {"connected": False, "base_url": base_url}
+    except Exception as exc:
+        _llm_config["connected"] = False
+        return {"connected": False, "error": str(exc)}
 
 
 if __name__ == "__main__":

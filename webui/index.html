@@ -123,7 +123,157 @@
     white-space: nowrap;
     text-align: right;
     line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
   }
+
+  .llm-status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .llm-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .llm-dot.on  { background: var(--green); box-shadow: 0 0 5px var(--green); }
+  .llm-dot.off { background: var(--dim); }
+
+  .llm-pill {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .llm-pill.connected {
+    border-color: #1a4030;
+    color: var(--green);
+    background: #001a0c;
+  }
+
+  /* ── SETUP TAB ── */
+  .setup-group { margin-bottom: 20px; }
+  .setup-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .setup-input {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.85rem;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .setup-input:focus { border-color: var(--red-mid); }
+
+  .setup-select {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.85rem;
+    padding: 8px 28px 8px 10px;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' fill='%23555' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    transition: border-color 0.15s;
+  }
+
+  .setup-select:focus { border-color: var(--red-mid); }
+
+  .setup-row { display: flex; gap: 8px; align-items: flex-end; }
+  .setup-row .setup-input { flex: 1; }
+
+  .btn-primary {
+    background: var(--red);
+    border: 1px solid var(--red-mid);
+    color: #fff;
+    font-family: var(--font);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+
+  .btn-primary:hover { background: var(--red-mid); }
+  .btn-primary:disabled { background: #1a0808; color: var(--dim); cursor: default; }
+
+  .btn-secondary {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 0.75rem;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+
+  .btn-secondary:hover { border-color: var(--red-mid); color: var(--text); }
+
+  .setup-status {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    display: none;
+  }
+
+  .setup-status.ok  { background: var(--green-dim); border: 1px solid #004422; color: var(--green); }
+  .setup-status.err { background: var(--red-dim);   border: 1px solid var(--red-bright); color: var(--red-glow); }
+
+  .model-list {
+    margin-top: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .model-item {
+    padding: 7px 10px;
+    font-size: 0.82rem;
+    color: var(--text);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .model-item:last-child { border-bottom: none; }
+  .model-item:hover { background: var(--panel); }
+  .model-item.selected { background: #1a0000; color: var(--red-bright); }
 
   /* ── SIDEBAR ── */
   .sidebar {
@@ -640,7 +790,13 @@
     <div class="satan-title">SATAN</div>
     <div class="satan-acronym">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
   </div>
-  <div class="header-right">K9-AIF Red Team Harness</div>
+  <div class="header-right">
+    <span style="font-size:0.58rem;letter-spacing:0.06em">K9-AIF Red Team Harness</span>
+    <div class="llm-status-row">
+      <div class="llm-dot off" id="llm-dot"></div>
+      <span class="llm-pill" id="llm-pill">not connected</span>
+    </div>
+  </div>
 </header>
 
 <!-- ── SIDEBAR ── -->
@@ -679,10 +835,82 @@
 <!-- ── MAIN ── -->
 <main class="main">
   <div class="tab-bar">
+    <button onclick="showTab('setup', this)">Setup</button>
     <button class="active" onclick="showTab('attack', this)">Penetration Monitor</button>
     <button onclick="showTab('results', this)">Results</button>
     <button onclick="showTab('architecture', this)">Architecture</button>
     <button onclick="showTab('documentation', this)">Documentation</button>
+  </div>
+
+  <!-- ── SETUP TAB ── -->
+  <div id="tab-setup" class="tab-panel">
+
+    <div style="max-width:560px">
+
+      <div style="margin-bottom:22px">
+        <div style="font-size:1.1rem;font-weight:300;color:var(--text);margin-bottom:6px">LLM Setup</div>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.7">Configure the LLM provider that Satan's target agents will use. Connect to Ollama, LM Studio, or any OpenAI-compatible endpoint.</div>
+      </div>
+
+      <div class="card">
+        <h3>Provider &amp; Connection</h3>
+
+        <div class="setup-group">
+          <label class="setup-label">Provider</label>
+          <select class="setup-select" id="setup-provider" onchange="onProviderChange(this.value)">
+            <option value="ollama">Ollama (local)</option>
+            <option value="lm-studio">LM Studio</option>
+            <option value="openai-compatible">OpenAI-Compatible Endpoint</option>
+          </select>
+        </div>
+
+        <div class="setup-group">
+          <label class="setup-label">Base URL</label>
+          <div class="setup-row">
+            <input class="setup-input" id="setup-base-url" type="text" placeholder="http://localhost:11434" value="http://localhost:11434">
+            <button class="btn-secondary" onclick="testConnection()">Test</button>
+          </div>
+          <div class="setup-status" id="setup-conn-status"></div>
+        </div>
+
+        <div class="setup-group">
+          <label class="setup-label">Model</label>
+          <div class="setup-row">
+            <input class="setup-input" id="setup-model" type="text" placeholder="e.g. llama3.2:1b or granite3-dense:2b">
+            <button class="btn-secondary" onclick="loadModels()">Browse</button>
+          </div>
+          <div class="model-list" id="model-list" style="display:none"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button class="btn-primary" onclick="saveConfig()">Save Configuration</button>
+          <div class="setup-status" id="setup-save-status" style="display:inline-block;margin:0;padding:6px 12px"></div>
+        </div>
+      </div>
+
+      <div class="card" id="setup-current-card">
+        <h3>Current Status</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:3px;overflow:hidden">
+          <div style="background:var(--panel);padding:8px 12px">
+            <div style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Provider</div>
+            <div style="font-size:0.82rem;color:var(--text)" id="status-provider">—</div>
+          </div>
+          <div style="background:var(--panel);padding:8px 12px">
+            <div style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Model</div>
+            <div style="font-size:0.82rem;color:var(--text)" id="status-model">—</div>
+          </div>
+          <div style="background:var(--panel);padding:8px 12px">
+            <div style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Base URL</div>
+            <div style="font-size:0.82rem;color:var(--text)" id="status-url">—</div>
+          </div>
+          <div style="background:var(--panel);padding:8px 12px">
+            <div style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Connection</div>
+            <div style="font-size:0.82rem" id="status-conn">—</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <!-- ── PENETRATION MONITOR TAB ── -->
@@ -984,6 +1212,7 @@ function showTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
   if (name === 'results') loadHistory();
+  if (name === 'setup')   loadLLMConfig();
 }
 
 // ── STATE
@@ -1318,7 +1547,169 @@ function makeChart(id, type, data, extraOptions = {}) {
   });
 }
 
+// ── SETUP
+const PROVIDER_DEFAULTS = {
+  'ollama':            'http://localhost:11434',
+  'lm-studio':         'http://localhost:1234',
+  'openai-compatible': 'http://localhost:8080',
+};
+
+function onProviderChange(val) {
+  const urlInput = document.getElementById('setup-base-url');
+  if (PROVIDER_DEFAULTS[val]) urlInput.value = PROVIDER_DEFAULTS[val];
+}
+
+async function loadLLMConfig() {
+  try {
+    const resp = await fetch('/api/llm/config');
+    const cfg  = await resp.json();
+    applyLLMConfig(cfg);
+  } catch {}
+}
+
+function applyLLMConfig(cfg) {
+  const providerSel = document.getElementById('setup-provider');
+  const urlInput    = document.getElementById('setup-base-url');
+  const modelInput  = document.getElementById('setup-model');
+  if (providerSel && cfg.provider) providerSel.value = cfg.provider;
+  if (urlInput    && cfg.base_url) urlInput.value    = cfg.base_url;
+  if (modelInput  && cfg.model)    modelInput.value  = cfg.model;
+  updateStatusCard(cfg);
+  updateHeaderPill(cfg);
+}
+
+function updateStatusCard(cfg) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '—'; };
+  set('status-provider', cfg.provider);
+  set('status-model',    cfg.model || 'not set');
+  set('status-url',      cfg.base_url);
+  const connEl = document.getElementById('status-conn');
+  if (connEl) {
+    connEl.textContent = cfg.connected ? '✓ Connected' : '✗ Not connected';
+    connEl.style.color = cfg.connected ? 'var(--green)' : 'var(--red-glow)';
+  }
+}
+
+function updateHeaderPill(cfg) {
+  const dot  = document.getElementById('llm-dot');
+  const pill = document.getElementById('llm-pill');
+  if (!dot || !pill) return;
+  if (cfg.connected && cfg.model) {
+    dot.className  = 'llm-dot on';
+    pill.className = 'llm-pill connected';
+    pill.textContent = `${cfg.provider} · ${cfg.model}`;
+  } else {
+    dot.className  = 'llm-dot off';
+    pill.className = 'llm-pill';
+    pill.textContent = 'not connected';
+  }
+}
+
+async function testConnection() {
+  const statusEl = document.getElementById('setup-conn-status');
+  statusEl.className   = 'setup-status';
+  statusEl.textContent = 'Testing…';
+  statusEl.style.display = 'block';
+
+  const base_url = document.getElementById('setup-base-url').value.trim();
+  const provider = document.getElementById('setup-provider').value;
+  const model    = document.getElementById('setup-model').value.trim();
+
+  await fetch('/api/llm/config', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({provider, base_url, model}),
+  });
+
+  try {
+    const resp = await fetch('/api/llm/test', {method: 'POST'});
+    const data = await resp.json();
+    if (data.connected) {
+      statusEl.className   = 'setup-status ok';
+      statusEl.textContent = `✓ Connected to ${base_url}`;
+    } else {
+      statusEl.className   = 'setup-status err';
+      statusEl.textContent = `✗ Cannot connect to ${base_url}`;
+    }
+    loadLLMConfig();
+  } catch (e) {
+    statusEl.className   = 'setup-status err';
+    statusEl.textContent = `✗ Error: ${e}`;
+  }
+}
+
+async function loadModels() {
+  const base_url = document.getElementById('setup-base-url').value.trim();
+  const provider = document.getElementById('setup-provider').value;
+  const model    = document.getElementById('setup-model').value.trim();
+
+  await fetch('/api/llm/config', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({provider, base_url, model}),
+  });
+
+  const listEl = document.getElementById('model-list');
+  listEl.style.display = 'block';
+  listEl.innerHTML = '<div class="model-item" style="color:var(--dim)">Loading…</div>';
+
+  try {
+    const resp = await fetch('/api/llm/models');
+    if (!resp.ok) {
+      const err = await resp.json();
+      listEl.innerHTML = `<div class="model-item" style="color:var(--red-glow)">✗ ${err.detail || 'Could not load models'}</div>`;
+      return;
+    }
+    const data = await resp.json();
+    const models = data.models || [];
+    if (!models.length) {
+      listEl.innerHTML = '<div class="model-item" style="color:var(--dim)">No models found</div>';
+      return;
+    }
+    const currentModel = document.getElementById('setup-model').value.trim();
+    listEl.innerHTML = models.map(m => `
+      <div class="model-item${m === currentModel ? ' selected' : ''}" onclick="selectModel('${m}')">${m}</div>
+    `).join('');
+  } catch (e) {
+    listEl.innerHTML = `<div class="model-item" style="color:var(--red-glow)">✗ ${e}</div>`;
+  }
+}
+
+function selectModel(name) {
+  document.getElementById('setup-model').value = name;
+  document.querySelectorAll('.model-item').forEach(el => {
+    el.classList.toggle('selected', el.textContent.trim() === name);
+  });
+}
+
+async function saveConfig() {
+  const provider = document.getElementById('setup-provider').value;
+  const base_url = document.getElementById('setup-base-url').value.trim();
+  const model    = document.getElementById('setup-model').value.trim();
+
+  const saveEl = document.getElementById('setup-save-status');
+
+  try {
+    const resp = await fetch('/api/llm/config', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json'},
+      body:    JSON.stringify({provider, base_url, model}),
+    });
+    const cfg = await resp.json();
+    applyLLMConfig(cfg);
+    saveEl.className   = 'setup-status ok';
+    saveEl.textContent = '✓ Saved';
+    saveEl.style.display = 'inline-block';
+    setTimeout(() => { saveEl.style.display = 'none'; }, 2500);
+  } catch (e) {
+    saveEl.className   = 'setup-status err';
+    saveEl.textContent = `✗ ${e}`;
+    saveEl.style.display = 'inline-block';
+  }
+}
+
 init();
+loadLLMConfig();
 </script>
 </body>
 </html>
