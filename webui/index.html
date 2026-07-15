@@ -1531,10 +1531,21 @@ function renderDocAnalysis(result, isClean) {
     callout.style.display = 'block';
     callout.innerHTML = `<strong>⚡ ${result.blocked_by}:</strong> ${escapeHtml(message || 'Threat pattern detected')}`;
   } else if (result.status === 'completed' && !isClean) {
-    labelEl.textContent = 'FINDING — passed all checks';
+    labelEl.textContent = 'EVASION — attack bypassed Shield undetected';
     labelEl.style.color = 'var(--red-glow)';
+
+    // Try to visually highlight likely evasion patterns even though Shield missed them
+    const evasionPatterns = [
+      /<!--[\s\S]*?-->/g,                            // HTML comment injection
+      /HIDDEN\s+INSTRUCTION[\s\S]*?(?=\n\n|\n[A-Z]|$)/gi,  // labelled hidden instruction
+      /system:\s*.+/gi,                              // SYSTEM: prefix
+    ];
+    for (const pat of evasionPatterns) {
+      html = html.replace(pat, m => `<mark class="threat">${m}</mark>`);
+    }
+
     callout.style.display = 'block';
-    callout.innerHTML = '<strong>⚠ Shield failed</strong> — this payload reached the agent layer without triggering a block.';
+    callout.innerHTML = '<strong>⚠ FINDING</strong> — no Shield check triggered a block. This attack reached the agent layer. Review the highlighted section — it contains an embedded instruction that evaded all current patterns.';
   } else {
     labelEl.textContent = 'document';
     labelEl.style.color = 'var(--muted)';
