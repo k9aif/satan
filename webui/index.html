@@ -7,24 +7,25 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg:        #0d0d10;
-    --surface:   #141418;
-    --panel:     #181820;
-    --card:      #1c1c24;
-    --border:    #2a2a38;
-    --border-r:  #3a2020;
-    --text:      #ededf0;
-    --muted:     #d4b8b8;
-    --dim:       #aa9090;
+    --bg:        #1a1a22;
+    --surface:   #20202c;
+    --panel:     #25252f;
+    --card:      #2a2a36;
+    --border:    #38384a;
+    --border-r:  #4a2828;
+    --text:      #b8b8c8;
+    --muted:     #9090a8;
+    --dim:       #666680;
     --red:       #8b0000;
     --red-mid:   #aa1515;
     --red-bright:#cc2222;
     --red-glow:  #ff3333;
-    --red-dim:   #1a0808;
+    --red-dim:   #2a1010;
     --green:     #00aa33;
     --yellow:    #cc8800;
     --orange:    #cc5500;
-    --font:      'Courier New', Courier, monospace;
+    --font:      -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Courier New', Courier, monospace;
     --sidebar-w: 272px;
   }
 
@@ -35,7 +36,8 @@
     background: var(--bg);
     color: var(--text);
     font-family: var(--font);
-    font-size: 13px;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
   ::-webkit-scrollbar { width: 5px; }
@@ -487,7 +489,8 @@
     border: 1px solid var(--border);
     border-radius: 3px;
     padding: 10px 12px;
-    font-size: 0.74rem;
+    font-size: 12px;
+    font-family: var(--font-mono);
     color: var(--muted);
     overflow-x: auto;
     line-height: 1.55;
@@ -534,10 +537,7 @@
     <div class="satan-title">SATAN</div>
     <div class="satan-acronym">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
   </div>
-  <div class="header-right">
-    K9-AIF Red Team Harness<br>
-    For authorized testing only
-  </div>
+  <div class="header-right">K9-AIF Red Team Harness</div>
 </header>
 
 <!-- ── SIDEBAR ── -->
