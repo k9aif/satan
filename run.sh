@@ -29,6 +29,9 @@ source "$VENV_DIR/bin/activate"
 # Install Satan deps into shared venv if needed
 pip install -q fastapi uvicorn requests python-multipart
 
+# k9x_satan must be importable as a package — add its parent to PYTHONPATH
+export PYTHONPATH="$(cd "$SCRIPT_DIR/.." && pwd):${PYTHONPATH}"
+
 # Start fake search server in background
 echo "[+] Starting fake search server on port 9999..."
 python -m k9x_satan.fake_search.server &
