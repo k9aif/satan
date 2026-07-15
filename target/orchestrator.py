@@ -65,10 +65,13 @@ class DocumentOrchestrator(BaseOrchestrator):
 
         if egress_result.blocked:
             log.warning("[DocumentOrchestrator] BLOCKED by %s", egress_result.blocked_by)
+            blocked_check = next((r for r in egress_result.results if r.blocked), None)
             return {
                 "status":            "blocked",
                 "blocked_at":        "orchestrator",
                 "blocked_by":        egress_result.blocked_by,
+                "check_message":     blocked_check.message if blocked_check else "",
+                "check_excerpt":     (blocked_check.metadata or {}).get("excerpt", "") if blocked_check else "",
                 "penetration_depth": "orchestrator",
                 "squad_reached":     True,
                 "agents_reached":    agents_reached,

@@ -47,10 +47,13 @@ class DocumentRouter(BaseRouter):
 
         if ingress_result.blocked:
             log.warning("[DocumentRouter] BLOCKED by %s", ingress_result.blocked_by)
+            blocked_check = next((r for r in ingress_result.results if r.blocked), None)
             return {
                 "status":            "blocked",
                 "blocked_at":        "router",
                 "blocked_by":        ingress_result.blocked_by,
+                "check_message":     blocked_check.message if blocked_check else "",
+                "check_excerpt":     (blocked_check.metadata or {}).get("excerpt", "") if blocked_check else "",
                 "penetration_depth": "router",
                 "squad_reached":     False,
                 "agents_reached":    [],

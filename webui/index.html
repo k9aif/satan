@@ -734,6 +734,70 @@
   .sym-row span:first-child { color: var(--text); }
   .sym-row span:last-child  { color: var(--dim); font-size: 0.7rem; }
 
+  /* ── DOCUMENT ANALYSIS PANEL ── */
+  .doc-analysis {
+    margin-top: 16px;
+    display: none;
+  }
+
+  .doc-analysis-header {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .doc-analysis-header span { color: var(--red-bright); }
+
+  .doc-viewer {
+    background: #050508;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+    color: #9898b8;
+    line-height: 1.7;
+    max-height: 260px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .doc-viewer mark.threat {
+    background: rgba(200, 20, 20, 0.35);
+    color: #ff8888;
+    border-bottom: 2px solid var(--red-bright);
+    border-radius: 2px;
+    padding: 0 2px;
+    font-style: normal;
+  }
+
+  .doc-viewer mark.clean {
+    background: rgba(0, 180, 60, 0.2);
+    color: var(--green);
+    border-bottom: 2px solid var(--green);
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+
+  .threat-callout {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #1a0000;
+    border: 1px solid var(--border-r);
+    border-left: 3px solid var(--red-bright);
+    border-radius: 3px;
+    font-size: 0.8rem;
+    color: var(--red-glow);
+    line-height: 1.5;
+    font-family: var(--font);
+  }
+
   pre.sample {
     background: #050508;
     border: 1px solid var(--border);
@@ -980,6 +1044,15 @@
         <div class="detail-key">Source</div>
         <div class="detail-val" id="d-source">—</div>
       </div>
+    </div>
+
+    <!-- ── DOCUMENT ANALYSIS ── -->
+    <div class="doc-analysis" id="doc-analysis">
+      <div class="doc-analysis-header">
+        Document Analysis &nbsp;—&nbsp; <span id="doc-analysis-label"></span>
+      </div>
+      <div class="doc-viewer" id="doc-viewer"></div>
+      <div class="threat-callout" id="threat-callout" style="display:none"></div>
     </div>
 
   </div>
@@ -1343,6 +1416,7 @@ function resetDepthDisplay() {
   vb.style.display = 'none';
   vb.className = 'verdict-box';
   document.getElementById('detail-grid').style.display = 'none';
+  document.getElementById('doc-analysis').style.display = 'none';
 }
 
 function markThreat(nodeId) {
@@ -1420,6 +1494,66 @@ function showDepthResult(result) {
   document.getElementById('d-size').textContent       = result.document_size ? result.document_size + ' chars' : '—';
   document.getElementById('d-source').textContent     = result.source || '—';
   document.getElementById('detail-grid').style.display = 'grid';
+
+  renderDocAnalysis(result, isClean);
+}
+
+function renderDocAnalysis(result, isClean) {
+  const panel    = document.getElementById('doc-analysis');
+  const viewer   = document.getElementById('doc-viewer');
+  const callout  = document.getElementById('threat-callout');
+  const labelEl  = document.getElementById('doc-analysis-label');
+
+  const docText = result.document_text || '';
+  if (!docText) { panel.style.display = 'none'; return; }
+
+  panel.style.display = 'block';
+
+  const excerpt = result.check_excerpt || '';
+  const message = result.check_message || '';
+
+  let html = escapeHtml(docText);
+
+  if (isClean) {
+    labelEl.textContent = 'clean — no threats detected';
+    labelEl.style.color = 'var(--green)';
+    callout.style.display = 'none';
+  } else if (excerpt) {
+    labelEl.textContent = `threat highlighted`;
+    labelEl.style.color = 'var(--red-bright)';
+    const escapedExcerpt = escapeHtml(excerpt);
+    html = html.replace(escapedExcerpt, `<mark class="threat">${escapedExcerpt}</mark>`);
+    callout.style.display = 'block';
+    callout.innerHTML = `<strong>⚡ ${result.blocked_by || 'Check'} detected:</strong> ${escapeHtml(message)}`;
+  } else if (result.blocked_by) {
+    labelEl.textContent = 'attack document';
+    labelEl.style.color = 'var(--red-bright)';
+    callout.style.display = 'block';
+    callout.innerHTML = `<strong>⚡ ${result.blocked_by}:</strong> ${escapeHtml(message || 'Threat pattern detected')}`;
+  } else if (result.status === 'completed' && !isClean) {
+    labelEl.textContent = 'FINDING — passed all checks';
+    labelEl.style.color = 'var(--red-glow)';
+    callout.style.display = 'block';
+    callout.innerHTML = '<strong>⚠ Shield failed</strong> — this payload reached the agent layer without triggering a block.';
+  } else {
+    labelEl.textContent = 'document';
+    labelEl.style.color = 'var(--muted)';
+    callout.style.display = 'none';
+  }
+
+  viewer.innerHTML = html;
+  if (excerpt) {
+    const mark = viewer.querySelector('mark.threat');
+    if (mark) mark.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function updateLastResult(result) {
