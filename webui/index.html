@@ -348,6 +348,7 @@
 
   .depth-box.active  { border-color: var(--red-mid); color: var(--red-mid); background: #1a0000; }
   .depth-box.reached { border-color: #333; color: #777; background: #0e0e18; }
+  .depth-box.safe    { border-color: var(--green); color: var(--green); background: #001a0a; }
   .depth-box.passed  { border-color: var(--red-bright); color: var(--red-bright); background: #200000; }
 
   /* THREAT — attack was blocked HERE — red glow */
@@ -374,7 +375,8 @@
     transition: color 0.3s;
   }
 
-  .depth-arrow.live { color: var(--red-mid); }
+  .depth-arrow.live  { color: var(--red-mid); }
+  .depth-arrow.clean { color: var(--green); }
 
   /* ── VERDICT ── */
   .verdict-box {
@@ -1133,32 +1135,35 @@ function showDepthResult(result) {
   const depthOrder = { router: 1, orchestrator: 2, squad: 3, agent: 4 };
   const reached = depthOrder[depth] || 0;
 
+  const completedCls  = isClean ? 'safe' : 'passed';
+  const arrowCls      = isClean ? 'clean' : 'live';
+
   if (reached >= 1) {
-    document.getElementById('arrow-1').className = 'depth-arrow live';
+    document.getElementById('arrow-1').className = 'depth-arrow ' + arrowCls;
     if (blockedAt === 'router') {
       markThreat('node-router');
     } else {
-      document.getElementById('node-router').className = 'depth-box reached';
+      document.getElementById('node-router').className = 'depth-box ' + completedCls;
     }
   }
 
   if (reached >= 2 && blockedAt !== 'router') {
-    document.getElementById('arrow-2').className = 'depth-arrow live';
+    document.getElementById('arrow-2').className = 'depth-arrow ' + arrowCls;
     if (blockedAt === 'orchestrator') {
       markThreat('node-orch');
     } else {
-      document.getElementById('node-orch').className = 'depth-box reached';
+      document.getElementById('node-orch').className = 'depth-box ' + completedCls;
     }
   }
 
   if (reached >= 3 && !blockedAt) {
-    document.getElementById('arrow-3').className = 'depth-arrow live';
-    document.getElementById('node-squad').className = 'depth-box passed';
+    document.getElementById('arrow-3').className = 'depth-arrow ' + arrowCls;
+    document.getElementById('node-squad').className = 'depth-box ' + completedCls;
   }
 
   if (reached >= 4 && !blockedAt) {
-    document.getElementById('arrow-4').className = 'depth-arrow live';
-    document.getElementById('node-agent').className = 'depth-box passed';
+    document.getElementById('arrow-4').className = 'depth-arrow ' + arrowCls;
+    document.getElementById('node-agent').className = 'depth-box ' + completedCls;
   }
 
   const vb = document.getElementById('verdict-box');
@@ -1182,7 +1187,7 @@ function showDepthResult(result) {
   document.getElementById('d-blocked-at').textContent = result.blocked_at || '—';
   document.getElementById('d-blocked-by').textContent = result.blocked_by || '—';
   document.getElementById('d-agents').textContent     = (result.agents_reached || []).join(', ') || 'none';
-  document.getElementById('d-shield').textContent     = result.shield_held ? '✓ Yes' : '✗ No — FINDING';
+  document.getElementById('d-shield').textContent     = result.shield_held ? '✓ Yes' : isClean ? '✓ N/A — clean pass' : '✗ No — FINDING';
   document.getElementById('d-size').textContent       = result.document_size ? result.document_size + ' chars' : '—';
   document.getElementById('d-source').textContent     = result.source || '—';
   document.getElementById('detail-grid').style.display = 'grid';
