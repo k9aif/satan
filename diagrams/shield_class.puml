@@ -1,0 +1,172 @@
+@startuml K9X Shield — ABB / SBB Class Hierarchy
+
+skinparam backgroundColor #0d0d0d
+skinparam classBackgroundColor #1a1a1a
+skinparam classBorderColor #444444
+skinparam classArrowColor #888888
+skinparam classFontColor #e0e0e0
+skinparam classAttributeFontColor #aaaaaa
+skinparam classStereotypeFontColor #666666
+skinparam packageBackgroundColor #111111
+skinparam packageBorderColor #333333
+skinparam packageFontColor #888888
+skinparam shadowing false
+skinparam monochrome false
+skinparam defaultFontName Courier
+skinparam defaultFontSize 11
+skinparam linetype ortho
+
+' ── K9-AIF ABBs (framework) ─────────────────────────────────────────────────
+
+package "K9-AIF Framework ABBs" #1a1a1a {
+
+  abstract class BaseVulnerabilityCheck {
+    {abstract} +check(payload: dict): CheckResult
+    #name: str
+    #description: str
+  }
+
+  class VulnerabilityChain {
+    -_checks: List[BaseVulnerabilityCheck]
+    +add(check: BaseVulnerabilityCheck): self
+    +run(payload: dict): CheckResult
+  }
+
+  abstract class BaseRouter {
+    {abstract} #_build_ingress_chain(): VulnerabilityChain
+    +route(payload: dict): dict
+    -_run_ingress_checks(payload): CheckResult
+  }
+
+  abstract class BaseOrchestrator {
+    {abstract} #_build_egress_chain(): VulnerabilityChain
+    +execute_flow(payload: dict): dict
+    -_run_egress_checks(payload): CheckResult
+  }
+
+  abstract class BaseAgent {
+    {abstract} +execute(payload: dict): dict
+    +enforce_governance()
+    +publish_event(event: dict)
+    #governance: BaseGovernance
+  }
+
+  abstract class BaseGovernance {
+    {abstract} +pre_process(payload: dict, ctx): dict
+    {abstract} +post_process(payload: dict, ctx): dict
+  }
+
+}
+
+' ── K9X Satan SBBs ──────────────────────────────────────────────────────────
+
+package "K9X Satan — Shield SBBs" #111122 {
+
+  class InputSizeCheck {
+    -_max_bytes: int
+    +check(payload): CheckResult
+    ' catches: Token Flood Attack
+  }
+
+  class PromptInjectionCheck {
+    -_patterns: List[Pattern]
+    +check(payload): CheckResult
+    ' catches: SYSTEM OVERRIDE, ignore all instructions
+  }
+
+  class FieldAnomalyCheck {
+    -_RED_FLAG_KEYS: Set[str]
+    -_RED_FLAG_VALUE_PATTERNS: List[Pattern]
+    -_RED_FLAG_RAW_PATTERNS: List[Pattern]
+    +check(payload): CheckResult
+    ' catches: EXEC-OVERRIDE, Priority: CRITICAL, COO auth codes
+  }
+
+  class DoclingExtractor {
+    -_enabled: bool
+    -_url: str
+    -_timeout: int
+    +enrich(payload: dict): dict
+    -_naive_extract(text): Dict[str,str]
+    -_extract_via_docling(text): Tuple[Dict,bool]
+    -_docling_endpoint(text): Dict[str,str]
+    ' PRE-SHIELD: populates extracted_fields
+  }
+
+  class DocumentRouter {
+    #_build_ingress_chain(): VulnerabilityChain
+    +route(payload: dict): dict
+  }
+
+  class DocumentOrchestrator {
+    #_build_egress_chain(): VulnerabilityChain
+    +execute_flow(payload: dict): dict
+  }
+
+  class DocumentExtractionAgent {
+    +execute(payload: dict): dict
+    ' extracts text fields, confidence score
+  }
+
+  class AuditAgent {
+    +execute(payload: dict): dict
+    ' audit trail, compliance record
+  }
+
+  class GuardianGovernance {
+    -_model: str
+    -_base: str
+    -_timeout: int
+    +pre_process(payload, ctx): dict
+    +post_process(payload, ctx): dict
+    -_call_guardian(system, content): Tuple[str,str]
+    ' model: granite4.1-guardian:8b
+  }
+
+  class NoopGovernance {
+    +pre_process(payload, ctx): dict
+    +post_process(payload, ctx): dict
+    ' passthrough — development only
+  }
+
+}
+
+' ── Inheritance ──────────────────────────────────────────────────────────────
+
+BaseVulnerabilityCheck <|-- InputSizeCheck
+BaseVulnerabilityCheck <|-- PromptInjectionCheck
+BaseVulnerabilityCheck <|-- FieldAnomalyCheck
+
+BaseRouter       <|-- DocumentRouter
+BaseOrchestrator <|-- DocumentOrchestrator
+BaseAgent        <|-- DocumentExtractionAgent
+BaseAgent        <|-- AuditAgent
+BaseGovernance   <|-- GuardianGovernance
+BaseGovernance   <|-- NoopGovernance
+
+' ── Composition ──────────────────────────────────────────────────────────────
+
+VulnerabilityChain "1" *--> "1..N" BaseVulnerabilityCheck : contains >
+DocumentRouter    "1" *--> "1"     VulnerabilityChain      : ingress chain >
+DocumentOrchestrator "1" *--> "1"  VulnerabilityChain      : egress chain >
+
+BaseAgent "N" o--> "1" BaseGovernance : uses >
+
+DocumentOrchestrator "1" --> "1" DocumentExtractionAgent
+DocumentOrchestrator "1" --> "1" AuditAgent
+
+note right of DoclingExtractor
+  Runs before VulnerabilityChain.
+  Populates extracted_fields so
+  FieldAnomalyCheck has structured
+  field data at ingress.
+end note
+
+note right of GuardianGovernance
+  Wraps every agent's pre/post hooks.
+  Calls granite4.1-guardian:8b via
+  Ollama for semantic safety check.
+  Required for post-agent defence.
+end note
+
+@enduml

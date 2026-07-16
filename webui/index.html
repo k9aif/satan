@@ -1474,6 +1474,180 @@
     </div>
 
     <div class="card">
+      <h3>Check Execution — Sequence &amp; Ownership</h3>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:16px">
+        Every payload traverses four phases in strict order. A block at any phase terminates execution — downstream phases never run.
+      </p>
+
+      <!-- ── check-sequence diagram ── -->
+      <div style="display:flex;gap:0;font-size:0.7rem">
+
+        <!-- left spine -->
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:18px;margin-right:12px">
+          <div style="width:2px;flex:1;background:linear-gradient(to bottom,var(--border),var(--red-mid) 20%,var(--red-mid) 45%,var(--muted) 55%,var(--muted) 72%,var(--green) 82%,var(--green))"></div>
+        </div>
+
+        <!-- phases -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+
+          <!-- Phase 0: DoclingExtractor -->
+          <div style="border-left:3px solid var(--border);padding:10px 14px;border-radius:0 5px 5px 0;background:color-mix(in srgb,var(--border) 8%,transparent)">
+            <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;color:var(--dim);margin-bottom:8px">PHASE 0 — PRE-SHIELD · DoclingExtractor</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--muted);min-width:22px;text-align:right">①</span>
+                <span style="color:var(--text);font-weight:500">naive_extract()</span>
+                <span style="color:var(--dim)">— regex key:value scan (always runs)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--muted);min-width:22px;text-align:right">②</span>
+                <span style="color:var(--text);font-weight:500">_docling_endpoint()</span>
+                <span style="color:var(--dim)">— OCR via /v1/convert/file (if enabled)</span>
+              </div>
+              <div style="margin-top:4px;padding:4px 8px;background:color-mix(in srgb,var(--border) 20%,transparent);border-radius:3px;font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">→ populates <span style="color:var(--text)">extracted_fields</span> for FieldAnomalyCheck</div>
+            </div>
+          </div>
+
+          <!-- Phase 1: Router Ingress -->
+          <div style="border-left:3px solid var(--red-mid);padding:10px 14px;border-radius:0 5px 5px 0;background:color-mix(in srgb,var(--red-mid) 6%,transparent)">
+            <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;color:var(--red-mid);margin-bottom:8px">PHASE 1 — ROUTER INGRESS SHIELD · VulnerabilityChain</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">①</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">InputSizeCheck</span>
+                  <span style="color:var(--dim)"> · payload byte length &gt; limit</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: Token Flood Attack (💣 Oversized Payload)</div>
+                </div>
+                <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">②</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">PromptInjectionCheck</span>
+                  <span style="color:var(--dim)"> · pattern scan on raw text</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: SYSTEM OVERRIDE · ignore all instructions · admin mode · roleplay jailbreak</div>
+                </div>
+                <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">③</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">FieldAnomalyCheck</span>
+                  <span style="color:var(--dim)"> · scans extracted_fields + raw text</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: EXEC-OVERRIDE codes · Priority: CRITICAL · COO auth · supersedes directives</div>
+                </div>
+                <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 2: Agent execution -->
+          <div style="border-left:3px solid var(--muted);padding:10px 14px;border-radius:0 5px 5px 0;background:color-mix(in srgb,var(--muted) 4%,transparent)">
+            <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">PHASE 2 — INTELLIGENCE · DocumentProcessingSquad</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <!-- agent template repeated -->
+              <div style="padding:8px 10px;border:1px solid var(--border);border-radius:4px;background:var(--panel)">
+                <div style="font-size:0.68rem;font-weight:600;color:var(--text);margin-bottom:6px">DocumentExtractionAgent</div>
+                <div style="display:flex;flex-direction:column;gap:4px;font-size:0.65rem">
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="color:var(--green);width:12px">▶</span>
+                    <span style="color:var(--muted)">Guardian</span>
+                    <span style="font-family:var(--font-mono);color:var(--dim)">pre_process()</span>
+                    <span style="margin-left:auto;color:var(--green)">🛑 BLOCK if unsafe input</span>
+                  </div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="color:var(--muted);width:12px">▶</span>
+                    <span style="color:var(--muted)">Agent</span>
+                    <span style="font-family:var(--font-mono);color:var(--dim)">execute() → LLM</span>
+                  </div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="color:var(--green);width:12px">▶</span>
+                    <span style="color:var(--muted)">Guardian</span>
+                    <span style="font-family:var(--font-mono);color:var(--dim)">post_process()</span>
+                    <span style="margin-left:auto;color:var(--green)">🛑 REDACT if PII/unsafe</span>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:8px 10px;border:1px solid var(--border);border-radius:4px;background:var(--panel)">
+                <div style="font-size:0.68rem;font-weight:600;color:var(--text);margin-bottom:6px">AuditAgent</div>
+                <div style="display:flex;flex-direction:column;gap:4px;font-size:0.65rem">
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="color:var(--green);width:12px">▶</span>
+                    <span style="color:var(--muted)">Guardian</span>
+                    <span style="font-family:var(--font-mono);color:var(--dim)">pre_process()</span>
+                    <span style="margin-left:auto;color:var(--green)">🛑 BLOCK if unsafe input</span>
+                  </div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="color:var(--muted);width:12px">▶</span>
+                    <span style="color:var(--muted)">Agent</span>
+                    <span style="font-family:var(--font-mono);color:var(--dim)">execute() → LLM</span>
+                  </div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="color:var(--green);width:12px">▶</span>
+                    <span style="color:var(--muted)">Guardian</span>
+                    <span style="font-family:var(--font-mono);color:var(--dim)">post_process()</span>
+                    <span style="margin-left:auto;color:var(--green)">🛑 REDACT if PII/unsafe</span>
+                  </div>
+                </div>
+              </div>
+              <div style="font-size:0.65rem;color:var(--dim);padding:2px 0">Guardian hooks fire only when Governance = GuardianGovernance (Setup → Governance). Default is NoopGovernance — hooks are present but pass through.</div>
+            </div>
+          </div>
+
+          <!-- Phase 3: Orchestrator Egress -->
+          <div style="border-left:3px solid var(--green);padding:10px 14px;border-radius:0 5px 5px 0;background:color-mix(in srgb,var(--green) 5%,transparent)">
+            <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;color:var(--green);margin-bottom:8px">PHASE 3 — ORCHESTRATOR EGRESS GATE · VulnerabilityChain</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--green);min-width:22px;text-align:right;flex-shrink:0">①</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">SemanticDriftCheck</span>
+                  <span style="color:var(--dim)"> · evaluates agent reasoning against original goal</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: role reframing · goal hijacking · identity override</div>
+                </div>
+                <span style="margin-left:auto;color:var(--green);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--green);min-width:22px;text-align:right;flex-shrink:0">②</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">ExecutionGuardCheck</span>
+                  <span style="color:var(--dim)"> · validates response schema &amp; scope</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: destructive actions · privilege escalation · schema violations</div>
+                </div>
+                <span style="margin-left:auto;color:var(--green);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid var(--border-r);border-radius:5px;background:color-mix(in srgb,var(--red-mid) 4%,transparent)">
+            <span style="font-size:0.72rem;color:var(--red-mid);font-weight:700">⚠ OUTPUT</span>
+            <span style="font-size:0.7rem;color:var(--dim)">All phases passed — response exits pipeline. FINDING if evil payload; COMPLETED if clean.</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>ABB / SBB Class Hierarchy</h3>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.7;margin-bottom:12px">
+        PlantUML source at <code style="font-size:0.78rem">diagrams/shield_class.puml</code>.
+        Run <code style="font-size:0.78rem">./diagrams/generate.sh</code> to render PNG.
+      </p>
+      <div id="class-diagram-container">
+        <img id="class-diagram-img" src="/static/shield_class.png" alt="ABB/SBB Class Diagram"
+             style="max-width:100%;border-radius:4px;display:none"
+             onload="this.style.display='block'"
+             onerror="document.getElementById('class-diagram-placeholder').style.display='block';this.style.display='none'">
+        <div id="class-diagram-placeholder" style="padding:20px;text-align:center;border:1px dashed var(--border);border-radius:4px;color:var(--dim);font-size:0.82rem">
+          PNG not generated yet — run <code>./diagrams/generate.sh</code> then reload
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <h3>Target Pipeline — SBB Hierarchy</h3>
       <pre class="sample">── PRE-AGENT ────────────────────────────────────────
 DoclingExtractor              SBB utility

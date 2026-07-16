@@ -16,12 +16,17 @@ except ImportError:
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("k9x_satan.app")
 
 app = FastAPI(title="K9x Satan", version="1.0.0")
+
+_DIAGRAMS_DIR = os.path.join(os.path.dirname(__file__), "diagrams")
+if os.path.isdir(_DIAGRAMS_DIR):
+    app.mount("/static", StaticFiles(directory=_DIAGRAMS_DIR), name="static")
 
 _run_history: list = []
 
