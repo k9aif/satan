@@ -4,6 +4,20 @@ K9x Satan — GuardianGovernance SBB
 Governance hook using IBM Granite Guardian (granite4.1-guardian:8b) via Ollama.
 Extends BaseGovernance (ABB) — pre_process screens inputs; post_process screens outputs.
 
+Defense in depth, not a replacement: K9X Shield (the VulnerabilityChain checks
+wired into DocumentRouter/DocumentOrchestrator) applies deterministic,
+policy-driven pattern matching at ingress and egress — explainable, fast,
+zero LLM cost, but evadable by paraphrase/encoding/indirection. Guardian is
+the optional semantic layer that catches what survives the literal rules:
+paraphrased injection, subtle goal hijacking, disguised privilege escalation.
+Neither layer replaces the other — Shield holds even with Guardian disabled
+(NoopGovernance); Guardian adds coverage Shield structurally cannot reach.
+
+Guardian unavailability is never silently treated as a pass. A timeout, HTTP
+error, or unreachable Ollama endpoint produces an explicit "UNAVAILABLE"
+verdict, and the configured on_guardian_unavailable policy decides what
+happens next — it is a policy decision, not a default success.
+
 Implements sync (non-async) methods so they work with Satan's direct _pre/_post
 wrappers in agents.py. BaseAgent.apply_pre_governance handles both sync and async
 governance via inspect.isawaitable(), so this is fully ABB-compliant.
@@ -11,6 +25,7 @@ governance via inspect.isawaitable(), so this is fully ABB-compliant.
 
 import logging
 import os
+import re
 import sys
 from typing import Any, Dict, Optional
 
@@ -42,6 +57,12 @@ _SYSTEM_POST = (
     "UNSAFE: <one-line reason>"
 )
 
+_VALID_UNAVAILABLE_POLICIES = {"fail_closed", "fail_open", "inconclusive"}
+
+# granite4.1-guardian:8b's actual output format — it ignores the SAFE:/UNSAFE:
+# instruction above and always answers in this fixed tag format instead.
+_SCORE_PATTERN = re.compile(r"<score>\s*(yes|no)\s*</score>", re.IGNORECASE)
+
 
 class GuardianGovernance(BaseGovernance):
     """
@@ -61,10 +82,27 @@ class GuardianGovernance(BaseGovernance):
         guardian_cfg  = self.config.get("governance", {})
         self._model   = guardian_cfg.get("guardian_model", "granite4.1-guardian:8b")
         self._timeout = int(guardian_cfg.get("timeout", 30))
-        log.info("[GuardianGovernance] ready — model=%s endpoint=%s", self._model, self._base)
+
+        policy = guardian_cfg.get("on_guardian_unavailable", "fail_closed")
+        if policy not in _VALID_UNAVAILABLE_POLICIES:
+            log.warning("[GuardianGovernance] unknown on_guardian_unavailable=%r — defaulting to fail_closed", policy)
+            policy = "fail_closed"
+        self._on_unavailable = policy
+
+        log.info(
+            "[GuardianGovernance] ready — model=%s endpoint=%s on_unavailable=%s",
+            self._model, self._base, self._on_unavailable,
+        )
 
     def _call_guardian(self, system_prompt: str, content: str) -> tuple:
-        """POST to Ollama guardian model. Returns (verdict, reason) strings."""
+        """
+        POST to Ollama guardian model. Returns (verdict, reason).
+
+        verdict is one of "SAFE", "UNSAFE", "UNAVAILABLE" — a timeout, HTTP
+        error, or connection failure returns UNAVAILABLE, never SAFE. Silently
+        mapping an unreachable safety check to "SAFE" would let a payload
+        through on the strength of a check that never actually ran.
+        """
         prompt = f"{system_prompt}\n\nContent to assess:\n{content[:4000]}"
         try:
             resp = requests.post(
@@ -75,16 +113,24 @@ class GuardianGovernance(BaseGovernance):
             if resp.ok:
                 text = resp.json().get("response", "").strip()
                 log.debug("[GuardianGovernance] response: %s", text[:200])
-                if text.upper().startswith("UNSAFE"):
-                    reason = text.split(":", 1)[1].strip() if ":" in text else text
-                    return "UNSAFE", reason
-                reason = text.split(":", 1)[1].strip() if ":" in text else "content cleared"
-                return "SAFE", reason
-            log.warning("[GuardianGovernance] HTTP %d — defaulting to SAFE", resp.status_code)
-            return "SAFE", f"guardian HTTP {resp.status_code}"
+                # granite4.1-guardian:8b is a fine-tuned binary risk classifier —
+                # it ignores the "SAFE:/UNSAFE:" free-text format requested in
+                # the prompt and always answers "<score> yes </score>" (risky)
+                # or "<score> no </score>" (not risky), regardless of prompt
+                # wording. Match that format; do NOT default to SAFE on a
+                # response we can't parse — treat it as UNAVAILABLE instead,
+                # same as an unreachable endpoint.
+                match = _SCORE_PATTERN.search(text)
+                if match:
+                    risky = match.group(1).lower() == "yes"
+                    return ("UNSAFE" if risky else "SAFE"), f"guardian score={match.group(1).lower()}"
+                log.warning("[GuardianGovernance] unparseable response: %r — Guardian unavailable", text[:200])
+                return "UNAVAILABLE", f"unparseable guardian response: {text[:100]!r}"
+            log.warning("[GuardianGovernance] HTTP %d — Guardian unavailable", resp.status_code)
+            return "UNAVAILABLE", f"guardian HTTP {resp.status_code}"
         except requests.exceptions.RequestException as exc:
-            log.warning("[GuardianGovernance] unreachable: %s — defaulting to SAFE", exc)
-            return "SAFE", f"guardian offline: {exc}"
+            log.warning("[GuardianGovernance] unreachable: %s — Guardian unavailable", exc)
+            return "UNAVAILABLE", f"guardian offline: {exc}"
 
     def pre_process(self, payload: Dict[str, Any], ctx: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:  # type: ignore[override]
         """Screen incoming payload before the agent invokes the LLM."""
@@ -97,8 +143,22 @@ class GuardianGovernance(BaseGovernance):
 
         if verdict == "UNSAFE":
             log.warning("[GuardianGovernance] PRE BLOCKED agent=%s — %s", agent, reason)
-            payload["_guardian_blocked"]  = True
-            payload["_guardian_finding"]  = reason
+            payload["_guardian_blocked"] = True
+            payload["_guardian_finding"] = reason
+
+        elif verdict == "UNAVAILABLE":
+            payload["_guardian_pre"]["policy_applied"] = self._on_unavailable
+            if self._on_unavailable == "fail_closed":
+                log.warning("[GuardianGovernance] PRE UNAVAILABLE agent=%s — fail_closed: %s", agent, reason)
+                payload["_guardian_blocked"] = True
+                payload["_guardian_finding"] = f"Guardian unavailable (fail-closed policy) — {reason}"
+            elif self._on_unavailable == "inconclusive":
+                log.warning("[GuardianGovernance] PRE UNAVAILABLE agent=%s — inconclusive: %s", agent, reason)
+                payload["_guardian_flagged"] = True
+                payload["_guardian_finding"] = f"Guardian unavailable (inconclusive) — {reason}"
+            else:  # fail_open
+                log.warning("[GuardianGovernance] PRE UNAVAILABLE agent=%s — fail_open (allowing through): %s", agent, reason)
+
         else:
             log.info("[GuardianGovernance] pre_process SAFE agent=%s", agent)
 
@@ -120,10 +180,26 @@ class GuardianGovernance(BaseGovernance):
 
         if verdict == "UNSAFE":
             log.warning("[GuardianGovernance] POST BLOCKED agent=%s — %s", agent, reason)
-            payload["_guardian_output_blocked"]  = True
-            payload["_guardian_output_finding"]  = reason
+            payload["_guardian_output_blocked"] = True
+            payload["_guardian_output_finding"] = reason
             payload["extracted"]   = "[REDACTED by GuardianGovernance]"
             payload["audit_notes"] = "[REDACTED by GuardianGovernance]"
+
+        elif verdict == "UNAVAILABLE":
+            payload["_guardian_post"]["policy_applied"] = self._on_unavailable
+            if self._on_unavailable == "fail_closed":
+                log.warning("[GuardianGovernance] POST UNAVAILABLE agent=%s — fail_closed, redacting: %s", agent, reason)
+                payload["_guardian_output_blocked"] = True
+                payload["_guardian_output_finding"] = f"Guardian unavailable (fail-closed policy) — {reason}"
+                payload["extracted"]   = "[REDACTED — Guardian unavailable, fail-closed policy]"
+                payload["audit_notes"] = "[REDACTED — Guardian unavailable, fail-closed policy]"
+            elif self._on_unavailable == "inconclusive":
+                log.warning("[GuardianGovernance] POST UNAVAILABLE agent=%s — inconclusive: %s", agent, reason)
+                payload["_guardian_output_flagged"] = True
+                payload["_guardian_output_finding"] = f"Guardian unavailable (inconclusive) — {reason}"
+            else:  # fail_open
+                log.warning("[GuardianGovernance] POST UNAVAILABLE agent=%s — fail_open (response not screened): %s", agent, reason)
+
         else:
             log.info("[GuardianGovernance] post_process SAFE agent=%s", agent)
 

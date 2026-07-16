@@ -16,8 +16,6 @@ import logging
 import os
 import sys
 
-import yaml
-
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "k9-aif-framework"))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
@@ -31,9 +29,19 @@ _CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config", "config.y
 
 
 def load_config() -> dict:
+    """
+    Load config.yaml via the framework's env-var-expanding loader.
+
+    Plain yaml.safe_load() would leave "${OLLAMA_BASE_URL:-http://localhost:11434}"
+    as a literal, unexpanded string — GuardianGovernance would then try to
+    connect to that literal string as a URL, fail, and silently fall into its
+    fail_closed path. k9_aif_abb.k9_utils.config_loader.load_yaml() is the
+    framework's own ${VAR:-default} expander — reuse it instead of duplicating
+    that logic here.
+    """
+    from k9_aif_abb.k9_utils.config_loader import load_yaml
     try:
-        with open(_CONFIG_PATH) as f:
-            cfg = yaml.safe_load(f) or {}
+        cfg = load_yaml(_CONFIG_PATH)
         # env var wins over config file for k9_env
         cfg["k9_env"] = os.environ.get("K9_ENV", cfg.get("k9_env", "development"))
         return cfg

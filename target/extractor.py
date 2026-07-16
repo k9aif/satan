@@ -158,12 +158,19 @@ class DoclingExtractor:
 
         # --- attempt 1: docling-serve standard multipart upload ---
         # Field name is "files" (plural) — matches DoclingParser ABB in k9-aif-framework.
+        # Uploaded as .md/text/markdown, not .txt/text/plain: docling-serve's
+        # /v1/convert/file defaults from_formats to a fixed list (docx, pptx,
+        # html, image, pdf, asciidoc, md, csv, xlsx, ...) that does NOT include
+        # plain text. Sending a .txt file made the server return a confusing
+        # HTTP 404 ("Task result not found") rather than a clean format error.
+        # "md" is in that list and plain prose is valid markdown, so this is a
+        # safe, lossless re-labeling — not a real format conversion.
         upload_url = f"{base}/v1/convert/file"
         try:
             file_bytes = io.BytesIO(text.encode("utf-8"))
             resp = requests.post(
                 upload_url,
-                files={"files": ("document.txt", file_bytes, "text/plain")},
+                files={"files": ("document.md", file_bytes, "text/markdown")},
                 timeout=self._timeout,
             )
             if resp.status_code not in (404, 405, 422):
@@ -176,12 +183,17 @@ class DoclingExtractor:
 
         # --- attempt 2: custom JSON text wrapper (POST /v1/parse) ---
         parse_url = f"{base}/v1/parse"
-        resp2 = requests.post(
-            parse_url,
-            json={"text": text},
-            timeout=self._timeout,
-        )
-        resp2.raise_for_status()
+        try:
+            resp2 = requests.post(
+                parse_url,
+                json={"text": text},
+                timeout=self._timeout,
+            )
+            resp2.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            raise RuntimeError(
+                f"Neither /v1/convert/file nor /v1/parse succeeded on {base} — {exc}"
+            ) from exc
         return self._parse_docling_response(resp2.json())
 
     def _parse_docling_response(self, data: Any) -> Dict[str, str]:

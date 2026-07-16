@@ -2,7 +2,6 @@
 
 import os
 import sys
-import requests
 
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "k9-aif-framework"))
 if _ROOT not in sys.path:
@@ -11,6 +10,7 @@ if _ROOT not in sys.path:
 from k9_aif_abb.k9_security.attacks.base_attack import (
     BaseAttack, AttackResult, AttackOutcome, AttackSurface, PenetrationDepth
 )
+from k9x_satan.attacks._fire import fire, classify
 
 
 INJECTED_CLAIM_FORM = """
@@ -72,14 +72,11 @@ class PromptInjectionAttack(BaseAttack):
 
     def run(self, target_url: str) -> AttackResult:
         payload = self.craft_payload()
-        try:
-            resp = requests.post(f"{target_url}/api/eoc/run", json=payload, timeout=30)
-            response = resp.json()
-        except Exception as exc:
-            response = {"status": "blocked", "blocked_at": "router", "error": str(exc)}
+        response, error_result = fire(target_url, payload, self.name, self.surface, governance_mode=self.config.get("governance_mode"))
+        if error_result:
+            return error_result
 
-        depth   = self._classify_depth(response)
-        outcome = self._classify_outcome(response, depth)
+        depth, outcome = classify(response)
         finding = None
         if outcome == AttackOutcome.PASSED:
             finding = "PromptInjectionCheck missed embedded instructions in document body"

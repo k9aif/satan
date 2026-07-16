@@ -19,6 +19,8 @@ from k9_aif_abb.k9_security.vulnerability.vulnerability_chain import Vulnerabili
 from k9_aif_abb.k9_security.vulnerability.checks.input_size_check import InputSizeCheck
 from k9_aif_abb.k9_security.vulnerability.checks.prompt_injection_check import PromptInjectionCheck
 from k9x_satan.target.field_anomaly_check import FieldAnomalyCheck
+from k9x_satan.target.memory_poisoning_check import MemoryPoisoningCheck
+from k9x_satan.target.request_frequency_check import RequestFrequencyCheck
 
 log = logging.getLogger("k9x_satan.target")
 
@@ -37,9 +39,11 @@ class DocumentRouter(BaseRouter):
     def _build_ingress_chain(self) -> VulnerabilityChain:
         return (
             VulnerabilityChain()
-            .add(InputSizeCheck())
-            .add(PromptInjectionCheck())
-            .add(FieldAnomalyCheck())
+            .add(RequestFrequencyCheck(self.config))
+            .add(InputSizeCheck(self.config))
+            .add(PromptInjectionCheck(self.config))
+            .add(FieldAnomalyCheck(self.config))
+            .add(MemoryPoisoningCheck(self.config))
         )
 
     def route(self, payload: Dict[str, Any]) -> Dict[str, Any]:

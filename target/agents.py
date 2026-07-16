@@ -29,13 +29,33 @@ log = logging.getLogger("k9x_satan.target")
 
 
 def _pre(agent: BaseAgent, payload: dict) -> dict:
-    """Sync wrapper for governance.pre_process — avoids asyncio complexity."""
-    return agent.governance.pre_process(payload, agent._governance_context())
+    """
+    Sync wrapper for governance.pre_process — avoids asyncio complexity.
+
+    ShieldGovernance (framework OOB) raises PermissionError on BLOCK rather
+    than annotating the payload the way GuardianGovernance does — normalize
+    both contracts here so execute() has exactly one enforcement path
+    (payload.get("_guardian_blocked")) regardless of which governance
+    backend is active.
+    """
+    try:
+        return agent.governance.pre_process(payload, agent._governance_context())
+    except PermissionError as exc:
+        payload["_guardian_blocked"] = True
+        payload["_guardian_finding"] = str(exc)
+        return payload
 
 
 def _post(agent: BaseAgent, result: dict) -> dict:
-    """Sync wrapper for governance.post_process — avoids asyncio complexity."""
-    return agent.governance.post_process(result, agent._governance_context())
+    """Sync wrapper for governance.post_process — avoids asyncio complexity. See _pre()."""
+    try:
+        return agent.governance.post_process(result, agent._governance_context())
+    except PermissionError as exc:
+        result["_guardian_output_blocked"] = True
+        result["_guardian_output_finding"] = str(exc)
+        result["extracted"]   = "[REDACTED by ShieldGovernance]"
+        result["audit_notes"] = "[REDACTED by ShieldGovernance]"
+        return result
 
 
 class DocumentExtractionAgent(BaseAgent):
@@ -53,6 +73,20 @@ class DocumentExtractionAgent(BaseAgent):
         # ── 1. governance pre-flight ──────────────────────────────────────────
         self.enforce_governance()
         payload = _pre(self, payload)
+
+        if payload.get("_guardian_blocked"):
+            finding = payload.get("_guardian_finding", "blocked by governance pre_process")
+            log.warning("[DocumentExtractionAgent] BLOCKED by governance — %s", finding)
+            self.publish_event({
+                "type":            "DocumentExtractionBlockedByGovernance",
+                "agent":           self.layer,
+                "guardian_finding": finding,
+            })
+            return {
+                "agent":            "DocumentExtractionAgent",
+                "status":           "blocked_by_governance",
+                "guardian_finding": finding,
+            }
 
         text = payload.get("document_text", "")
         log.info("[DocumentExtractionAgent] processing %d chars", len(text))
@@ -119,6 +153,20 @@ class AuditAgent(BaseAgent):
         # ── 1. governance pre-flight ──────────────────────────────────────────
         self.enforce_governance()
         payload = _pre(self, payload)
+
+        if payload.get("_guardian_blocked"):
+            finding = payload.get("_guardian_finding", "blocked by governance pre_process")
+            log.warning("[AuditAgent] BLOCKED by governance — %s", finding)
+            self.publish_event({
+                "type":             "AuditBlockedByGovernance",
+                "agent":            self.layer,
+                "guardian_finding": finding,
+            })
+            return {
+                "agent":            "AuditAgent",
+                "status":           "blocked_by_governance",
+                "guardian_finding": finding,
+            }
 
         extracted = payload.get("DocumentExtractionAgent", {})
         extracted_text = extracted.get("extracted", "")

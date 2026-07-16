@@ -1,24 +1,12 @@
-@startuml K9X Shield — ABB / SBB Class Hierarchy
+@startuml shield_class
 
-skinparam backgroundColor #0d0d0d
-skinparam classBackgroundColor #1a1a1a
-skinparam classBorderColor #444444
-skinparam classArrowColor #888888
-skinparam classFontColor #e0e0e0
-skinparam classAttributeFontColor #aaaaaa
-skinparam classStereotypeFontColor #666666
-skinparam packageBackgroundColor #111111
-skinparam packageBorderColor #333333
-skinparam packageFontColor #888888
-skinparam shadowing false
-skinparam monochrome false
 skinparam defaultFontName Courier
 skinparam defaultFontSize 11
 skinparam linetype ortho
 
-' ── K9-AIF ABBs (framework) ─────────────────────────────────────────────────
+' ── K9-AIF ABBs (framework — abstract contracts) ────────────────────────────
 
-package "K9-AIF Framework ABBs" #1a1a1a {
+package "K9-AIF Framework ABBs" {
 
   abstract class BaseVulnerabilityCheck {
     {abstract} +check(payload: dict): CheckResult
@@ -58,28 +46,94 @@ package "K9-AIF Framework ABBs" #1a1a1a {
 
 }
 
-' ── K9X Satan SBBs ──────────────────────────────────────────────────────────
+' ── K9-AIF Framework OOB Checks (concrete, framework-provided) ──────────────
+' These live in k9_aif_abb/k9_security/vulnerability/checks/ — NOT Satan code.
+' Satan wires them into its own VulnerabilityChain instances (below).
 
-package "K9X Satan — Shield SBBs" #111122 {
+package "K9-AIF Framework OOB Checks" {
 
   class InputSizeCheck {
-    -_max_bytes: int
     +check(payload): CheckResult
-    ' catches: Token Flood Attack
+    ' Ingress · catches: token-flood / oversized payload
   }
 
   class PromptInjectionCheck {
-    -_patterns: List[Pattern]
     +check(payload): CheckResult
-    ' catches: SYSTEM OVERRIDE, ignore all instructions
+    ' Ingress · catches: SYSTEM OVERRIDE, ignore all instructions
   }
+
+  class SemanticDriftCheck {
+    +check(payload): CheckResult
+    ' Egress · catches: goal hijacking, identity override, loop traps
+  }
+
+  class PIIBoundaryCheck {
+    +check(payload): CheckResult
+    ' Egress · catches: SSN / credit card / email crossing the boundary
+  }
+
+  class ToolArgumentCheck {
+    +check(payload): CheckResult
+    ' Egress · catches: SQLi / command injection / path traversal / SSRF
+  }
+
+  class ExecutionGuardCheck {
+    +check(payload): CheckResult
+    ' Egress · catches: destructive commands, reverse shells, persistence
+  }
+
+  class HardcodedCredentialCheck {
+    +check(payload): CheckResult
+    ' Egress · catches: API keys / secrets echoed into the response
+  }
+
+}
+
+' ── K9X Satan SBBs (this repo — extends the ABBs above) ─────────────────────
+
+package "K9X Satan — Shield SBBs" {
 
   class FieldAnomalyCheck {
     -_RED_FLAG_KEYS: Set[str]
     -_RED_FLAG_VALUE_PATTERNS: List[Pattern]
     -_RED_FLAG_RAW_PATTERNS: List[Pattern]
     +check(payload): CheckResult
-    ' catches: EXEC-OVERRIDE, Priority: CRITICAL, COO auth codes
+    ' Ingress · catches: EXEC-OVERRIDE, Priority: CRITICAL, COO auth codes
+  }
+
+  class MemoryPoisoningCheck {
+    -_cache: BaseCache
+    -_TRACKED_FACT_KEYS: Set[str]
+    +check(payload): CheckResult
+    ' Ingress · catches: fabricated/contradicted session memory (Zscaler
+    ' Memory Poisoning) — uses CacheFactory to fingerprint session facts
+  }
+
+  class RequestFrequencyCheck {
+    -_cache: BaseCache
+    -_max_requests: int
+    -_window_seconds: int
+    +check(payload): CheckResult
+    ' Ingress · catches: per-session resource-exhaustion request floods
+  }
+
+  class ToolAuthorizationCheck {
+    -_approved_tools: Set[str]
+    -_approved_backends: List[str]
+    +check(payload): CheckResult
+    ' Egress · catches: unapproved tool/backend (Zscaler Shadow AI)
+  }
+
+  class SystemPromptLeakageCheck {
+    -_fragments: List[str]
+    +check(payload): CheckResult
+    ' Egress · catches: agent echoing its own system prompt verbatim
+  }
+
+  class OutputSanitizationCheck {
+    -_patterns: List[Pattern]
+    +check(payload): CheckResult
+    ' Egress · catches: <script>/markup/template injection in output
   }
 
   class DoclingExtractor {
@@ -135,7 +189,18 @@ package "K9X Satan — Shield SBBs" #111122 {
 
 BaseVulnerabilityCheck <|-- InputSizeCheck
 BaseVulnerabilityCheck <|-- PromptInjectionCheck
+BaseVulnerabilityCheck <|-- SemanticDriftCheck
+BaseVulnerabilityCheck <|-- PIIBoundaryCheck
+BaseVulnerabilityCheck <|-- ToolArgumentCheck
+BaseVulnerabilityCheck <|-- ExecutionGuardCheck
+BaseVulnerabilityCheck <|-- HardcodedCredentialCheck
+
 BaseVulnerabilityCheck <|-- FieldAnomalyCheck
+BaseVulnerabilityCheck <|-- MemoryPoisoningCheck
+BaseVulnerabilityCheck <|-- RequestFrequencyCheck
+BaseVulnerabilityCheck <|-- ToolAuthorizationCheck
+BaseVulnerabilityCheck <|-- SystemPromptLeakageCheck
+BaseVulnerabilityCheck <|-- OutputSanitizationCheck
 
 BaseRouter       <|-- DocumentRouter
 BaseOrchestrator <|-- DocumentOrchestrator
@@ -158,15 +223,31 @@ DocumentOrchestrator "1" --> "1" AuditAgent
 note right of DoclingExtractor
   Runs before VulnerabilityChain.
   Populates extracted_fields so
-  FieldAnomalyCheck has structured
-  field data at ingress.
+  FieldAnomalyCheck + MemoryPoisoningCheck
+  have structured field data at ingress.
 end note
 
 note right of GuardianGovernance
   Wraps every agent's pre/post hooks.
   Calls granite4.1-guardian:8b via
-  Ollama for semantic safety check.
-  Required for post-agent defence.
+  Ollama for semantic safety check —
+  catches what regex-based checks can't
+  (paraphrase, encoding, indirection).
+end note
+
+note bottom of MemoryPoisoningCheck
+  Ingress chain order:
+  RequestFrequencyCheck -> InputSizeCheck ->
+  PromptInjectionCheck -> FieldAnomalyCheck ->
+  MemoryPoisoningCheck
+end note
+
+note bottom of OutputSanitizationCheck
+  Egress chain order:
+  SemanticDriftCheck -> ExecutionGuardCheck ->
+  PIIBoundaryCheck -> ToolArgumentCheck ->
+  HardcodedCredentialCheck -> ToolAuthorizationCheck ->
+  SystemPromptLeakageCheck -> OutputSanitizationCheck
 end note
 
 @enduml

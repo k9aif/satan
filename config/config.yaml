@@ -33,7 +33,13 @@ inference:
         cost_tier: standard
 
   router:
-    type: default
+    # k9_model_router (real Ollama inference via K9ModelRouter) — NOT "default",
+    # which resolves to the framework's DefaultModelRouter stub that always
+    # returns the literal string "Model invocation placeholder" regardless of
+    # input. That stub silently defeated every check that inspects agent
+    # output (SystemPromptLeakageCheck, OutputSanitizationCheck, Guardian
+    # post_process) since the LLM never actually saw the attack payload.
+    type: k9_model_router
     default_model: general
     persistence:
       enabled: false   # no DB needed for red-team runs
@@ -42,9 +48,14 @@ ollama:
   base_url: "${OLLAMA_BASE_URL:-http://localhost:11434}"
 
 governance:
-  provider: noop            # noop | guardian — override via /api/governance/config at runtime
+  provider: noop            # noop | guardian | shield — override via /api/governance/config at runtime
   guardian_model: "granite4.1-guardian:8b"
   timeout: 30               # seconds per Guardian call
+  # Policy applied when Guardian times out, errors, or is unreachable — this is
+  # never silently treated as "SAFE". fail_closed (default) blocks/redacts,
+  # matching the "should not be penetrable" goal; fail_open lets the payload
+  # through unscreened (documented risk); inconclusive flags without blocking.
+  on_guardian_unavailable: fail_closed   # fail_closed | fail_open | inconclusive
 
 docling:
   enabled: false            # true requires: pip install docling (or running Docling server)
@@ -52,3 +63,35 @@ docling:
   # Full URL:  DOCLING_URL=http://host:5001
   # Split:     DOCLING_URL=host  DOCLING_PORT=5001
   timeout: 180              # seconds — OCR on large PDFs can take time
+
+cache:
+  provider: in_memory       # in_memory | redis — backs MemoryPoisoningCheck + RequestFrequencyCheck
+
+security:
+  # ToolAuthorizationCheck — Shadow AI / unapproved tool allowlist
+  approved_tools: ["fake_search"]
+  approved_backends: ["localhost", "127.0.0.1"]
+
+  # RequestFrequencyCheck — per-session rate limiting
+  max_requests_per_window: 20
+  rate_limit_window_seconds: 60
+
+  # MemoryPoisoningCheck — session fact fingerprint TTL
+  memory_ttl: 3600
+
+  # OutputSanitizationCheck
+  block_on_output_markup: true
+
+  # ShieldGovernance (k9_aif_abb.k9_security.vulnerability) — only active when
+  # governance.provider: shield. Demonstrates the same check classes Router/
+  # Orchestrator already wire, reused at the agent pre/post hook level instead —
+  # a second valid architectural point for the same VulnerabilityChain ABB.
+  shield:
+    enabled: true
+    strict: false
+    ingress:
+      checks:
+        - PromptInjectionCheck
+    egress:
+      checks:
+        - PIIBoundaryCheck

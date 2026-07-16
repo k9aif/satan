@@ -1010,7 +1010,7 @@
 <!-- ── HEADER ── -->
 <header>
   <div class="header-left">
-    <a class="logo-k9" href="https://k9x.ai" target="_blank">K9X</a>
+    <a class="logo-k9" href="https://k9x.ai" target="_blank">K9X <span style="font-size:0.55rem;font-weight:700;letter-spacing:0.08em;color:var(--muted);background:none;-webkit-text-fill-color:var(--muted);vertical-align:super">(Beta)</span></a>
     <div class="header-k9-sub">k9x.ai</div>
   </div>
   <div class="header-center">
@@ -1162,6 +1162,7 @@
           <select class="setup-select" id="setup-governance" onchange="saveGovernance(this.value)">
             <option value="noop">NoopGovernance (passthrough — development)</option>
             <option value="guardian">GuardianGovernance (IBM Granite Guardian via Ollama)</option>
+            <option value="shield">ShieldGovernance (framework OOB — agent-level VulnerabilityChain)</option>
           </select>
           <div class="setup-status" id="setup-gov-status" style="margin-top:6px"></div>
         </div>
@@ -1169,6 +1170,13 @@
           GuardianGovernance wraps every agent's <code>pre_process</code> and <code>post_process</code> hooks
           with a live <strong>granite4.1-guardian:8b</strong> safety call — screening inputs before the LLM
           and outputs after. Requires Ollama to be connected with the guardian model pulled.
+        </div>
+        <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;margin-top:10px">
+          ShieldGovernance (<code>k9_aif_abb.k9_security.vulnerability</code>) is a <strong>framework</strong> class,
+          not Satan-local — it wires the same <code>VulnerabilityChain</code>/<code>BaseVulnerabilityCheck</code>
+          contracts Router/Orchestrator already use, but at the agent pre/post hook level instead. Deterministic,
+          zero LLM cost, config-driven via <code>security.shield</code> in config.yaml — a second valid
+          architectural point for the same ABB, proving the pattern isn't tied to one wiring location.
         </div>
       </div>
 
@@ -1288,7 +1296,7 @@
     <div class="summary-bar">
       <div class="summary-stat s-total">
         <div class="num" id="stat-total">0</div>
-        <div class="lbl">Total Attacks</div>
+        <div class="lbl">Recent Attacks</div>
       </div>
       <div class="summary-stat s-blocked">
         <div class="num" id="stat-blocked">0</div>
@@ -1316,7 +1324,7 @@
     </div>
 
     <div class="card">
-      <h3>Attack History</h3>
+      <h3>Attack History <span id="history-cap-note" style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0"></span></h3>
       <div id="history-empty" class="empty-state">No attacks fired yet. Select a document and click Fire.</div>
       <table class="history-table" id="history-table" style="display:none">
         <thead>
@@ -1326,7 +1334,9 @@
         </thead>
         <tbody id="history-body"></tbody>
       </table>
-      <div style="text-align:right;margin-top:8px">
+      <div style="text-align:right;margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-ghost" onclick="downloadReport()">Download Report (.md)</button>
+        <button class="btn-ghost" onclick="downloadRawJson()">Download Raw (.json)</button>
         <button class="btn-ghost" onclick="clearHistory()">Clear History</button>
       </div>
     </div>
@@ -1372,6 +1382,47 @@
     </div>
 
     <div class="card">
+      <h3>Complete Check Inventory — Component × Threat Class</h3>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
+        Every handler currently wired into the target pipeline's two <code style="font-size:0.78rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">13 checks total</span> — 7 framework OOB, 6 Satan-local — plus Guardian as a cross-cutting semantic layer that wraps every agent regardless of chain position.
+      </p>
+      <div style="overflow-x:auto">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Check</th>
+            <th>Stage</th>
+            <th>Component</th>
+            <th>Owner</th>
+            <th>Threat Class</th>
+            <th>Proven By</th>
+          </tr>
+        </thead>
+        <tbody style="font-family:var(--font-mono);font-size:0.74rem">
+          <tr><td>1</td><td>RequestFrequencyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Unbounded Consumption — OWASP LLM10</td><td>request_flood</td></tr>
+          <tr><td>2</td><td>InputSizeCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Token-flood / oversized payload — OWASP LLM10</td><td>payload_flood</td></tr>
+          <tr><td>3</td><td>PromptInjectionCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Indirect Prompt Injection — Zscaler #1 · OWASP LLM01</td><td>prompt_injection_document, search_poisoning</td></tr>
+          <tr><td>4</td><td>FieldAnomalyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Authority-override social engineering — Zscaler #1 extension</td><td>prompt_injection_document</td></tr>
+          <tr><td>5</td><td>MemoryPoisoningCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Memory Poisoning — Zscaler #3 · OWASP LLM04</td><td>memory_poisoning</td></tr>
+          <tr><td>6</td><td>SemanticDriftCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Goal Hijacking &amp; Privilege Escalation — Zscaler #2 · OWASP LLM06</td><td>semantic_drift</td></tr>
+          <tr><td>7</td><td>ExecutionGuardCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Destructive execution / privilege escalation — Zscaler #2 · OWASP LLM06</td><td>execution_bypass</td></tr>
+          <tr><td>8</td><td>PIIBoundaryCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Sensitive Info Disclosure — OWASP LLM02</td><td>pii_exfiltration</td></tr>
+          <tr><td>9</td><td>ToolArgumentCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05</td><td>tool_argument_poison</td></tr>
+          <tr><td>10</td><td>HardcodedCredentialCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Supply chain / secret leakage — OWASP LLM03</td><td>hardcoded_credential</td></tr>
+          <tr><td>11</td><td>ToolAuthorizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Shadow AI — unapproved tool/backend — Zscaler #4</td><td>shadow_tool</td></tr>
+          <tr><td>12</td><td>SystemPromptLeakageCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>System Prompt Leakage — OWASP LLM07</td><td>system_prompt_leakage</td></tr>
+          <tr><td>13</td><td>OutputSanitizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Improper Output Handling — OWASP LLM05</td><td>output_sanitization</td></tr>
+          <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Pre/Post — every agent</td><td>Agent</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Semantic evasion of all 13 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code></td><td>any attack, with Governance = GuardianGovernance</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p style="font-size:0.78rem;color:var(--dim);line-height:1.7;margin-top:10px">
+        <strong style="color:var(--text)">Out of scope by design</strong> — not runtime-checkable at the payload level: training-data/model poisoning (OWASP LLM04's non-session-state half), vector/embedding attacks (OWASP LLM08 — no RAG in this target), and misinformation/hallucination (OWASP LLM09 — a quality concern, not a security boundary).
+      </p>
+    </div>
+
+    <div class="card">
       <h3>Open-Closed Security — One New Threat, One New Handler</h3>
       <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
         The Chain of Vulnerability Tests applies the GoF Chain of Responsibility pattern to security. Each handler inspects the payload for one class of threat. A new Zscaler ThreatLabz finding means one new handler. <strong style="color:var(--text)">Nothing else changes.</strong>
@@ -1396,7 +1447,7 @@
         <div class="arch-arrow red">→</div>
         <div class="arch-node">
           <div class="arch-box gate">ROUTER<br><span style="font-size:0.6rem;font-weight:400">Pre-Agent Shield</span></div>
-          <div class="arch-note">InputSizeCheck<br>PromptInjectionCheck<br>FieldAnomalyCheck</div>
+          <div class="arch-note">RequestFrequencyCheck<br>InputSizeCheck<br>PromptInjectionCheck<br>FieldAnomalyCheck<br>MemoryPoisoningCheck</div>
           <div class="arch-stop">🛑 BLOCKED ✓</div>
         </div>
         <div class="arch-arrow">→</div>
@@ -1407,7 +1458,7 @@
         <div class="arch-arrow">→</div>
         <div class="arch-node">
           <div class="arch-box gate" style="border-color:var(--green)">ORCHESTRATOR<br><span style="font-size:0.6rem;font-weight:400">Post-Agent Gate</span></div>
-          <div class="arch-note" style="color:var(--green)">Guardian Governance<br>SemanticDriftCheck<br>ExecutionGuardCheck</div>
+          <div class="arch-note" style="color:var(--green)">Guardian Governance<br>SemanticDriftCheck · ExecutionGuardCheck<br>PIIBoundaryCheck · ToolArgumentCheck<br>HardcodedCredentialCheck · ToolAuthorizationCheck<br>SystemPromptLeakageCheck · OutputSanitizationCheck</div>
           <div class="arch-stop" style="color:var(--green)">🛑 BLOCKED ✓</div>
         </div>
         <div class="arch-arrow red">→</div>
@@ -1515,6 +1566,15 @@
               <div style="display:flex;align-items:flex-start;gap:8px">
                 <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">①</span>
                 <div>
+                  <span style="color:var(--text);font-weight:500">RequestFrequencyCheck</span>
+                  <span style="color:var(--dim)"> · per-session request count vs. rolling window</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: resource-exhaustion request floods (Satan SBB — CacheFactory-backed)</div>
+                </div>
+                <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">②</span>
+                <div>
                   <span style="color:var(--text);font-weight:500">InputSizeCheck</span>
                   <span style="color:var(--dim)"> · payload byte length &gt; limit</span>
                   <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: Token Flood Attack (💣 Oversized Payload)</div>
@@ -1522,7 +1582,7 @@
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
               <div style="display:flex;align-items:flex-start;gap:8px">
-                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">②</span>
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">③</span>
                 <div>
                   <span style="color:var(--text);font-weight:500">PromptInjectionCheck</span>
                   <span style="color:var(--dim)"> · pattern scan on raw text</span>
@@ -1531,11 +1591,20 @@
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
               <div style="display:flex;align-items:flex-start;gap:8px">
-                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">③</span>
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">④</span>
                 <div>
                   <span style="color:var(--text);font-weight:500">FieldAnomalyCheck</span>
                   <span style="color:var(--dim)"> · scans extracted_fields + raw text</span>
                   <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: EXEC-OVERRIDE codes · Priority: CRITICAL · COO auth · supersedes directives</div>
+                </div>
+                <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">⑤</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">MemoryPoisoningCheck</span>
+                  <span style="color:var(--dim)"> · session fact fingerprint vs. CacheFactory record</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: fabricated/contradicted "as previously approved" session memory claims</div>
                 </div>
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
@@ -1705,19 +1774,35 @@ DocumentOrchestrator          extends BaseOrchestrator    (K9-AIF ABB)
       </div>
 
       <div class="card" style="border-color:color-mix(in srgb,var(--green) 40%,var(--border))">
-        <div class="doc-h4" style="color:var(--green)">Guardian Governance — Required for Full Coverage</div>
+        <div class="doc-h4" style="color:var(--green)">Defense in Depth — Guardian Complements Shield, Never Replaces It</div>
         <p class="doc-p" style="margin-top:8px">
-          Satan's post-agent gate depends on <strong style="color:var(--text)">IBM Granite Guardian</strong>
-          (<code>granite4.1-guardian:8b</code>). Without it, attacks that evade the Router Shield — such as
-          PII Exfiltration via compliance framing — reach the agent and their responses flow out unfiltered.
+          <strong style="color:var(--text)">K9X Shield applies deterministic, policy-driven checks</strong> at Router
+          ingress and Orchestrator egress — 13 handlers, explainable, zero LLM cost, evaluated the same way every
+          time. <strong style="color:var(--text)">IBM Guardian provides an optional semantic assessment layer</strong>
+          for attacks that survive literal pattern matching — paraphrase, encoding, or wording changes that no regex
+          list can enumerate in advance.
         </p>
-        <p class="doc-p">Pull the model before running Satan:</p>
+        <p class="doc-p">Regex and rule-based checks catch known, explicit patterns and give predictable, auditable enforcement. Guardian trades that predictability for broader semantic coverage — it can recognise paraphrased prompt injection, subtle goal hijacking, and disguised privilege escalation that never matches a literal rule. Neither layer is a superset of the other; each catches what the other structurally cannot.</p>
+        <p class="doc-p">Pull the model before enabling Guardian:</p>
         <pre class="sample" style="margin:8px 0">ollama pull granite4.1-guardian:8b</pre>
-        <p class="doc-p">Then enable it in <strong style="color:var(--text)">Setup → Governance → GuardianGovernance</strong>. The Setup tab shows the active provider. The chain log shows Guardian's pre/post verdict on every agent run.</p>
+        <p class="doc-p">Enable it in <strong style="color:var(--text)">Setup → Governance</strong> — three providers are available: <code>NoopGovernance</code> (passthrough, dev default), <code>GuardianGovernance</code> (semantic, this section), and <code>ShieldGovernance</code> (a second deterministic wiring point — the same <code>VulnerabilityChain</code> contract, reused at the agent pre/post hook instead of Router/Orchestrator). The chain log shows Guardian's pre/post verdict on every agent run.</p>
         <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--green) 6%,transparent);border-left:3px solid var(--green);font-size:0.78rem;color:var(--muted);line-height:1.7">
-          Router Shield catches <strong style="color:var(--text)">known pattern attacks</strong> (injection markers, override codes) at ingress — zero LLM cost.
-          Guardian catches <strong style="color:var(--text)">semantic attacks</strong> (PII exfiltration, compliance framing, policy bypass) in the agent's response — one LLM call per agent.
-          Both layers are required. Neither replaces the other.
+          Router/Orchestrator Shield catches <strong style="color:var(--text)">known pattern attacks</strong> (injection markers, override codes, poisoned tool arguments) — zero LLM cost, deterministic.
+          Guardian catches <strong style="color:var(--text)">semantic attacks</strong> (PII exfiltration, compliance framing, policy bypass) that evaded the pattern layer — one LLM call per agent.
+          Shield holds with Guardian disabled entirely. Guardian only ever adds coverage on top — it is never the only thing standing between a payload and the agent.
+        </div>
+        <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--red-mid) 6%,transparent);border-left:3px solid var(--red-mid);font-size:0.78rem;color:var(--muted);line-height:1.7">
+          <strong style="color:var(--text)">Guardian unavailability is a policy decision, never a silent pass.</strong> A timeout, HTTP error, or unreachable
+          Ollama endpoint produces an explicit <code>UNAVAILABLE</code> verdict — it is never mapped to "SAFE" by default.
+          <code>governance.on_guardian_unavailable</code> in config.yaml decides what happens next: <code>fail_closed</code>
+          (default — blocks/redacts, matching "should not be penetrable"), <code>fail_open</code> (documented risk —
+          lets the payload through unscreened), or <code>inconclusive</code> (flags for review without blocking).
+        </div>
+        <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--muted) 6%,transparent);border-left:3px solid var(--muted);font-size:0.78rem;color:var(--muted);line-height:1.7">
+          <strong style="color:var(--text)">Prove what Guardian adds, don't just assert it.</strong>
+          <code>python -m k9x_satan.runner.satan_runner --target &lt;url&gt; --suite full --compare-governance</code>
+          fires every attack twice — deterministic-only, then deterministic + Guardian — and reports which findings
+          Guardian closed. A regression (Guardian making a previously-contained attack pass) is flagged as a bug, not a result.
         </div>
       </div>
 
@@ -1754,28 +1839,30 @@ DocumentOrchestrator          extends BaseOrchestrator    (K9-AIF ABB)
           <p class="doc-p" style="margin-top:8px;color:var(--dim)">The Router Shield cannot stop what it does not recognise. An attack written to look like a legitimate audit request has no injection markers, no override codes, no anomalous fields. It passes because it looks clean.</p>
         </div>
 
-        <!-- Layer 2: Orchestrator -->
-        <div style="margin:18px 0 0 0;border-left:3px solid var(--muted);padding-left:14px">
-          <div style="font-size:0.78rem;font-weight:700;color:var(--muted);letter-spacing:0.06em;margin-bottom:4px">LAYER 2 — ORCHESTRATOR (routing)</div>
-          <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:6px">Structural validation. Schema and event-type enforcement.</div>
-          <p class="doc-p" style="margin-bottom:6px">Validates that the event is well-formed, the correlation ID is present, and the event type maps to a known Squad. Blocks malformed envelopes — not malicious content.</p>
-          <div style="font-size:0.78rem;color:var(--muted);line-height:1.9;font-family:var(--font-mono)">
-            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Unknown event types, missing required envelope fields</div>
-            <div><span style="color:var(--yellow)">~ passes</span> &nbsp;Well-formed payloads carrying malicious content</div>
-          </div>
-        </div>
-
-        <!-- Layer 3: Guardian -->
+        <!-- Layer 2: Guardian (wraps agent execution, optional) -->
         <div style="margin:18px 0 0 0;border-left:3px solid var(--green);padding-left:14px">
-          <div style="font-size:0.78rem;font-weight:700;color:var(--green);letter-spacing:0.06em;margin-bottom:4px">LAYER 3 — GUARDIAN GOVERNANCE (egress)</div>
-          <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:6px">Semantic LLM-based. Evaluates what the agent is about to return.</div>
-          <p class="doc-p" style="margin-bottom:6px">Guardian runs after the agent completes its reasoning. It evaluates the agent's <em>output</em> — not the input — against policy. This is where semantically-crafted attacks are caught: a PII exfiltration attempt succeeds at reaching the agent, but Guardian intercepts the response before it leaves the pipeline.</p>
+          <div style="font-size:0.78rem;font-weight:700;color:var(--green);letter-spacing:0.06em;margin-bottom:4px">LAYER 2 — GUARDIAN GOVERNANCE (agent pre/post — optional)</div>
+          <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:6px">Semantic LLM-based. Wraps every agent's execution, not just the boundary.</div>
+          <p class="doc-p" style="margin-bottom:6px">Guardian screens the payload immediately before each agent invokes the LLM (pre_process) and the agent's draft output immediately after (post_process) — inside the Squad, between Layer 1 and Layer 3. Defense in depth, not a replacement: Shield holds with Guardian disabled entirely; Guardian only adds coverage on attacks that survive the pattern layer.</p>
           <div style="font-size:0.78rem;color:var(--muted);line-height:1.9;font-family:var(--font-mono)">
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Paraphrased/encoded injection that evades literal PromptInjectionCheck patterns</div>
             <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Agent responses containing PII, SSNs, account numbers</div>
             <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Responses that bypass policy — claim approvals without validation</div>
-            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Semantic drift — agent reasoning that has been reframed by the payload</div>
+            <div><span style="color:var(--yellow)">~ policy</span> &nbsp;Guardian unavailable — fail_closed (default) blocks, fail_open passes, inconclusive flags. Never silently "SAFE".</div>
           </div>
-          <p class="doc-p" style="margin-top:8px;color:var(--dim)">Enable Guardian in the Setup tab to activate egress-layer defence. Without it, attacks that evade the pattern layer reach the agent and their responses flow out unfiltered.</p>
+          <p class="doc-p" style="margin-top:8px;color:var(--dim)">Enable Guardian in Setup → Governance. Disabled by default (NoopGovernance) — Layers 1 and 3 hold regardless.</p>
+        </div>
+
+        <!-- Layer 3: Orchestrator egress Shield -->
+        <div style="margin:18px 0 0 0;border-left:3px solid var(--muted);padding-left:14px">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--muted);letter-spacing:0.06em;margin-bottom:4px">LAYER 3 — ORCHESTRATOR EGRESS SHIELD (deterministic, always active)</div>
+          <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:6px">Pattern-based. Evaluates the squad's combined output before it exits the pipeline.</div>
+          <p class="doc-p" style="margin-bottom:6px">Runs after the squad completes — 8 handlers covering goal hijacking, destructive execution, PII boundary, poisoned tool arguments, leaked credentials, unapproved tools, leaked system prompts, and output markup injection. Always active, independent of Guardian.</p>
+          <div style="font-size:0.78rem;color:var(--muted);line-height:1.9;font-family:var(--font-mono)">
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Goal hijacking / role reframing that reached the squad</div>
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;PII, secrets, poisoned tool arguments, unapproved tools surfacing in the response</div>
+            <div><span style="color:var(--yellow)">~ passes</span> &nbsp;Semantic attacks with no literal pattern match — Guardian is the layer that catches these</div>
+          </div>
         </div>
 
         <!-- Why FINDING is correct -->
@@ -2088,14 +2175,16 @@ function showChainLog(result) {
     return `<span class="check-status ${cls}">${s.toUpperCase()}</span>`;
   }
 
-  function renderChecks(checks, skipped) {
+  // Returns an array of row HTML strings (one per check) rather than one
+  // joined block, so the caller can reveal them one at a time.
+  function renderCheckRows(checks, skipped) {
     if (skipped) {
-      return `<div class="chain-check"><span class="check-icon" style="color:var(--dim)">–</span>
-              <span class="check-name" style="color:var(--dim)">— skipped (blocked upstream)</span></div>`;
+      return [`<div class="chain-check"><span class="check-icon" style="color:var(--dim)">–</span>
+              <span class="check-name" style="color:var(--dim)">— skipped (blocked upstream)</span></div>`];
     }
     if (!checks.length) {
-      return `<div class="chain-check"><span class="check-icon" style="color:var(--dim)">–</span>
-              <span class="check-name" style="color:var(--dim)">No checks returned</span></div>`;
+      return [`<div class="chain-check"><span class="check-icon" style="color:var(--dim)">–</span>
+              <span class="check-name" style="color:var(--dim)">No checks returned</span></div>`];
     }
     return checks.map(c => {
       const msgCls = (c.status === 'block' || c.status === 'flag') ? 'threat' : '';
@@ -2105,7 +2194,7 @@ function showChainLog(result) {
         ${statusBadge(c.status)}
         <span class="check-msg ${msgCls}">${escapeHtml(c.message || '')}</span>
       </div>`;
-    }).join('');
+    });
   }
 
   const govProvider = result.governance_provider || 'noop';
@@ -2118,43 +2207,59 @@ function showChainLog(result) {
               GRD·${verdict}</span>`;
   }
 
-  function renderAgents(agentList, skipped) {
+  function renderAgentRows(agentList, skipped) {
     if (skipped) {
-      return `<div class="chain-agent"><span class="check-icon" style="color:var(--dim)">–</span>
-              <span class="agent-name" style="color:var(--dim)">— skipped (blocked upstream)</span></div>`;
+      return [`<div class="chain-agent"><span class="check-icon" style="color:var(--dim)">–</span>
+              <span class="agent-name" style="color:var(--dim)">— skipped (blocked upstream)</span></div>`];
     }
     const names = ['DocumentExtractionAgent', 'AuditAgent'];
     return names.map(name => {
-      const ran     = agentList.includes(name);
-      const agRes   = squadResult[name] || {};
-      const pre     = agRes._guardian_pre  || null;
-      const post    = agRes._guardian_post || null;
-      const icon    = ran
-        ? '<span class="check-icon" style="color:var(--green)">✓</span>'
-        : '<span class="check-icon" style="color:var(--dim)">–</span>';
-      const color   = ran ? 'var(--text)' : 'var(--dim)';
-      const role    = name === 'DocumentExtractionAgent' ? 'extracts text, fields' : 'audit trail, compliance';
-      const govLine = (govProvider === 'guardian' && ran && (pre || post))
-        ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:3px;padding-left:22px">
-             Guardian pre: ${guardianBadge(pre && pre.verdict)}
-             <span style="margin-left:4px;color:var(--dim)">${escapeHtml((pre && pre.reason) || '—')}</span>
-             &nbsp;&nbsp;post: ${guardianBadge(post && post.verdict)}
-             <span style="margin-left:4px;color:var(--dim)">${escapeHtml((post && post.reason) || '—')}</span>
+      const agRes    = squadResult[name] || {};
+      const reached  = agentList.includes(name);
+      const govBlock = agRes.status === 'blocked_by_governance';
+      const ran      = reached && !govBlock;
+      const pre      = agRes._guardian_pre  || null;
+      const post     = agRes._guardian_post || null;
+      const icon     = govBlock
+        ? '<span class="check-icon" style="color:var(--red-glow)">✗</span>'
+        : ran
+          ? '<span class="check-icon" style="color:var(--green)">✓</span>'
+          : '<span class="check-icon" style="color:var(--dim)">–</span>';
+      const color    = govBlock ? 'var(--red-glow)' : ran ? 'var(--text)' : 'var(--dim)';
+      const role     = name === 'DocumentExtractionAgent' ? 'extracts text, fields' : 'audit trail, compliance';
+      const statusBadge = govBlock
+        ? '<span class="check-status block">BLOCKED BY GOVERNANCE</span>'
+        : ran
+          ? '<span class="check-status pass">RAN</span>'
+          : '<span class="check-status skip">SKIPPED</span>';
+      const govLine = govBlock
+        ? `<div style="font-size:0.72rem;color:var(--red-glow);margin-top:3px;padding-left:22px">
+             ${escapeHtml(agRes.guardian_finding || 'blocked before reaching the LLM')}
            </div>`
-        : '';
+        : (govProvider !== 'noop' && ran && (pre || post))
+          ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:3px;padding-left:22px">
+               pre: ${guardianBadge(pre && pre.verdict)}
+               <span style="margin-left:4px;color:var(--dim)">${escapeHtml((pre && pre.reason) || '—')}</span>
+               &nbsp;&nbsp;post: ${guardianBadge(post && post.verdict)}
+               <span style="margin-left:4px;color:var(--dim)">${escapeHtml((post && post.reason) || '—')}</span>
+             </div>`
+          : '';
       return `<div class="chain-agent" style="flex-wrap:wrap">
         ${icon}
         <span class="agent-name" style="color:${color}">${escapeHtml(name)}</span>
         <span class="agent-role">${role}</span>
-        ${ran ? '<span class="check-status pass">RAN</span>' : '<span class="check-status skip">SKIPPED</span>'}
+        ${statusBadge}
         ${govLine}
       </div>`;
-    }).join('');
+    });
   }
 
-  const govSub = govProvider === 'guardian'
-    ? 'DocumentProcessingSquad · GuardianGovernance (granite4.1-guardian:8b)'
-    : 'DocumentProcessingSquad · NoopGovernance (passthrough)';
+  const govLabels = {
+    guardian: 'GuardianGovernance (granite4.1-guardian:8b)',
+    shield:   'ShieldGovernance (framework OOB — agent-level VulnerabilityChain)',
+    noop:     'NoopGovernance (passthrough)',
+  };
+  const govSub = 'DocumentProcessingSquad · ' + (govLabels[govProvider] || govLabels.noop);
 
   const ingressSkipped = false;
   const egressSkipped  = blockedAt === 'router';
@@ -2190,43 +2295,79 @@ function showChainLog(result) {
      </div>`
   ).join('');
 
-  el.innerHTML = `
-    <div class="chain-section">
-      <div class="chain-section-header">
-        <span class="chain-section-title" style="color:var(--muted)">Pre-Shield — Document Extraction</span>
-        <span class="chain-section-sub">DoclingExtractor · ${extractSub}</span>
-      </div>
-      <div class="chain-check">
-        ${extractIcon}
-        <span class="check-name">DoclingExtractor</span>
-        <span class="check-status ${extractBadgeClass}">${extractBadgeLabel}</span>
-        <span class="check-msg ${extractFallback ? 'threat' : ''}">${escapeHtml(extractMsg)}</span>
-      </div>
-      ${fieldRows}
-    </div>
-    <div class="chain-section">
-      <div class="chain-section-header">
-        <span class="chain-section-title">Router — Ingress Gate</span>
-        <span class="chain-section-sub">VulnerabilityChain · InputSizeCheck · PromptInjectionCheck · FieldAnomalyCheck</span>
-      </div>
-      ${renderChecks(ingress, ingressSkipped)}
-    </div>
-    <div class="chain-section">
-      <div class="chain-section-header">
-        <span class="chain-section-title">Orchestrator — Egress Gate</span>
-        <span class="chain-section-sub">VulnerabilityChain · SemanticDriftCheck · ExecutionGuardCheck</span>
-      </div>
-      ${renderChecks(egress, egressSkipped)}
-    </div>
-    <div class="chain-section">
-      <div class="chain-section-header">
-        <span class="chain-section-title">Squad / Agents — Execution</span>
-        <span class="chain-section-sub">${govSub}</span>
-      </div>
-      ${renderAgents(agents, agentsSkipped)}
-    </div>`;
+  const ingressSub = ingressSkipped
+    ? 'VulnerabilityChain'
+    : `VulnerabilityChain · ${ingress.length} check${ingress.length !== 1 ? 's' : ''}`;
+  const egressSub = egressSkipped
+    ? 'VulnerabilityChain · skipped'
+    : `VulnerabilityChain · ${egress.length} check${egress.length !== 1 ? 's' : ''}`;
 
+  // Build a flat, ordered sequence of row HTML strings — section headers and
+  // individual check/agent/field rows — so revealChainLog() can stagger them
+  // in one at a time for a live-log feel instead of rendering everything at
+  // once.
+  const steps = [];
+  const sectionHeader = (title, sub, titleStyle) =>
+    `<div class="chain-section-header">
+       <span class="chain-section-title"${titleStyle ? ` style="${titleStyle}"` : ''}>${title}</span>
+       <span class="chain-section-sub">${sub}</span>
+     </div>`;
+
+  steps.push('<div class="chain-section">');
+  steps.push(sectionHeader('Pre-Shield — Document Extraction', `DoclingExtractor · ${extractSub}`, 'color:var(--muted)'));
+  steps.push(`<div class="chain-check">
+    ${extractIcon}
+    <span class="check-name">DoclingExtractor</span>
+    <span class="check-status ${extractBadgeClass}">${extractBadgeLabel}</span>
+    <span class="check-msg ${extractFallback ? 'threat' : ''}">${escapeHtml(extractMsg)}</span>
+  </div>`);
+  Object.entries(extractedFields).slice(0, 8).forEach(([k, v]) => {
+    steps.push(`<div class="chain-check" style="padding:4px 12px">
+       <span class="check-icon" style="color:var(--dim);font-size:0.7rem">·</span>
+       <span class="check-name" style="font-size:0.7rem;min-width:180px;color:var(--muted)">${escapeHtml(k)}</span>
+       <span class="check-msg" style="font-size:0.7rem;color:var(--text)">${escapeHtml(String(v).slice(0,80))}</span>
+     </div>`);
+  });
+  steps.push('</div>');
+
+  steps.push('<div class="chain-section">');
+  steps.push(sectionHeader('Router — Ingress Gate', ingressSub));
+  renderCheckRows(ingress, ingressSkipped).forEach(row => steps.push(row));
+  steps.push('</div>');
+
+  steps.push('<div class="chain-section">');
+  steps.push(sectionHeader('Squad / Agents — Execution', govSub));
+  renderAgentRows(agents, agentsSkipped).forEach(row => steps.push(row));
+  steps.push('</div>');
+
+  steps.push('<div class="chain-section">');
+  steps.push(sectionHeader('Orchestrator — Egress Gate', egressSub));
+  renderCheckRows(egress, egressSkipped).forEach(row => steps.push(row));
+  steps.push('</div>');
+
+  revealChainLog(el, steps);
+}
+
+// ── LIVE LOG — staggered reveal ──────────────────────────────────────────────
+// Each Fire supersedes any in-flight reveal from a previous run (guards
+// against overlapping animations if the user fires again before the last
+// one finishes).
+let _chainLogRevealToken = 0;
+
+function revealChainLog(el, steps) {
+  el.innerHTML = '';
   el.style.display = 'block';
+  const token = ++_chainLogRevealToken;
+  const STEP_MS = 70;
+
+  function next(i) {
+    if (token !== _chainLogRevealToken) return;   // superseded by a newer fire
+    if (i >= steps.length) return;
+    el.insertAdjacentHTML('beforeend', steps[i]);
+    el.scrollTop = el.scrollHeight;
+    setTimeout(() => next(i + 1), STEP_MS);
+  }
+  next(0);
 }
 
 function renderDocAnalysis(result, isClean) {
@@ -2316,23 +2457,79 @@ function updateLastResult(result) {
 }
 
 // ── HISTORY & CHARTS
-async function loadHistory() {
-  try {
-    const resp = await fetch('/api/history');
-    const data = await resp.json();
-    _history = data.runs || [];
-  } catch {}
+// Session-local only — deliberately does NOT fetch /api/history. That endpoint
+// is a shared list on the server (every visitor's fires land in the same
+// deque), so pulling from it would leak one person's attacks — and any
+// documents they uploaded — into every other visitor's browser. _history is
+// built up purely from fires that happened in *this* tab (see fireAttack()).
+function loadHistory() {
+  const note = document.getElementById('history-cap-note');
+  if (note) note.textContent = '(this session only)';
   renderHistory();
   updateStats();
   updateCharts();
 }
 
-async function clearHistory() {
-  await fetch('/api/history', { method: 'DELETE' });
+function clearHistory() {
   _history = [];
   renderHistory();
   updateStats();
   updateCharts();
+}
+
+// ── DOWNLOAD REPORT — client-side only, nothing round-trips the server ──────
+function _triggerDownload(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function _checksToMarkdown(checks, label) {
+  if (!checks || !checks.length) return `${label}: (none — skipped or not reached)\n`;
+  return `${label}:\n` + checks.map(c =>
+    `  - ${c.name}: ${c.status}${c.message ? ' — ' + c.message : ''}`
+  ).join('\n') + '\n';
+}
+
+function downloadReport() {
+  if (!_history.length) { alert('No runs in this session yet.'); return; }
+
+  const blocked  = _history.filter(r => r.status === 'blocked').length;
+  const flagged  = _history.filter(r => r.status === 'flagged').length;
+  const findings = _history.filter(r => !r.shield_held && r.status === 'completed').length;
+
+  let md = `# K9x Satan — Attack Report\n\n`;
+  md += `Generated: ${new Date().toISOString()}\n`;
+  md += `Runs this session: ${_history.length}\n\n`;
+  md += `## Summary\n\n`;
+  md += `- Blocked: ${blocked}\n- Flagged: ${flagged}\n- Findings: ${findings}\n\n`;
+  md += `---\n\n`;
+
+  // _history is newest-first (unshift on fire) — report oldest-first so it reads top to bottom.
+  [..._history].reverse().forEach((r, i) => {
+    md += `## Run ${i + 1} — ${r.source || 'unknown source'}\n\n`;
+    md += `- Status: ${r.status}\n`;
+    md += `- Penetration depth: ${r.penetration_depth || '—'}\n`;
+    md += `- Blocked by: ${r.blocked_by || '—'}\n`;
+    md += `- Shield held: ${r.shield_held ? 'yes' : 'no'}\n`;
+    md += `- Governance: ${r.governance_provider || 'noop'}\n\n`;
+    md += _checksToMarkdown(r.ingress_checks, 'Ingress checks') + '\n';
+    md += _checksToMarkdown(r.egress_checks, 'Egress checks') + '\n';
+    md += `---\n\n`;
+  });
+
+  _triggerDownload(`satan-report-${Date.now()}.md`, md, 'text/markdown');
+}
+
+function downloadRawJson() {
+  if (!_history.length) { alert('No runs in this session yet.'); return; }
+  _triggerDownload(`satan-history-${Date.now()}.json`, JSON.stringify(_history, null, 2), 'application/json');
 }
 
 function renderHistory() {

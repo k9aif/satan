@@ -19,7 +19,21 @@ from k9_aif_abb.k9_core.orchestration.base_orchestrator import BaseOrchestrator
 from k9_aif_abb.k9_security.vulnerability.vulnerability_chain import VulnerabilityChain
 from k9_aif_abb.k9_security.vulnerability.checks.semantic_drift_check import SemanticDriftCheck
 from k9_aif_abb.k9_security.vulnerability.checks.execution_guard_check import ExecutionGuardCheck
+from k9_aif_abb.k9_security.vulnerability.checks.pii_boundary_check import PIIBoundaryCheck
+from k9_aif_abb.k9_security.vulnerability.checks.tool_argument_check import ToolArgumentCheck
+from k9_aif_abb.k9_security.vulnerability.checks.hardcoded_credential_check import HardcodedCredentialCheck
 from k9x_satan.target.squad import DocumentProcessingSquad
+from k9x_satan.target.tool_authorization_check import ToolAuthorizationCheck
+from k9x_satan.target.system_prompt_leakage_check import SystemPromptLeakageCheck
+from k9x_satan.target.output_sanitization_check import OutputSanitizationCheck
+
+
+def _find_governance_block(squad_output: Dict[str, Any]) -> str:
+    """Return the first governance-block finding among agent results, or ''."""
+    for value in squad_output.values():
+        if isinstance(value, dict) and value.get("status") == "blocked_by_governance":
+            return value.get("guardian_finding", "blocked by governance")
+    return ""
 
 
 def _serialize_chain(chain_result) -> list:
@@ -53,10 +67,17 @@ class DocumentOrchestrator(BaseOrchestrator):
         self._squad = DocumentProcessingSquad(config=self.config)
 
     def _build_egress_chain(self) -> VulnerabilityChain:
+        pii_config = {**self.config, "block_on_match": True}
         return (
             VulnerabilityChain()
-            .add(SemanticDriftCheck())
-            .add(ExecutionGuardCheck())
+            .add(SemanticDriftCheck(self.config))
+            .add(ExecutionGuardCheck(self.config))
+            .add(PIIBoundaryCheck(pii_config))
+            .add(ToolArgumentCheck(self.config))
+            .add(HardcodedCredentialCheck(self.config))
+            .add(ToolAuthorizationCheck(self.config))
+            .add(SystemPromptLeakageCheck(self.config))
+            .add(OutputSanitizationCheck(self.config))
         )
 
     def execute_flow(self, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -70,6 +91,27 @@ class DocumentOrchestrator(BaseOrchestrator):
         except Exception as exc:
             log.error("[DocumentOrchestrator] squad failed: %s", exc)
             squad_output = {"status": "squad_error", "error": str(exc)}
+
+        # An agent may have short-circuited itself via governance (Guardian/
+        # ShieldGovernance pre_process BLOCK) before ever calling the LLM.
+        # That's containment, not a pass-through — report it as blocked rather
+        # than letting it fall through to the egress chain, which only sees
+        # {"status": "blocked_by_governance", ...} stub dicts that trip
+        # nothing and would otherwise get reported as "completed".
+        governance_finding = _find_governance_block(squad_output)
+        if governance_finding:
+            log.warning("[DocumentOrchestrator] BLOCKED by governance — %s", governance_finding)
+            return {
+                "status":            "blocked",
+                "blocked_at":        "agent",
+                "blocked_by":        "GovernanceBlock",
+                "check_message":     governance_finding,
+                "penetration_depth": "agent",
+                "squad_reached":     True,
+                "agents_reached":    agents_reached,
+                "shield_held":       True,
+                "egress_checks":     [],
+            }
 
         log.info("[DocumentOrchestrator] running egress Shield checks")
         egress_chain  = self._build_egress_chain()

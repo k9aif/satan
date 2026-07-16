@@ -17,11 +17,23 @@ from k9x_satan.target.agents import DocumentExtractionAgent, AuditAgent
 
 
 def _make_governance(config: dict):
-    """Return the configured governance instance, or None for NoopGovernance default."""
+    """
+    Return the configured governance instance, or None for NoopGovernance default.
+
+    "shield" wires in ShieldGovernance (k9_aif_abb.k9_security.vulnerability) —
+    a framework OOB class, unlike GuardianGovernance which is Satan-local. It
+    demonstrates the same VulnerabilityChain/BaseVulnerabilityCheck contracts
+    Satan's Router/Orchestrator already use, but wired at the agent pre/post
+    hook level instead — a second valid architectural point for the same
+    ABB, per the framework's own "K9X Shield" documentation.
+    """
     provider = config.get("governance", {}).get("provider", "noop")
     if provider == "guardian":
         from k9x_satan.target.guardian_governance import GuardianGovernance
         return GuardianGovernance(config=config)
+    if provider == "shield":
+        from k9_aif_abb.k9_security.vulnerability.shield_governance import ShieldGovernance
+        return ShieldGovernance(config=config)
     return None  # BaseAgent.require_governance → NoopGovernance (dev env)
 
 

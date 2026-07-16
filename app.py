@@ -3,7 +3,8 @@
 import logging
 import os
 import requests
-from typing import List, Optional
+from collections import deque
+from typing import Any, Dict, List, Optional
 
 # Auto-load .env so running via `uvicorn` directly (e.g. from VS Code) picks up
 # OLLAMA_BASE_URL, DOCLING_URL, DOCLING_PORT, etc. — run.sh already sources it
@@ -14,7 +15,7 @@ try:
 except ImportError:
     pass
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import Body, FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -28,7 +29,14 @@ _DIAGRAMS_DIR = os.path.join(os.path.dirname(__file__), "diagrams")
 if os.path.isdir(_DIAGRAMS_DIR):
     app.mount("/static", StaticFiles(directory=_DIAGRAMS_DIR), name="static")
 
-_run_history: list = []
+# Bounded to the most recent N runs — oldest is evicted automatically once
+# full. A long red-team session can fire hundreds of attacks; keeping all of
+# them in memory forever serves no purpose the UI's Results tab needs.
+_MAX_HISTORY = 10
+_run_history: "deque[dict]" = deque(maxlen=_MAX_HISTORY)
+_attack_counter = 0   # monotonic — decoupled from len(_run_history), which
+                      # caps at _MAX_HISTORY and would otherwise produce
+                      # duplicate auto-generated correlation_ids once full
 
 # ── LLM config (in-memory, persists per server session) ──────────────────────
 
@@ -255,11 +263,53 @@ async def fire(
     return result
 
 
+@app.post("/api/attack/fire")
+async def attack_fire(payload: Dict[str, Any] = Body(...)):
+    """
+    JSON attack-fire endpoint for the automated red-team runner
+    (runner/satan_runner.py + attacks/*.py).
+
+    Distinct from /api/fire — that endpoint is multipart (corpus_key or file
+    upload) for the webui's human-driven "Fire" button. Attacks send structured
+    JSON payloads (document_text, tool_name/tool_arguments, session_id, ...)
+    that don't fit a file-upload form, so they hit this endpoint instead and
+    the payload passes straight through to run_pipeline() unmodified.
+
+    A payload may include "_governance_override" (noop | guardian | shield) to
+    run this one request under a different governance provider than the
+    server's currently configured default — without mutating global state.
+    This is what lets satan_runner.py --compare-governance fire the same
+    attack in "deterministic checks only" vs "deterministic + Guardian" mode.
+    """
+    from k9x_satan.target.pipeline import run_pipeline, load_config
+
+    global _attack_counter
+    _attack_counter += 1
+
+    payload.setdefault("event_type", "document_received")
+    payload.setdefault("correlation_id", f"satan-attack-{_attack_counter}")
+    governance_override = payload.pop("_governance_override", None)
+    governance_provider  = governance_override or _governance_config["provider"]
+
+    cfg = load_config()
+    cfg.setdefault("governance", {})["provider"] = governance_provider
+    cfg.setdefault("docling", {}).update(_docling_config)
+
+    result = run_pipeline(payload, config=cfg)
+    result["source"]              = "attack"
+    result["governance_provider"] = governance_provider
+    result["docling_enabled"]     = _docling_config["enabled"]
+
+    _run_history.append(result)
+    log.info("[Satan] attack-fire result: status=%s depth=%s", result["status"], result["penetration_depth"])
+    return result
+
+
 # ── History ───────────────────────────────────────────────────────────────────
 
 @app.get("/api/history")
 def history():
-    return {"runs": _run_history}
+    return {"runs": list(_run_history), "max_history": _MAX_HISTORY}
 
 
 @app.delete("/api/history")
@@ -350,7 +400,7 @@ def test_llm_connection():
 # ── Governance Config API ─────────────────────────────────────────────────────
 
 class GovernanceConfigRequest(BaseModel):
-    provider: str  # noop | guardian
+    provider: str  # noop | guardian | shield
 
 @app.get("/api/governance/config")
 def get_governance_config():
@@ -358,8 +408,8 @@ def get_governance_config():
 
 @app.post("/api/governance/config")
 def set_governance_config(req: GovernanceConfigRequest):
-    if req.provider not in ("noop", "guardian"):
-        raise HTTPException(status_code=400, detail="provider must be noop or guardian")
+    if req.provider not in ("noop", "guardian", "shield"):
+        raise HTTPException(status_code=400, detail="provider must be noop, guardian, or shield")
     _governance_config["provider"] = req.provider
     log.info("[Satan] governance provider set to %s", req.provider)
     return _governance_config
