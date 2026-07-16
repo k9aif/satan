@@ -38,6 +38,22 @@ _attack_counter = 0   # monotonic — decoupled from len(_run_history), which
                       # caps at _MAX_HISTORY and would otherwise produce
                       # duplicate auto-generated correlation_ids once full
 
+# When true, /api/governance/config, /api/docling/config, and /api/llm/config
+# reject writes — no visitor to a public instance can flip these away from
+# whatever was set at deploy time. These are unauthenticated endpoints that
+# mutate global, shared server state (not per-visitor), so on a public
+# deployment a single visitor flipping governance to "guardian" changes
+# behavior for every other visitor's fire, against whatever LLM endpoint the
+# server happens to be configured with.
+_LOCK_CONFIG = os.environ.get("SATAN_LOCK_CONFIG", "false").lower() == "true"
+
+def _reject_if_locked():
+    if _LOCK_CONFIG:
+        raise HTTPException(
+            status_code=403,
+            detail="Configuration is locked on this instance (SATAN_LOCK_CONFIG=true).",
+        )
+
 # ── LLM config (in-memory, persists per server session) ──────────────────────
 
 _llm_config = {
@@ -339,6 +355,7 @@ def get_llm_config():
 
 @app.post("/api/llm/config")
 def set_llm_config(req: LLMConfigRequest):
+    _reject_if_locked()
     _llm_config["provider"]  = req.provider
     _llm_config["base_url"]  = req.base_url.rstrip("/")
     _llm_config["model"]     = req.model
@@ -408,6 +425,7 @@ def get_governance_config():
 
 @app.post("/api/governance/config")
 def set_governance_config(req: GovernanceConfigRequest):
+    _reject_if_locked()
     if req.provider not in ("noop", "guardian", "shield"):
         raise HTTPException(status_code=400, detail="provider must be noop, guardian, or shield")
     _governance_config["provider"] = req.provider
@@ -428,6 +446,7 @@ def get_docling_config():
 
 @app.post("/api/docling/config")
 def set_docling_config(req: DoclingConfigRequest):
+    _reject_if_locked()
     _docling_config["enabled"]   = req.enabled
     _docling_config["url"]       = req.url.rstrip("/")
     _docling_config["timeout"]   = req.timeout

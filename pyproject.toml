@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "k9x-satan"
+version = "0.1.0"
+description = "K9X Satan — adversarial red-team harness for K9-AIF. Fires structured attacks at a live K9-AIF pipeline and proves K9X Shield containment."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+
+dependencies = [
+    "k9-aif>=1.8.1",
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+    "pydantic>=2.0",
+    "python-multipart>=0.0.9",
+    "requests>=2.31.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+k9x-satan = "k9x_satan.cli:main"
+
+# pyproject.toml sits INSIDE the k9x_satan/ directory itself (project root ==
+# package root, both named k9x_satan) — setuptools.packages.find's default
+# `where=["."]` looks for a k9x_satan* SUBDIRECTORY of the project root, which
+# doesn't exist (this directory's own __init__.py/app.py/target/ etc. sit
+# directly here). package-dir maps the package name back onto ".", and
+# packages is listed explicitly rather than relying on find() to guess the
+# self-referential layout correctly.
+[tool.setuptools]
+include-package-data = true
+packages = [
+    "k9x_satan",
+    "k9x_satan.target",
+    "k9x_satan.attacks",
+    "k9x_satan.runner",
+    "k9x_satan.report",
+    "k9x_satan.fake_search",
+]
+
+[tool.setuptools.package-dir]
+k9x_satan = "."
+
+[tool.setuptools.package-data]
+k9x_satan = [
+    "webui/*.html",
+    "corpus/*",
+    "config/*.yaml",
+    "diagrams/*.puml",
+    "diagrams/*.png",
+    "diagrams/*.sh",
+]

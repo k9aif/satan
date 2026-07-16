@@ -1,5 +1,7 @@
+k9-aif>=1.8.1
 fastapi>=0.111.0
 uvicorn>=0.29.0
 requests>=2.31.0
 python-dotenv>=1.0.0
 aiofiles>=23.0.0
+python-multipart>=0.0.9

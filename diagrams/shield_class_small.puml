@@ -1,0 +1,204 @@
+@startuml shield_class_small
+
+skinparam defaultFontName Courier
+skinparam defaultFontSize 11
+skinparam linetype ortho
+
+' ── K9-AIF ABBs (framework — abstract contracts) ────────────────────────────
+
+package "K9-AIF Framework ABBs" {
+
+  abstract class BaseVulnerabilityCheck {
+    {abstract} +check(payload: dict): CheckResult
+    #name: str
+    #description: str
+  }
+
+  class VulnerabilityChain {
+    -_checks: List[BaseVulnerabilityCheck]
+    +add(check: BaseVulnerabilityCheck): self
+    +run(payload: dict): CheckResult
+  }
+
+  abstract class BaseRouter {
+    {abstract} #_build_ingress_chain(): VulnerabilityChain
+    +route(payload: dict): dict
+    -_run_ingress_checks(payload): CheckResult
+  }
+
+  abstract class BaseOrchestrator {
+    {abstract} #_build_egress_chain(): VulnerabilityChain
+    +execute_flow(payload: dict): dict
+    -_run_egress_checks(payload): CheckResult
+  }
+
+  abstract class BaseAgent {
+    {abstract} +execute(payload: dict): dict
+    +enforce_governance()
+    +publish_event(event: dict)
+    #governance: BaseGovernance
+  }
+
+  abstract class BaseGovernance {
+    {abstract} +pre_process(payload: dict, ctx): dict
+    {abstract} +post_process(payload: dict, ctx): dict
+  }
+
+}
+
+' ── Grouped check boxes — one box per origin, one arrow each ────────────────
+' Same detail as shield_class.puml, collapsed so 13 individual inheritance
+' arrows don't spread the diagram wide. See shield_class.puml for the
+' un-grouped version with each check as its own class.
+
+class "K9-AIF Framework OOB Checks (7)" as FrameworkChecks {
+  InputSizeCheck
+  --
+  Ingress · token-flood / oversized payload
+  ==
+  PromptInjectionCheck
+  --
+  Ingress · SYSTEM OVERRIDE, ignore all instructions
+  ==
+  SemanticDriftCheck
+  --
+  Egress · goal hijacking, identity override, loop traps
+  ==
+  PIIBoundaryCheck
+  --
+  Egress · SSN / credit card / email crossing the boundary
+  ==
+  ToolArgumentCheck
+  --
+  Egress · SQLi / command injection / path traversal / SSRF
+  ==
+  ExecutionGuardCheck
+  --
+  Egress · destructive commands, reverse shells, persistence
+  ==
+  HardcodedCredentialCheck
+  --
+  Egress · API keys / secrets echoed into the response
+}
+
+class "K9X Satan — Shield SBB Checks (6)" as SatanChecks {
+  FieldAnomalyCheck
+  --
+  Ingress · EXEC-OVERRIDE, Priority: CRITICAL, COO auth codes
+  ==
+  MemoryPoisoningCheck
+  --
+  Ingress · fabricated/contradicted session memory
+  ==
+  RequestFrequencyCheck
+  --
+  Ingress · per-session resource-exhaustion request floods
+  ==
+  ToolAuthorizationCheck
+  --
+  Egress · unapproved tool/backend (Shadow AI)
+  ==
+  SystemPromptLeakageCheck
+  --
+  Egress · agent echoing its own system prompt verbatim
+  ==
+  OutputSanitizationCheck
+  --
+  Egress · <script>/markup/template injection in output
+}
+
+' ── K9X Satan SBBs (this repo — extends the ABBs above) ─────────────────────
+
+package "K9X Satan — Shield SBBs" {
+
+  class DoclingExtractor {
+    -_enabled: bool
+    -_url: str
+    -_timeout: int
+    +enrich(payload: dict): dict
+    ' PRE-SHIELD: populates extracted_fields
+  }
+
+  class DocumentRouter {
+    #_build_ingress_chain(): VulnerabilityChain
+    +route(payload: dict): dict
+  }
+
+  class DocumentOrchestrator {
+    #_build_egress_chain(): VulnerabilityChain
+    +execute_flow(payload: dict): dict
+  }
+
+  class DocumentExtractionAgent {
+    +execute(payload: dict): dict
+  }
+
+  class AuditAgent {
+    +execute(payload: dict): dict
+  }
+
+  class GuardianGovernance {
+    -_model: str
+    -_base: str
+    -_timeout: int
+    +pre_process(payload, ctx): dict
+    +post_process(payload, ctx): dict
+    ' model: granite4.1-guardian:8b
+  }
+
+  class NoopGovernance {
+    +pre_process(payload, ctx): dict
+    +post_process(payload, ctx): dict
+    ' passthrough — development only
+  }
+
+}
+
+' ── Inheritance — one arrow per group instead of 13 individual ones ─────────
+
+BaseVulnerabilityCheck <|-- FrameworkChecks
+BaseVulnerabilityCheck <|-- SatanChecks
+
+BaseRouter       <|-- DocumentRouter
+BaseOrchestrator <|-- DocumentOrchestrator
+BaseAgent        <|-- DocumentExtractionAgent
+BaseAgent        <|-- AuditAgent
+BaseGovernance   <|-- GuardianGovernance
+BaseGovernance   <|-- NoopGovernance
+
+' ── Composition ──────────────────────────────────────────────────────────────
+
+VulnerabilityChain "1" *--> "1..N" BaseVulnerabilityCheck : contains >
+DocumentRouter    "1" *--> "1"     VulnerabilityChain      : ingress chain >
+DocumentOrchestrator "1" *--> "1"  VulnerabilityChain      : egress chain >
+
+BaseAgent "N" o--> "1" BaseGovernance : uses >
+
+DocumentOrchestrator "1" --> "1" DocumentExtractionAgent
+DocumentOrchestrator "1" --> "1" AuditAgent
+
+note right of DoclingExtractor
+  Runs before VulnerabilityChain.
+  Populates extracted_fields so
+  FieldAnomalyCheck + MemoryPoisoningCheck
+  have structured field data at ingress.
+end note
+
+note right of GuardianGovernance
+  Wraps every agent's pre/post hooks.
+  Calls granite4.1-guardian:8b via
+  Ollama for semantic safety check —
+  catches what regex-based checks can't
+  (paraphrase, encoding, indirection).
+end note
+
+note bottom of SatanChecks
+  Ingress order: RequestFrequencyCheck -> InputSizeCheck ->
+  PromptInjectionCheck -> FieldAnomalyCheck -> MemoryPoisoningCheck
+
+  Egress order: SemanticDriftCheck -> ExecutionGuardCheck ->
+  PIIBoundaryCheck -> ToolArgumentCheck -> HardcodedCredentialCheck ->
+  ToolAuthorizationCheck -> SystemPromptLeakageCheck -> OutputSanitizationCheck
+end note
+
+@enduml

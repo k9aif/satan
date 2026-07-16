@@ -1209,6 +1209,13 @@
           that syntax-based injection checks miss. In production K9-AIF this step
           runs as a dedicated Squad via Kafka (non-blocking).
         </div>
+        <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;margin-top:10px;padding:8px 10px;border-left:2px solid var(--border-r);background:color-mix(in srgb,var(--red-mid) 4%,transparent)">
+          <strong style="color:var(--text)">Docling OCR is optional but recommended</strong> for a full scan of the document —
+          naive regex only reads plain key:value lines, so anomalies hidden inside a corrupted,
+          malformed, or unusually structured file (a real risk on a public instance anyone can
+          upload to) can slip past extraction entirely. If you'd rather not upload documents to
+          this shared instance at all, run Satan yourself: <code>pip install k9x-satan</code>.
+        </div>
       </div>
 
       <div class="card" id="setup-current-card">
@@ -1356,7 +1363,7 @@
 
     <div class="card">
       <h3>Threat Intelligence — Zscaler ThreatLabz</h3>
-      <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:10px">
+      <p style="font-size:0.95rem;color:var(--muted);line-height:1.8;margin-bottom:10px">
         Zscaler ThreatLabz maps four distinct vectors in the agentic AI threat landscape. K9X Shield was designed to address each one architecturally — not with signatures, but with an extensible chain where <strong style="color:var(--text)">each vector maps to one handler.</strong>
       </p>
       <div class="arch-scope-grid">
@@ -1376,14 +1383,14 @@
           <div class="arch-scope-item"><span class="ico">⚡</span>ExecutionGuardCheck — destructive execution, privilege escalation</div>
         </div>
       </div>
-      <p style="font-size:0.82rem;color:var(--dim);line-height:1.7;margin-top:10px">
+      <p style="font-size:0.92rem;color:var(--muted);line-height:1.7;margin-top:10px">
         Unlike a human reviewer, an LLM has no inherent notion of trusted versus attacker-controlled content. It follows instructions regardless of their origin — <strong style="color:var(--text)">unless architectural safeguards intervene.</strong> The payload walked through the front door as a document. That is what Satan tests.
       </p>
     </div>
 
     <div class="card">
       <h3>Complete Check Inventory — Component × Threat Class</h3>
-      <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
+      <p style="font-size:0.95rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
         Every handler currently wired into the target pipeline's two <code style="font-size:0.78rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">13 checks total</span> — 7 framework OOB, 6 Satan-local — plus Guardian as a cross-cutting semantic layer that wraps every agent regardless of chain position.
       </p>
       <div style="overflow-x:auto">
@@ -1417,28 +1424,25 @@
         </tbody>
       </table>
       </div>
-      <p style="font-size:0.78rem;color:var(--dim);line-height:1.7;margin-top:10px">
+      <p style="font-size:0.9rem;color:var(--muted);line-height:1.7;margin-top:10px">
         <strong style="color:var(--text)">Out of scope by design</strong> — not runtime-checkable at the payload level: training-data/model poisoning (OWASP LLM04's non-session-state half), vector/embedding attacks (OWASP LLM08 — no RAG in this target), and misinformation/hallucination (OWASP LLM09 — a quality concern, not a security boundary).
       </p>
     </div>
 
     <div class="card">
       <h3>Open-Closed Security — One New Threat, One New Handler</h3>
-      <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
+      <p style="font-size:0.95rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
         The Chain of Vulnerability Tests applies the GoF Chain of Responsibility pattern to security. Each handler inspects the payload for one class of threat. A new Zscaler ThreatLabz finding means one new handler. <strong style="color:var(--text)">Nothing else changes.</strong>
       </p>
 
-      <!-- Pre / Post labels -->
-      <div style="display:flex;gap:0;margin-bottom:4px;font-size:0.65rem;font-weight:700;letter-spacing:0.06em;color:var(--dim);padding-left:2px">
-        <div style="flex:0 0 auto;width:72px"></div>
-        <div style="flex:0 0 auto;width:12px"></div>
-        <div style="flex:1;text-align:center;color:var(--red-mid)">PRE-AGENT GATE</div>
-        <div style="flex:0 0 auto;width:12px"></div>
-        <div style="flex:1;text-align:center;color:var(--muted)">INTELLIGENCE</div>
-        <div style="flex:0 0 auto;width:12px"></div>
-        <div style="flex:1;text-align:center;color:var(--green)">POST-AGENT GATE</div>
-      </div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:8px">
+        ORCHESTRATOR appears twice below — <strong style="color:var(--text)">it's the same object both times.</strong>
+        It dispatches to Squad first, then evaluates the returned response later. The second box is not a
+        separate "egress gate" component — it's the same Orchestrator, invoked a second time on the way out.
+      </p>
 
+      <!-- IN -->
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;color:var(--red-mid);margin-bottom:4px">IN</div>
       <div class="arch-pipeline">
         <div class="arch-node">
           <div class="arch-box attack">SATAN</div>
@@ -1452,13 +1456,44 @@
         </div>
         <div class="arch-arrow">→</div>
         <div class="arch-node">
-          <div class="arch-box" style="background:color-mix(in srgb,var(--muted) 15%,var(--surface));border-color:var(--muted)">SQUAD / AGENT<br><span style="font-size:0.6rem;font-weight:400">LLM Reasoning</span></div>
-          <div class="arch-note">DocumentExtractionAgent<br>AuditAgent</div>
+          <div class="arch-box" style="border-color:var(--yellow);color:var(--yellow)">ORCHESTRATOR<br><span style="font-size:0.6rem;font-weight:400">① dispatches work</span></div>
+          <div class="arch-note">execute_squads([DocumentProcessingSquad])</div>
         </div>
         <div class="arch-arrow">→</div>
         <div class="arch-node">
-          <div class="arch-box gate" style="border-color:var(--green)">ORCHESTRATOR<br><span style="font-size:0.6rem;font-weight:400">Post-Agent Gate</span></div>
-          <div class="arch-note" style="color:var(--green)">Guardian Governance<br>SemanticDriftCheck · ExecutionGuardCheck<br>PIIBoundaryCheck · ToolArgumentCheck<br>HardcodedCredentialCheck · ToolAuthorizationCheck<br>SystemPromptLeakageCheck · OutputSanitizationCheck</div>
+          <div class="arch-box" style="border-color:var(--muted)">SQUAD</div>
+          <div class="arch-note">DocumentProcessingSquad<br>flow: ExtractionAgent → AuditAgent</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="arch-box" style="border-color:var(--muted)">AGENT<br><span style="font-size:0.6rem;font-weight:400">pre_process()</span></div>
+          <div class="arch-note" style="color:var(--green)">Guardian/Shield screens input</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="arch-box" style="background:color-mix(in srgb,var(--muted) 15%,var(--surface));border-color:var(--muted)">LLM / TOOLS</div>
+          <div class="arch-note">DocumentExtractionAgent<br>AuditAgent</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;font-size:0.7rem;color:var(--muted);margin:8px 0;letter-spacing:0.06em">↓ response path ↓</div>
+
+      <!-- OUT -->
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;color:var(--green);margin-bottom:4px">OUT</div>
+      <div class="arch-pipeline">
+        <div class="arch-node">
+          <div class="arch-box" style="border-color:var(--muted)">AGENT<br><span style="font-size:0.6rem;font-weight:400">post_process()</span></div>
+          <div class="arch-note" style="color:var(--green)">Guardian/Shield screens output</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="arch-box" style="border-color:var(--muted)">SQUAD<br><span style="font-size:0.6rem;font-weight:400">returns</span></div>
+          <div class="arch-note">Result bubbles back to Orchestrator</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="arch-box gate" style="border-color:var(--green)">ORCHESTRATOR<br><span style="font-size:0.6rem;font-weight:400">② evaluates returned result</span></div>
+          <div class="arch-note" style="color:var(--green)">egress VulnerabilityChain:<br>SemanticDriftCheck · ExecutionGuardCheck<br>PIIBoundaryCheck · ToolArgumentCheck<br>HardcodedCredentialCheck · ToolAuthorizationCheck<br>SystemPromptLeakageCheck · OutputSanitizationCheck</div>
           <div class="arch-stop" style="color:var(--green)">🛑 BLOCKED ✓</div>
         </div>
         <div class="arch-arrow red">→</div>
@@ -1467,8 +1502,11 @@
           <div class="arch-note" style="color:var(--red-mid)">⚠ FINDING<br>Both gates passed</div>
         </div>
       </div>
+      <p style="font-size:0.86rem;color:var(--muted);margin-top:8px">
+        ORCHESTRATOR and AGENT each appear once in IN and once in OUT — same objects both times. ORCHESTRATOR dispatches to Squad on the way in, then evaluates the returned result on the way out. AGENT screens input before calling the LLM, then screens its own output before returning it.
+      </p>
 
-      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.78rem;color:var(--dim);line-height:1.7">
+      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.78rem;color:var(--text);line-height:1.7">
         <div style="padding:10px;background:color-mix(in srgb,var(--red-mid) 6%,transparent);border:1px solid color-mix(in srgb,var(--red-mid) 20%,transparent);border-radius:5px">
           <div style="color:var(--red-mid);font-weight:700;margin-bottom:4px">PRE-AGENT — Router Shield</div>
           Pattern-based. Runs on the raw document before the LLM touches it. Fast, deterministic. Blocks known attack shapes (injection markers, override codes, anomalous fields). Cannot block semantic attacks that look legitimate.
@@ -1481,8 +1519,60 @@
     </div>
 
     <div class="card">
+      <h3>Shared Responsibility — What the Framework Handles, What the SBB Owns</h3>
+      <p style="font-size:0.95rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
+        The diagram above is Satan's own target pipeline. A real solution built on K9-AIF — say, an insurance
+        claims processor — looks the same from the outside:
+      </p>
+      <pre class="sample" style="margin:0 0 14px">Incoming claim document → Router → Orchestrator → Squad → LLM</pre>
+      <p style="font-size:0.95rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
+        The claims team writes <code>ClaimsRouter(BaseRouter)</code>, <code>ClaimsOrchestrator(BaseOrchestrator)</code>,
+        a triage squad, and agents that call <code>llm_invoke()</code> — ordinary business logic. They never write
+        a line of security code. This is a <strong style="color:var(--text)">shared responsibility model</strong>:
+        the framework and the solution team each own a different half of what makes the system secure.
+      </p>
+      <div class="sym-grid">
+        <div class="sym-col shield">
+          <h4>🛡 Framework (ABB) — inherited automatically</h4>
+          <div class="sym-row"><span>Router ingress VulnerabilityChain</span><span>pattern checks pre-LLM</span></div>
+          <div class="sym-row"><span>Orchestrator egress VulnerabilityChain</span><span>pattern checks on response</span></div>
+          <div class="sym-row"><span>Agent pre_process() / post_process()</span><span>Guardian/Shield governance hooks</span></div>
+          <div class="sym-row"><span>Zero Trust execution guard</span><span>opt-in, framework-enforced</span></div>
+          <div class="sym-row"><span>_policy.locked enforcement</span><span>SBB cannot override enterprise policy</span></div>
+          <div class="sym-row"><span>publish_event() audit trail</span><span>every check result, every verdict</span></div>
+        </div>
+        <div class="sym-col satan">
+          <h4>⚔ SBB (solution team) — written per solution</h4>
+          <div class="sym-row"><span>Router/Orchestrator/Squad/Agent classes</span><span>domain-specific, extend the ABBs</span></div>
+          <div class="sym-row"><span>Agent role, goal, instructions</span><span>agent YAML — what the LLM is asked to do</span></div>
+          <div class="sym-row"><span>Domain-specific checks</span><span>optional — e.g. FieldAnomalyCheck-style</span></div>
+          <div class="sym-row"><span>Governance provider selection</span><span>noop / guardian / shield, per config.yaml</span></div>
+          <div class="sym-row"><span>Squad flow — agent sequence</span><span>which agents run, in what order</span></div>
+        </div>
+      </div>
+      <p style="font-size:0.9rem;color:var(--muted);line-height:1.7;margin-top:12px">
+        Nothing in the left column is something the claims team opted into — it's inherited the moment their
+        classes extend <code>BaseRouter</code>/<code>BaseOrchestrator</code>/<code>BaseAgent</code>, the same way
+        logging or the event bus is. Satan attacks the exact same pattern a real solution would use — that's what
+        makes a contained attack here evidence for a real solution, not just proof about a demo.
+      </p>
+      <div style="margin-top:12px;padding:10px 12px;background:color-mix(in srgb,var(--yellow) 6%,transparent);border-left:3px solid var(--yellow);font-size:0.8rem;color:var(--muted);line-height:1.7">
+        <strong style="color:var(--text)">Does the ABB's OOB set cover everything? No — and this repo is the proof, not a hedge.</strong>
+        The framework ships 7 OOB checks, and they're deliberately generic: oversized payload, generic injection
+        phrases, generic PII patterns. They can't know that <code>FieldAnomalyCheck</code>'s red-flag terms
+        ("COO authorization code", "EXEC-OVERRIDE") only make sense for insurance-claims-shaped documents — a
+        healthcare or defense-procurement solution needs different domain terms entirely. And five of the six
+        Satan-local checks — <code>MemoryPoisoningCheck</code>, <code>ToolAuthorizationCheck</code>,
+        <code>SystemPromptLeakageCheck</code>, <code>OutputSanitizationCheck</code>, <code>RequestFrequencyCheck</code> —
+        didn't exist anywhere in the framework's OOB set until Satan needed them. The ABB gives every solution a
+        strong, reusable baseline. The SBB still has to review whether that baseline covers its actual domain and
+        threat surface, and add what's missing — the same way Satan did.
+      </div>
+    </div>
+
+    <div class="card">
       <h3>The Hardening Loop</h3>
-      <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
+      <p style="font-size:0.95rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
         Satan and Shield grow together. Every EVASION finding closes a gap in the framework — making it stronger for every solution built on K9-AIF.
       </p>
       <pre class="sample" style="font-size:0.8rem;line-height:1.8">Satan fires attack
@@ -1492,7 +1582,7 @@
   → Shield blocks it        BLOCKED — framework hardened
   → next attack class probes the next gap
   → repeat</pre>
-      <p style="font-size:0.82rem;color:var(--dim);line-height:1.7;margin-top:10px">
+      <p style="font-size:0.92rem;color:var(--muted);line-height:1.7;margin-top:10px">
         The chain is open-ended by design. Zscaler's four vectors are not a ceiling — they are the current known surface. As agentic systems become more capable and more autonomous, the attack surface expands. Each new vector is one new handler. The chain does not need to be rewritten. <strong style="color:var(--text)">It just needs one more link.</strong>
       </p>
     </div>
@@ -1519,14 +1609,14 @@
           <div class="sym-row" style="opacity:0.45"><span>HtmlCommentInjectionCheck</span><span>ingress — pending</span></div>
         </div>
       </div>
-      <p style="font-size:0.82rem;color:var(--dim);line-height:1.7;margin-top:12px">
+      <p style="font-size:0.92rem;color:var(--muted);line-height:1.7;margin-top:12px">
         <strong style="color:var(--text)">ABBs live in the framework.</strong> SBBs live in Satan. Every attack SBB extends <code>BaseAttack</code>. Every defence check extends <code>BaseVulnerabilityCheck</code>. The contracts belong to the framework — not to any one solution.
       </p>
     </div>
 
     <div class="card">
       <h3>Check Execution — Sequence &amp; Ownership</h3>
-      <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:16px">
+      <p style="font-size:0.95rem;color:var(--muted);line-height:1.8;margin-bottom:16px">
         Every payload traverses four phases in strict order. A block at any phase terminates execution — downstream phases never run.
       </p>
 
@@ -1543,17 +1633,17 @@
 
           <!-- Phase 0: DoclingExtractor -->
           <div style="border-left:3px solid var(--border);padding:10px 14px;border-radius:0 5px 5px 0;background:color-mix(in srgb,var(--border) 8%,transparent)">
-            <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;color:var(--dim);margin-bottom:8px">PHASE 0 — PRE-SHIELD · DoclingExtractor</div>
+            <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">PHASE 0 — PRE-SHIELD · DoclingExtractor</div>
             <div style="display:flex;flex-direction:column;gap:5px">
               <div style="display:flex;align-items:center;gap:8px">
                 <span style="font-family:var(--font-mono);color:var(--muted);min-width:22px;text-align:right">①</span>
                 <span style="color:var(--text);font-weight:500">naive_extract()</span>
-                <span style="color:var(--dim)">— regex key:value scan (always runs)</span>
+                <span style="color:var(--muted)">— regex key:value scan (always runs)</span>
               </div>
               <div style="display:flex;align-items:center;gap:8px">
                 <span style="font-family:var(--font-mono);color:var(--muted);min-width:22px;text-align:right">②</span>
                 <span style="color:var(--text);font-weight:500">_docling_endpoint()</span>
-                <span style="color:var(--dim)">— OCR via /v1/convert/file (if enabled)</span>
+                <span style="color:var(--muted)">— OCR via /v1/convert/file (if enabled)</span>
               </div>
               <div style="margin-top:4px;padding:4px 8px;background:color-mix(in srgb,var(--border) 20%,transparent);border-radius:3px;font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">→ populates <span style="color:var(--text)">extracted_fields</span> for FieldAnomalyCheck</div>
             </div>
@@ -1567,8 +1657,8 @@
                 <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">①</span>
                 <div>
                   <span style="color:var(--text);font-weight:500">RequestFrequencyCheck</span>
-                  <span style="color:var(--dim)"> · per-session request count vs. rolling window</span>
-                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: resource-exhaustion request floods (Satan SBB — CacheFactory-backed)</div>
+                  <span style="color:var(--muted)"> · per-session request count vs. rolling window</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--muted)">catches: resource-exhaustion request floods (Satan SBB — CacheFactory-backed)</div>
                 </div>
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
@@ -1576,8 +1666,8 @@
                 <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">②</span>
                 <div>
                   <span style="color:var(--text);font-weight:500">InputSizeCheck</span>
-                  <span style="color:var(--dim)"> · payload byte length &gt; limit</span>
-                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: Token Flood Attack (💣 Oversized Payload)</div>
+                  <span style="color:var(--muted)"> · payload byte length &gt; limit</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--muted)">catches: Token Flood Attack (💣 Oversized Payload)</div>
                 </div>
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
@@ -1585,8 +1675,8 @@
                 <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">③</span>
                 <div>
                   <span style="color:var(--text);font-weight:500">PromptInjectionCheck</span>
-                  <span style="color:var(--dim)"> · pattern scan on raw text</span>
-                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: SYSTEM OVERRIDE · ignore all instructions · admin mode · roleplay jailbreak</div>
+                  <span style="color:var(--muted)"> · pattern scan on raw text</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--muted)">catches: SYSTEM OVERRIDE · ignore all instructions · admin mode · roleplay jailbreak</div>
                 </div>
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
@@ -1594,8 +1684,8 @@
                 <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">④</span>
                 <div>
                   <span style="color:var(--text);font-weight:500">FieldAnomalyCheck</span>
-                  <span style="color:var(--dim)"> · scans extracted_fields + raw text</span>
-                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: EXEC-OVERRIDE codes · Priority: CRITICAL · COO auth · supersedes directives</div>
+                  <span style="color:var(--muted)"> · scans extracted_fields + raw text</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--muted)">catches: EXEC-OVERRIDE codes · Priority: CRITICAL · COO auth · supersedes directives</div>
                 </div>
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
@@ -1603,8 +1693,8 @@
                 <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">⑤</span>
                 <div>
                   <span style="color:var(--text);font-weight:500">MemoryPoisoningCheck</span>
-                  <span style="color:var(--dim)"> · session fact fingerprint vs. CacheFactory record</span>
-                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: fabricated/contradicted "as previously approved" session memory claims</div>
+                  <span style="color:var(--muted)"> · session fact fingerprint vs. CacheFactory record</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--muted)">catches: fabricated/contradicted "as previously approved" session memory claims</div>
                 </div>
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
@@ -1622,18 +1712,18 @@
                   <div style="display:flex;gap:6px;align-items:center">
                     <span style="color:var(--green);width:12px">▶</span>
                     <span style="color:var(--muted)">Guardian</span>
-                    <span style="font-family:var(--font-mono);color:var(--dim)">pre_process()</span>
+                    <span style="font-family:var(--font-mono);color:var(--muted)">pre_process()</span>
                     <span style="margin-left:auto;color:var(--green)">🛑 BLOCK if unsafe input</span>
                   </div>
                   <div style="display:flex;gap:6px;align-items:center">
                     <span style="color:var(--muted);width:12px">▶</span>
                     <span style="color:var(--muted)">Agent</span>
-                    <span style="font-family:var(--font-mono);color:var(--dim)">execute() → LLM</span>
+                    <span style="font-family:var(--font-mono);color:var(--muted)">execute() → LLM</span>
                   </div>
                   <div style="display:flex;gap:6px;align-items:center">
                     <span style="color:var(--green);width:12px">▶</span>
                     <span style="color:var(--muted)">Guardian</span>
-                    <span style="font-family:var(--font-mono);color:var(--dim)">post_process()</span>
+                    <span style="font-family:var(--font-mono);color:var(--muted)">post_process()</span>
                     <span style="margin-left:auto;color:var(--green)">🛑 REDACT if PII/unsafe</span>
                   </div>
                 </div>
@@ -1644,23 +1734,23 @@
                   <div style="display:flex;gap:6px;align-items:center">
                     <span style="color:var(--green);width:12px">▶</span>
                     <span style="color:var(--muted)">Guardian</span>
-                    <span style="font-family:var(--font-mono);color:var(--dim)">pre_process()</span>
+                    <span style="font-family:var(--font-mono);color:var(--muted)">pre_process()</span>
                     <span style="margin-left:auto;color:var(--green)">🛑 BLOCK if unsafe input</span>
                   </div>
                   <div style="display:flex;gap:6px;align-items:center">
                     <span style="color:var(--muted);width:12px">▶</span>
                     <span style="color:var(--muted)">Agent</span>
-                    <span style="font-family:var(--font-mono);color:var(--dim)">execute() → LLM</span>
+                    <span style="font-family:var(--font-mono);color:var(--muted)">execute() → LLM</span>
                   </div>
                   <div style="display:flex;gap:6px;align-items:center">
                     <span style="color:var(--green);width:12px">▶</span>
                     <span style="color:var(--muted)">Guardian</span>
-                    <span style="font-family:var(--font-mono);color:var(--dim)">post_process()</span>
+                    <span style="font-family:var(--font-mono);color:var(--muted)">post_process()</span>
                     <span style="margin-left:auto;color:var(--green)">🛑 REDACT if PII/unsafe</span>
                   </div>
                 </div>
               </div>
-              <div style="font-size:0.65rem;color:var(--dim);padding:2px 0">Guardian hooks fire only when Governance = GuardianGovernance (Setup → Governance). Default is NoopGovernance — hooks are present but pass through.</div>
+              <div style="font-size:0.65rem;color:var(--muted);padding:2px 0">Guardian hooks fire only when Governance = GuardianGovernance (Setup → Governance). Default is NoopGovernance — hooks are present but pass through.</div>
             </div>
           </div>
 
@@ -1672,8 +1762,8 @@
                 <span style="font-family:var(--font-mono);color:var(--green);min-width:22px;text-align:right;flex-shrink:0">①</span>
                 <div>
                   <span style="color:var(--text);font-weight:500">SemanticDriftCheck</span>
-                  <span style="color:var(--dim)"> · evaluates agent reasoning against original goal</span>
-                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: role reframing · goal hijacking · identity override</div>
+                  <span style="color:var(--muted)"> · evaluates agent reasoning against original goal</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--muted)">catches: role reframing · goal hijacking · identity override</div>
                 </div>
                 <span style="margin-left:auto;color:var(--green);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
@@ -1681,8 +1771,8 @@
                 <span style="font-family:var(--font-mono);color:var(--green);min-width:22px;text-align:right;flex-shrink:0">②</span>
                 <div>
                   <span style="color:var(--text);font-weight:500">ExecutionGuardCheck</span>
-                  <span style="color:var(--dim)"> · validates response schema &amp; scope</span>
-                  <div style="margin-top:2px;font-size:0.65rem;color:var(--dim)">catches: destructive actions · privilege escalation · schema violations</div>
+                  <span style="color:var(--muted)"> · validates response schema &amp; scope</span>
+                  <div style="margin-top:2px;font-size:0.65rem;color:var(--muted)">catches: destructive actions · privilege escalation · schema violations</div>
                 </div>
                 <span style="margin-left:auto;color:var(--green);font-size:0.65rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
@@ -1692,7 +1782,7 @@
           <!-- Output -->
           <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid var(--border-r);border-radius:5px;background:color-mix(in srgb,var(--red-mid) 4%,transparent)">
             <span style="font-size:0.72rem;color:var(--red-mid);font-weight:700">⚠ OUTPUT</span>
-            <span style="font-size:0.7rem;color:var(--dim)">All phases passed — response exits pipeline. FINDING if evil payload; COMPLETED if clean.</span>
+            <span style="font-size:0.7rem;color:var(--muted)">All phases passed — response exits pipeline. FINDING if evil payload; COMPLETED if clean.</span>
           </div>
 
         </div>
@@ -1701,16 +1791,18 @@
 
     <div class="card">
       <h3>ABB / SBB Class Hierarchy</h3>
-      <p style="font-size:0.85rem;color:var(--muted);line-height:1.7;margin-bottom:12px">
-        PlantUML source at <code style="font-size:0.78rem">diagrams/shield_class.puml</code>.
+      <p style="font-size:0.95rem;color:var(--muted);line-height:1.7;margin-bottom:12px">
+        PlantUML source at <code style="font-size:0.78rem">diagrams/shield_class_small.puml</code>
+        (checks grouped into two boxes to keep this readable — the un-grouped version with each
+        check as its own class is <code style="font-size:0.78rem">diagrams/shield_class.puml</code>).
         Run <code style="font-size:0.78rem">./diagrams/generate.sh</code> to render PNG.
       </p>
       <div id="class-diagram-container">
-        <img id="class-diagram-img" src="/static/shield_class.png" alt="ABB/SBB Class Diagram"
+        <img id="class-diagram-img" src="/static/shield_class_small.png" alt="ABB/SBB Class Diagram"
              style="max-width:100%;border-radius:4px;display:none"
              onload="this.style.display='block'"
              onerror="document.getElementById('class-diagram-placeholder').style.display='block';this.style.display='none'">
-        <div id="class-diagram-placeholder" style="padding:20px;text-align:center;border:1px dashed var(--border);border-radius:4px;color:var(--dim);font-size:0.82rem">
+        <div id="class-diagram-placeholder" style="padding:20px;text-align:center;border:1px dashed var(--border);border-radius:4px;color:var(--muted);font-size:0.82rem">
           PNG not generated yet — run <code>./diagrams/generate.sh</code> then reload
         </div>
       </div>
@@ -2095,8 +2187,14 @@ function showDepthResult(result) {
   const depthOrder = { router: 1, orchestrator: 2, squad: 3, agent: 4 };
   const reached = depthOrder[depth] || 0;
 
-  const completedCls  = isClean ? 'safe' : 'passed';
+  // Green for every node that ran its own checks and correctly found nothing
+  // — true whether the document is a clean control or just didn't match THIS
+  // node's checks. Red is reserved for the node that actually caught it
+  // (markThreat below), and — for a genuine finding — the terminal AGENT
+  // node, where an uncaught payload's effects actually reached execution.
+  const completedCls = 'safe';
   const arrowCls      = isClean ? 'clean' : 'live';
+  const isFinding      = !blockedAt && status === 'completed' && result.shield_held === false;
 
   if (reached >= 1) {
     document.getElementById('arrow-1').className = 'depth-arrow ' + arrowCls;
@@ -2123,7 +2221,11 @@ function showDepthResult(result) {
 
   if (reached >= 4 && !blockedAt) {
     document.getElementById('arrow-4').className = 'depth-arrow ' + arrowCls;
-    document.getElementById('node-agent').className = 'depth-box ' + completedCls;
+    if (isFinding) {
+      markThreat('node-agent');
+    } else {
+      document.getElementById('node-agent').className = 'depth-box ' + completedCls;
+    }
   }
 
   const vb = document.getElementById('verdict-box');
