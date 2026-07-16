@@ -1,9 +1,18 @@
-"""K9x Santa — dashboard backend + target pipeline host."""
+"""K9x Satan — dashboard backend + target pipeline host."""
 
 import logging
 import os
 import requests
 from typing import List, Optional
+
+# Auto-load .env so running via `uvicorn` directly (e.g. from VS Code) picks up
+# OLLAMA_BASE_URL, DOCLING_URL, DOCLING_PORT, etc. — run.sh already sources it
+# via bash, so this is a no-op when env vars are already set.
+try:
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv(os.path.join(os.path.dirname(__file__), ".env"), override=False)
+except ImportError:
+    pass
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -12,21 +21,37 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("k9x_satan.app")
 
-app = FastAPI(title="K9x Santa", version="1.0.0")
+app = FastAPI(title="K9x Satan", version="1.0.0")
 
 _run_history: list = []
 
 # ── LLM config (in-memory, persists per server session) ──────────────────────
 
 _llm_config = {
-    "provider":  os.environ.get("SANTA_LLM_PROVIDER", "ollama"),
-    "base_url":  os.environ.get("SANTA_LLM_BASE_URL", "http://localhost:11434"),
-    "model":     os.environ.get("SANTA_LLM_MODEL", ""),
+    "provider":  os.environ.get("SATAN_LLM_PROVIDER", "ollama"),
+    "base_url":  (os.environ.get("SATAN_LLM_BASE_URL")
+                  or os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")),
+    "model":     os.environ.get("SATAN_LLM_MODEL", ""),
+    "api_key":   os.environ.get("SATAN_LLM_API_KEY", ""),
     "connected": False,
 }
 
 _governance_config = {
-    "provider": os.environ.get("SANTA_GOVERNANCE", "noop"),  # noop | guardian
+    "provider": os.environ.get("SATAN_GOVERNANCE", "noop"),  # noop | guardian
+}
+
+def _build_docling_url() -> str:
+    raw  = os.environ.get("DOCLING_URL", "")
+    port = os.environ.get("DOCLING_PORT", "5001")
+    if raw.startswith("http"):
+        return raw
+    return f"http://{raw}:{port}" if raw else f"http://localhost:{port}"
+
+_docling_config = {
+    "enabled":   os.environ.get("SATAN_DOCLING", "false").lower() == "true",
+    "url":       _build_docling_url(),
+    "timeout":   180,
+    "connected": False,
 }
 
 # ── Pre-built poisonous document corpus ──────────────────────────────────────
@@ -210,6 +235,7 @@ async def fire(
     from k9x_satan.target.pipeline import load_config
     cfg = load_config()
     cfg.setdefault("governance", {})["provider"] = _governance_config["provider"]
+    cfg.setdefault("docling", {}).update(_docling_config)
 
     result = run_pipeline(payload, config=cfg)
     result["source"]              = source
@@ -217,9 +243,10 @@ async def fire(
     result["document_text"]       = document_text
     result["is_evil"]             = CORPUS[corpus_key]["evil"] if corpus_key and corpus_key in CORPUS else True
     result["governance_provider"] = _governance_config["provider"]
+    result["docling_enabled"]     = _docling_config["enabled"]
 
     _run_history.append(result)
-    log.info("[Santa] fire result: status=%s depth=%s", result["status"], result["penetration_depth"])
+    log.info("[Satan] fire result: status=%s depth=%s", result["status"], result["penetration_depth"])
     return result
 
 
@@ -247,18 +274,23 @@ class LLMConfigRequest(BaseModel):
     provider: str
     base_url: str
     model: str
+    api_key: str = ""
 
 @app.get("/api/llm/config")
 def get_llm_config():
-    return _llm_config
+    cfg = dict(_llm_config)
+    cfg["api_key"] = "***" if cfg.get("api_key") else ""  # never expose key to UI
+    return cfg
 
 @app.post("/api/llm/config")
 def set_llm_config(req: LLMConfigRequest):
     _llm_config["provider"]  = req.provider
     _llm_config["base_url"]  = req.base_url.rstrip("/")
     _llm_config["model"]     = req.model
+    if req.api_key and req.api_key != "***":
+        _llm_config["api_key"] = req.api_key
     _llm_config["connected"] = False
-    log.info("[Santa] LLM config updated: provider=%s base_url=%s model=%s",
+    log.info("[Satan] LLM config updated: provider=%s base_url=%s model=%s",
              req.provider, req.base_url, req.model)
     return _llm_config
 
@@ -299,7 +331,7 @@ def test_llm_connection():
                 r = requests.get(f"{base_url}{path}", timeout=4)
                 if r.ok:
                     _llm_config["connected"] = True
-                    log.info("[Santa] LLM connection OK at %s%s", base_url, path)
+                    log.info("[Satan] LLM connection OK at %s%s", base_url, path)
                     return {"connected": True, "base_url": base_url}
             except Exception:
                 pass
@@ -324,24 +356,71 @@ def set_governance_config(req: GovernanceConfigRequest):
     if req.provider not in ("noop", "guardian"):
         raise HTTPException(status_code=400, detail="provider must be noop or guardian")
     _governance_config["provider"] = req.provider
-    log.info("[Santa] governance provider set to %s", req.provider)
+    log.info("[Satan] governance provider set to %s", req.provider)
     return _governance_config
+
+
+# ── Docling Config API ───────────────────────────────────────────────────────
+
+class DoclingConfigRequest(BaseModel):
+    enabled: bool
+    url:     str = "http://localhost:5001"
+    timeout: int = 180
+
+@app.get("/api/docling/config")
+def get_docling_config():
+    return _docling_config
+
+@app.post("/api/docling/config")
+def set_docling_config(req: DoclingConfigRequest):
+    _docling_config["enabled"]   = req.enabled
+    _docling_config["url"]       = req.url.rstrip("/")
+    _docling_config["timeout"]   = req.timeout
+    _docling_config["connected"] = False  # reset on config change
+    log.info("[Satan] docling config: enabled=%s url=%s", req.enabled, req.url)
+    return _docling_config
+
+@app.post("/api/docling/test")
+def test_docling_connection():
+    """Probe the configured Docling server for liveness."""
+    url = _docling_config.get("url", "").rstrip("/")
+    if not url:
+        raise HTTPException(status_code=400, detail="Docling URL not configured")
+    timeout = int(_docling_config.get("timeout", 30))
+    probe_paths = ["/health", "/v1/health", "/", "/v1/parse"]
+    try:
+        for path in probe_paths:
+            try:
+                r = requests.get(f"{url}{path}", timeout=min(timeout, 5))
+                if r.status_code < 500:
+                    _docling_config["connected"] = True
+                    log.info("[Satan] Docling reachable at %s%s", url, path)
+                    return {"connected": True, "url": url, "path": path}
+            except requests.exceptions.ConnectionError:
+                continue
+            except requests.exceptions.Timeout:
+                continue
+        _docling_config["connected"] = False
+        return {"connected": False, "url": url, "error": "No response on any probe path"}
+    except Exception as exc:
+        _docling_config["connected"] = False
+        return {"connected": False, "url": url, "error": str(exc)}
 
 
 # ── Repent API ────────────────────────────────────────────────────────────────
 
 @app.get("/api/repent/state")
 def repent_state():
-    """Tell the UI whether we are currently in SANTA mode."""
+    """Tell the UI whether we are currently in SATAN mode."""
     from k9x_satan.repent import _is_repented
     return {"repented": _is_repented()}
 
 @app.post("/api/repent")
 def repent(undo: bool = False):
-    """Run repent.py — rename SANTA → SANTA (or back). Reloading the page applies the change."""
+    """Run repent.py — rename SATAN → SATAN (or back). Reloading the page applies the change."""
     from k9x_satan.repent import run as repent_run
     result = repent_run(undo=undo)
-    log.info("[Santa] repent called: undo=%s changes=%d", undo, result["changes"])
+    log.info("[Satan] repent called: undo=%s changes=%d", undo, result["changes"])
     return result
 
 

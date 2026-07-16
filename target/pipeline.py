@@ -57,9 +57,30 @@ def run_pipeline(payload: dict, config: dict = None) -> dict:
     """
     cfg = config or load_config()
 
+    # ── Pre-Shield: extract document fields (naive regex, or Docling if enabled) ──
+    # In production K9-AIF, this step runs as a dedicated Squad via Kafka.
+    # In Satan (sync test harness) it runs inline so FieldAnomalyCheck has
+    # structured field data before the VulnerabilityChain fires.
+    from k9x_satan.target.extractor import DoclingExtractor
+    extractor = DoclingExtractor(config=cfg)
+    payload   = extractor.enrich(payload)
+
     orchestrator = DocumentOrchestrator(config=cfg)
     router       = DocumentRouter(config=cfg)
     router.register_orchestrator("document_processing", orchestrator)
 
-    log.info("[Pipeline] firing payload through Satan target pipeline (k9_env=%s)", cfg.get("k9_env"))
-    return router.route(payload)
+    log.info(
+        "[Pipeline] firing payload (k9_env=%s, extraction=%s, fields=%d)",
+        cfg.get("k9_env"),
+        payload.get("extraction_method", "?"),
+        payload.get("extracted_count", 0),
+    )
+    result = router.route(payload)
+    # Bubble extraction metadata up to the API result
+    result["extraction_method"]   = payload.get("extraction_method", "naive")
+    result["extracted_count"]     = payload.get("extracted_count", 0)
+    result["docling_used"]        = payload.get("docling_used", False)
+    result["extracted_fields"]    = payload.get("extracted_fields", {})
+    result["extraction_fallback"] = payload.get("extraction_fallback", False)
+    result["extraction_error"]    = payload.get("extraction_error", "")
+    return result

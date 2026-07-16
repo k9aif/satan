@@ -18,6 +18,7 @@ from k9_aif_abb.k9_core.router.base_router import BaseRouter
 from k9_aif_abb.k9_security.vulnerability.vulnerability_chain import VulnerabilityChain
 from k9_aif_abb.k9_security.vulnerability.checks.input_size_check import InputSizeCheck
 from k9_aif_abb.k9_security.vulnerability.checks.prompt_injection_check import PromptInjectionCheck
+from k9x_satan.target.field_anomaly_check import FieldAnomalyCheck
 
 log = logging.getLogger("k9x_satan.target")
 
@@ -38,6 +39,7 @@ class DocumentRouter(BaseRouter):
             VulnerabilityChain()
             .add(InputSizeCheck())
             .add(PromptInjectionCheck())
+            .add(FieldAnomalyCheck())
         )
 
     def route(self, payload: Dict[str, Any]) -> Dict[str, Any]:

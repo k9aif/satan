@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>K9x Santa — Security Analysis Tool for Agentic Networks</title>
+<title>K9x Satan — Security Analysis Tool for Agentic Networks</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -107,7 +107,7 @@
     line-height: 1;
   }
 
-  /* ── SANTA MODE — applied by repent.py via body class ── */
+  /* ── SATAN MODE — applied by repent.py via body class ── */
   body.santa-mode .satan-title      { color: #1a5c2e; }
   body.santa-mode .logo-k9          { background: linear-gradient(135deg, #145228, #22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   body.santa-mode header            { border-bottom-color: #1a3d24; }
@@ -137,20 +137,24 @@
   }
 
   .repent-btn {
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+    display: block;
+    width: 100%;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
     font-family: var(--font-mono);
-    color: var(--dim);
+    color: var(--red-bright);
     background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 3px 8px;
+    border: 2px solid var(--red-mid);
+    border-radius: 8px;
+    padding: 10px 0;
     cursor: pointer;
-    transition: color 0.2s, border-color 0.2s;
+    text-align: center;
+    transition: all 0.2s;
   }
-  .repent-btn:hover { color: var(--green); border-color: var(--green); }
+  .repent-btn:hover { background: rgba(170,21,21,0.12); border-color: var(--red-bright); }
   .repent-btn.repented { color: var(--green); border-color: var(--green); }
+  .repent-btn.repented:hover { background: rgba(0,204,68,0.08); }
 
   /* ── PERSISTENT PIPELINE STRIP ── */
   .pipeline-strip {
@@ -444,9 +448,9 @@
 
   .repent-tip {
     font-size: 0.65rem;
-    color: var(--dim);
+    color: var(--muted);
     line-height: 1.5;
-    margin-top: 6px;
+    margin-top: 8px;
     min-height: 1.4em;
   }
 
@@ -1000,7 +1004,7 @@
   }
 </style>
 </head>
-<body class="santa-mode">
+<body>
 <div class="app">
 
 <!-- ── HEADER ── -->
@@ -1010,15 +1014,12 @@
     <div class="header-k9-sub">k9x.ai</div>
   </div>
   <div class="header-center">
-    <div class="satan-title">SANTA</div>
+    <div class="satan-title">SATAN</div>
     <div class="satan-acronym">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
   </div>
   <div class="header-right">
-    <span style="font-size:0.58rem;letter-spacing:0.06em">K9-AIF Red Team Harness</span>
-    <div class="llm-status-row">
-      <div class="llm-dot off" id="llm-dot"></div>
-      <span class="llm-pill" id="llm-pill">not connected</span>
-    </div>
+    <span class="llm-pill" id="llm-pill-hdr">not connected</span>
+    <span class="llm-pill connected" id="ocr-pill-hdr" style="display:none">OCR: on</span>
   </div>
 </header>
 
@@ -1065,9 +1066,14 @@
 
   <!-- ── PERSISTENT PIPELINE STRIP ── -->
   <div class="pipeline-strip">
+    <div class="llm-status-row" style="gap:10px">
+      <div class="llm-dot off" id="llm-dot"></div>
+      <span class="llm-pill" id="llm-pill">not connected</span>
+      <span class="llm-pill connected" id="ocr-pill" style="display:none">OCR: on</span>
+    </div>
     <div class="depth-pipeline">
       <div class="depth-node">
-        <div class="depth-box" id="node-satan">SANTA</div>
+        <div class="depth-box" id="node-satan">SATAN</div>
         <div class="depth-label">Attacker</div>
       </div>
       <div class="depth-arrow" id="arrow-1">→</div>
@@ -1109,7 +1115,7 @@
 
       <div style="margin-bottom:22px">
         <div style="font-size:1.1rem;font-weight:300;color:var(--text);margin-bottom:6px">LLM Setup</div>
-        <div style="font-size:0.85rem;color:var(--muted);line-height:1.7">Configure the LLM provider that Santa's target agents will use. Connect to Ollama, LM Studio, or any OpenAI-compatible endpoint.</div>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.7">Configure the LLM provider that Satan's target agents will use. Connect to Ollama, LM Studio, or any OpenAI-compatible endpoint.</div>
       </div>
 
       <div class="card">
@@ -1127,19 +1133,20 @@
         <div class="setup-group">
           <label class="setup-label">Base URL</label>
           <div class="setup-row">
-            <input class="setup-input" id="setup-base-url" type="text" placeholder="http://localhost:11434" value="http://localhost:11434">
+            <input class="setup-input" id="setup-base-url" type="text" placeholder="from OLLAMA_BASE_URL env var">
             <button class="btn-primary" onclick="connectAndLoad()">Connect</button>
           </div>
           <div class="setup-status" id="setup-conn-status"></div>
         </div>
 
+        <div class="setup-group" id="api-key-group" style="display:none">
+          <label class="setup-label">API Key</label>
+          <input class="setup-input" id="setup-api-key" type="password" placeholder="from SATAN_LLM_API_KEY env var">
+        </div>
+
         <div class="setup-group">
           <label class="setup-label">Model</label>
-          <div class="setup-row">
-            <input class="setup-input" id="setup-model" type="text" placeholder="Click Connect to browse models">
-            <button class="btn-secondary" onclick="loadModels()">Browse</button>
-          </div>
-          <div class="model-list" id="model-list" style="display:none"></div>
+          <input class="setup-input" id="setup-model" type="text" placeholder="e.g. llama3.2:1b  (from SATAN_LLM_MODEL env var)">
         </div>
 
         <div style="display:flex;gap:10px;margin-top:4px">
@@ -1162,6 +1169,37 @@
           GuardianGovernance wraps every agent's <code>pre_process</code> and <code>post_process</code> hooks
           with a live <strong>granite4.1-guardian:8b</strong> safety call — screening inputs before the LLM
           and outputs after. Requires Ollama to be connected with the guardian model pulled.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Document Extraction</h3>
+        <div class="setup-group">
+          <label class="setup-label">Extraction Mode</label>
+          <select class="setup-select" id="setup-docling-mode" onchange="toggleDoclingUrl(this.value)">
+            <option value="naive">Naive (regex key:value — no dependencies)</option>
+            <option value="docling">Docling OCR (local library or remote server)</option>
+          </select>
+        </div>
+        <div id="docling-url-group" class="setup-group" style="display:none">
+          <label class="setup-label">Docling Server URL</label>
+          <input class="setup-input" id="setup-docling-url" type="text"
+                 placeholder="loaded from DOCLING_URL + DOCLING_PORT env vars">
+          <div style="font-size:0.72rem;color:var(--dim);margin-top:4px">
+            Set <code>DOCLING_URL</code> env var or enter URL above.
+            Leave blank to use local <code>pip install docling</code>.
+          </div>
+        </div>
+        <div class="setup-row" style="margin-top:10px">
+          <button class="btn-primary" onclick="connectDocling()">Test Connection</button>
+          <button class="btn-secondary" onclick="saveDoclingConfig()">Save</button>
+        </div>
+        <div class="setup-status" id="setup-docling-status" style="margin-top:6px"></div>
+        <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;margin-top:10px">
+          Runs <strong>before</strong> the Shield checks. Extracted fields feed
+          <code>FieldAnomalyCheck</code> — catches authority-override patterns
+          that syntax-based injection checks miss. In production K9-AIF this step
+          runs as a dedicated Squad via Kafka (non-blocking).
         </div>
       </div>
 
@@ -1303,7 +1341,7 @@
       <p>K9-AIF treats security as a framework capability, not an application concern. Every solution built on the framework automatically inherits a runtime security chain that validates inputs before they reach the intelligence layer.</p>
       <p>Out of the box, Shield provides architectural handlers including <span style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text)">InputSizeCheck, PromptInjectionCheck, SemanticDriftCheck, PIIBoundaryCheck, ToolArgumentCheck, ExecutionGuardCheck,</span> and <span style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text)">HardcodedCredentialCheck</span>.</p>
       <p>These handlers address the primary attack vectors identified by Zscaler ThreatLabz and can be extended as new threats emerge.</p>
-      <p>K9X Santa exists for one reason: <strong style="color:var(--red-bright)">prove whether that architecture actually holds.</strong></p>
+      <p>K9X Satan exists for one reason: <strong style="color:var(--red-bright)">prove whether that architecture actually holds.</strong></p>
     </div>
 
     <div class="card">
@@ -1329,7 +1367,7 @@
         </div>
       </div>
       <p style="font-size:0.82rem;color:var(--dim);line-height:1.7;margin-top:10px">
-        Unlike a human reviewer, an LLM has no inherent notion of trusted versus attacker-controlled content. It follows instructions regardless of their origin — <strong style="color:var(--text)">unless architectural safeguards intervene.</strong> The payload walked through the front door as a document. That is what Santa tests.
+        Unlike a human reviewer, an LLM has no inherent notion of trusted versus attacker-controlled content. It follows instructions regardless of their origin — <strong style="color:var(--text)">unless architectural safeguards intervene.</strong> The payload walked through the front door as a document. That is what Satan tests.
       </p>
     </div>
 
@@ -1338,27 +1376,55 @@
       <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
         The Chain of Vulnerability Tests applies the GoF Chain of Responsibility pattern to security. Each handler inspects the payload for one class of threat. A new Zscaler ThreatLabz finding means one new handler. <strong style="color:var(--text)">Nothing else changes.</strong>
       </p>
+
+      <!-- Pre / Post labels -->
+      <div style="display:flex;gap:0;margin-bottom:4px;font-size:0.65rem;font-weight:700;letter-spacing:0.06em;color:var(--dim);padding-left:2px">
+        <div style="flex:0 0 auto;width:72px"></div>
+        <div style="flex:0 0 auto;width:12px"></div>
+        <div style="flex:1;text-align:center;color:var(--red-mid)">PRE-AGENT GATE</div>
+        <div style="flex:0 0 auto;width:12px"></div>
+        <div style="flex:1;text-align:center;color:var(--muted)">INTELLIGENCE</div>
+        <div style="flex:0 0 auto;width:12px"></div>
+        <div style="flex:1;text-align:center;color:var(--green)">POST-AGENT GATE</div>
+      </div>
+
       <div class="arch-pipeline">
         <div class="arch-node">
-          <div class="arch-box attack">SANTA</div>
+          <div class="arch-box attack">SATAN</div>
           <div class="arch-note">Crafted payload<br>BaseAttack SBB</div>
         </div>
         <div class="arch-arrow red">→</div>
         <div class="arch-node">
-          <div class="arch-box gate">ROUTER<br><span style="font-size:0.6rem;font-weight:400">Ingress Gate</span></div>
-          <div class="arch-note">InputSizeCheck<br>PromptInjectionCheck</div>
+          <div class="arch-box gate">ROUTER<br><span style="font-size:0.6rem;font-weight:400">Pre-Agent Shield</span></div>
+          <div class="arch-note">InputSizeCheck<br>PromptInjectionCheck<br>FieldAnomalyCheck</div>
           <div class="arch-stop">🛑 BLOCKED ✓</div>
         </div>
         <div class="arch-arrow">→</div>
         <div class="arch-node">
-          <div class="arch-box gate">ORCHESTRATOR<br><span style="font-size:0.6rem;font-weight:400">Egress Gate</span></div>
-          <div class="arch-note">SemanticDriftCheck<br>ExecutionGuardCheck</div>
-          <div class="arch-stop">🛑 BLOCKED ✓</div>
+          <div class="arch-box" style="background:color-mix(in srgb,var(--muted) 15%,var(--surface));border-color:var(--muted)">SQUAD / AGENT<br><span style="font-size:0.6rem;font-weight:400">LLM Reasoning</span></div>
+          <div class="arch-note">DocumentExtractionAgent<br>AuditAgent</div>
         </div>
         <div class="arch-arrow">→</div>
         <div class="arch-node">
-          <div class="arch-box finding">SQUAD / AGENT</div>
-          <div class="arch-note" style="color:var(--red-mid)">⚠ FINDING — Shield failed</div>
+          <div class="arch-box gate" style="border-color:var(--green)">ORCHESTRATOR<br><span style="font-size:0.6rem;font-weight:400">Post-Agent Gate</span></div>
+          <div class="arch-note" style="color:var(--green)">Guardian Governance<br>SemanticDriftCheck<br>ExecutionGuardCheck</div>
+          <div class="arch-stop" style="color:var(--green)">🛑 BLOCKED ✓</div>
+        </div>
+        <div class="arch-arrow red">→</div>
+        <div class="arch-node">
+          <div class="arch-box finding">OUTPUT</div>
+          <div class="arch-note" style="color:var(--red-mid)">⚠ FINDING<br>Both gates passed</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.78rem;color:var(--dim);line-height:1.7">
+        <div style="padding:10px;background:color-mix(in srgb,var(--red-mid) 6%,transparent);border:1px solid color-mix(in srgb,var(--red-mid) 20%,transparent);border-radius:5px">
+          <div style="color:var(--red-mid);font-weight:700;margin-bottom:4px">PRE-AGENT — Router Shield</div>
+          Pattern-based. Runs on the raw document before the LLM touches it. Fast, deterministic. Blocks known attack shapes (injection markers, override codes, anomalous fields). Cannot block semantic attacks that look legitimate.
+        </div>
+        <div style="padding:10px;background:color-mix(in srgb,var(--green) 6%,transparent);border:1px solid color-mix(in srgb,var(--green) 20%,transparent);border-radius:5px">
+          <div style="color:var(--green);font-weight:700;margin-bottom:4px">POST-AGENT — Orchestrator Gate</div>
+          Semantic LLM-based. Runs on the agent's <em>output</em> before it leaves the pipeline. Guardian evaluates what the agent is about to return — catches PII leakage, policy bypass, semantic drift that evaded the pre-gate.
         </div>
       </div>
     </div>
@@ -1366,12 +1432,12 @@
     <div class="card">
       <h3>The Hardening Loop</h3>
       <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
-        Santa and Shield grow together. Every EVASION finding closes a gap in the framework — making it stronger for every solution built on K9-AIF.
+        Satan and Shield grow together. Every EVASION finding closes a gap in the framework — making it stronger for every solution built on K9-AIF.
       </p>
-      <pre class="sample" style="font-size:0.8rem;line-height:1.8">Santa fires attack
+      <pre class="sample" style="font-size:0.8rem;line-height:1.8">Satan fires attack
   → Shield misses it        EVASION — gap found
   → new Check added to framework ABB
-  → Santa fires again
+  → Satan fires again
   → Shield blocks it        BLOCKED — framework hardened
   → next attack class probes the next gap
   → repeat</pre>
@@ -1384,7 +1450,7 @@
       <h3>ABB / SBB — Framework Owns the Contracts</h3>
       <div class="sym-grid">
         <div class="sym-col satan">
-          <h4>⚔ K9x Santa — SBBs (Attack)</h4>
+          <h4>⚔ K9x Satan — SBBs (Attack)</h4>
           <div class="sym-row"><span>PromptInjectionAttack</span><span>document body</span></div>
           <div class="sym-row"><span>SearchPoisoningAttack</span><span>tool response</span></div>
           <div class="sym-row"><span>PayloadFloodAttack</span><span>token exhaustion</span></div>
@@ -1403,26 +1469,39 @@
         </div>
       </div>
       <p style="font-size:0.82rem;color:var(--dim);line-height:1.7;margin-top:12px">
-        <strong style="color:var(--text)">ABBs live in the framework.</strong> SBBs live in Santa. Every attack SBB extends <code>BaseAttack</code>. Every defence check extends <code>BaseVulnerabilityCheck</code>. The contracts belong to the framework — not to any one solution.
+        <strong style="color:var(--text)">ABBs live in the framework.</strong> SBBs live in Satan. Every attack SBB extends <code>BaseAttack</code>. Every defence check extends <code>BaseVulnerabilityCheck</code>. The contracts belong to the framework — not to any one solution.
       </p>
     </div>
 
     <div class="card">
       <h3>Target Pipeline — SBB Hierarchy</h3>
-      <pre class="sample">DocumentRouter          extends BaseRouter         (K9-AIF ABB)
-  [Ingress Gate]
-    InputSizeCheck       extends BaseVulnerabilityCheck
-    PromptInjectionCheck extends BaseVulnerabilityCheck
-      ↓ (if not blocked)
-DocumentOrchestrator    extends BaseOrchestrator    (K9-AIF ABB)
-  DocumentProcessingSquad  extends BaseSquad        (K9-AIF ABB)
-    DocumentExtractionAgent  extends BaseAgent      (K9-AIF ABB)
-    AuditAgent               extends BaseAgent      (K9-AIF ABB)
-  [Egress Gate]
-    SemanticDriftCheck   extends BaseVulnerabilityCheck
-    ExecutionGuardCheck  extends BaseVulnerabilityCheck
-      ↓ (if not blocked)
-  FINDING — Shield failed — attack reached agent layer</pre>
+      <pre class="sample">── PRE-AGENT ────────────────────────────────────────
+DoclingExtractor              SBB utility
+  naive regex | Docling OCR (optional)
+  → populates extracted_fields
+
+DocumentRouter                extends BaseRouter         (K9-AIF ABB)
+  [PRE-AGENT Shield — VulnerabilityChain]
+    InputSizeCheck            extends BaseVulnerabilityCheck
+    PromptInjectionCheck      extends BaseVulnerabilityCheck
+    FieldAnomalyCheck         extends BaseVulnerabilityCheck
+      → BLOCKED here if any check fires
+
+── INTELLIGENCE ─────────────────────────────────────
+DocumentOrchestrator          extends BaseOrchestrator    (K9-AIF ABB)
+  DocumentProcessingSquad     extends BaseSquad           (K9-AIF ABB)
+    DocumentExtractionAgent   extends BaseAgent           (K9-AIF ABB)
+    AuditAgent                extends BaseAgent           (K9-AIF ABB)
+
+── POST-AGENT ───────────────────────────────────────
+  [POST-AGENT Gate — Orchestrator Egress]
+    Guardian Governance       semantic LLM evaluation
+    SemanticDriftCheck        extends BaseVulnerabilityCheck
+    ExecutionGuardCheck       extends BaseVulnerabilityCheck
+      → BLOCKED here if response violates policy
+
+── OUTPUT ───────────────────────────────────────────
+  ⚠ FINDING — both gates passed — response exited pipeline</pre>
     </div>
 
   </div>
@@ -1432,28 +1511,45 @@ DocumentOrchestrator    extends BaseOrchestrator    (K9-AIF ABB)
     <div style="max-width:680px">
 
       <div class="card">
-        <div class="doc-h2">Why the Name "SANTA"?</div>
-        <p class="doc-p" style="margin-top:10px">The name K9X Santa is inspired by the pioneering <strong style="color:var(--text)">SANTA (Security Administrator Tool for Analyzing Networks)</strong>, released in 1995 by security researchers Dan Farmer and Wietse Venema.</p>
-        <p class="doc-p">The original SANTA was one of the first widely recognized network vulnerability assessment tools. Rather than exploiting systems, its purpose was to help administrators identify weaknesses before attackers did.</p>
-        <p class="doc-p">K9X Santa follows the same philosophy for the era of agentic AI. Instead of scanning networks, it executes carefully crafted adversarial attacks against K9X Shield to validate that architectural security controls detect and intercept malicious inputs before they reach the intelligence layer.</p>
+        <div class="doc-h2">Why the Name "SATAN"?</div>
+        <p class="doc-p" style="margin-top:10px">The name K9X Satan is inspired by the pioneering <strong style="color:var(--text)">SATAN (Security Administrator Tool for Analyzing Networks)</strong>, released in 1995 by security researchers Dan Farmer and Wietse Venema.</p>
+        <p class="doc-p">The original SATAN was one of the first widely recognized network vulnerability assessment tools. Rather than exploiting systems, its purpose was to help administrators identify weaknesses before attackers did.</p>
+        <p class="doc-p">K9X Satan follows the same philosophy for the era of agentic AI. Instead of scanning networks, it executes carefully crafted adversarial attacks against K9X Shield to validate that architectural security controls detect and intercept malicious inputs before they reach the intelligence layer.</p>
         <p class="doc-p">The goal is not to break applications — it is to continuously strengthen the framework that protects them.</p>
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-          <span style="font-size:0.78rem;color:var(--dim)">The original SANTA shipped with <code style="color:var(--muted)">repent.pl</code> — run it and SANTA became SANTA. K9X Santa carries the tradition. Find the REPENT button in the sidebar.</span>
+          <span style="font-size:0.78rem;color:var(--dim)">The original SATAN shipped with <code style="color:var(--muted)">repent.pl</code> — run it and SATAN became SATAN. K9X Satan carries the tradition. Find the REPENT button in the sidebar.</span>
         </div>
       </div>
 
       <div class="card">
-        <div class="doc-h2">How Santa Works</div>
+        <div class="doc-h2">How Satan Works</div>
 
         <div class="doc-h4" style="margin-top:18px">The Philosophy</div>
-        <p class="doc-p">K9X Santa is an adversarial testing platform for K9X Shield.</p>
-        <p class="doc-p">Rather than generating random inputs, Santa executes carefully crafted attacks that target known classes of agentic AI vulnerabilities. Each attack is designed to validate that the framework's architectural security controls detect and intercept malicious payloads before they reach the intelligence layer.</p>
+        <p class="doc-p">K9X Satan is an adversarial testing platform for K9X Shield.</p>
+        <p class="doc-p">Rather than generating random inputs, Satan executes carefully crafted attacks that target known classes of agentic AI vulnerabilities. Each attack is designed to validate that the framework's architectural security controls detect and intercept malicious payloads before they reach the intelligence layer.</p>
         <p class="doc-p">The objective is not to demonstrate successful attacks — it's to prove that the framework's defensive architecture holds under real-world adversarial conditions.</p>
+      </div>
+
+      <div class="card" style="border-color:color-mix(in srgb,var(--green) 40%,var(--border))">
+        <div class="doc-h4" style="color:var(--green)">Guardian Governance — Required for Full Coverage</div>
+        <p class="doc-p" style="margin-top:8px">
+          Satan's post-agent gate depends on <strong style="color:var(--text)">IBM Granite Guardian</strong>
+          (<code>granite4.1-guardian:8b</code>). Without it, attacks that evade the Router Shield — such as
+          PII Exfiltration via compliance framing — reach the agent and their responses flow out unfiltered.
+        </p>
+        <p class="doc-p">Pull the model before running Satan:</p>
+        <pre class="sample" style="margin:8px 0">ollama pull granite4.1-guardian:8b</pre>
+        <p class="doc-p">Then enable it in <strong style="color:var(--text)">Setup → Governance → GuardianGovernance</strong>. The Setup tab shows the active provider. The chain log shows Guardian's pre/post verdict on every agent run.</p>
+        <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--green) 6%,transparent);border-left:3px solid var(--green);font-size:0.78rem;color:var(--muted);line-height:1.7">
+          Router Shield catches <strong style="color:var(--text)">known pattern attacks</strong> (injection markers, override codes) at ingress — zero LLM cost.
+          Guardian catches <strong style="color:var(--text)">semantic attacks</strong> (PII exfiltration, compliance framing, policy bypass) in the agent's response — one LLM call per agent.
+          Both layers are required. Neither replaces the other.
+        </div>
       </div>
 
       <div class="card">
         <div class="doc-h4">Attack Corpus</div>
-        <p class="doc-p">Santa includes a curated corpus of attack documents representing common agentic AI threat patterns. Each payload targets a specific vulnerability class implemented by K9X Shield.</p>
+        <p class="doc-p">Satan includes a curated corpus of attack documents representing common agentic AI threat patterns. Each payload targets a specific vulnerability class implemented by K9X Shield.</p>
         <ul class="doc-list">
           <li>Prompt Injection</li>
           <li>Goal Hijacking</li>
@@ -1468,22 +1564,53 @@ DocumentOrchestrator    extends BaseOrchestrator    (K9-AIF ABB)
 
       <div class="card">
         <div class="doc-h4">Understanding the Pipeline</div>
-        <p class="doc-p">Every document follows the same architectural execution path.</p>
+        <p class="doc-p">Every document follows the same three-layer defence path. Each layer has a different detection strategy and a different threat class it can stop.</p>
 
-        <div style="margin:16px 0;font-family:var(--font-mono);font-size:0.82rem;line-height:2.2;color:var(--muted)">
-          <div style="color:var(--red-bright);font-weight:600">SANTA</div>
-          <div style="color:var(--dim);padding-left:4px">↓</div>
-          <div style="color:var(--text)">Router</div>
-          <div style="color:var(--dim);padding-left:4px">↓</div>
-          <div style="color:var(--text)">Orchestrator</div>
-          <div style="color:var(--dim);padding-left:4px">↓</div>
-          <div style="color:var(--text)">Squad</div>
-          <div style="color:var(--dim);padding-left:4px">↓</div>
-          <div style="color:var(--text)">Agents</div>
+        <!-- Layer 1: Router -->
+        <div style="margin:18px 0 0 0;border-left:3px solid var(--red-mid);padding-left:14px">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--red-mid);letter-spacing:0.06em;margin-bottom:4px">LAYER 1 — ROUTER SHIELD (ingress)</div>
+          <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:6px">Pattern-based. Zero latency. Deterministic.</div>
+          <p class="doc-p" style="margin-bottom:6px">Runs a chain of vulnerability checks before the LLM ever sees the document. Each handler looks for a known attack <em>shape</em> — a structural fingerprint.</p>
+          <div style="font-size:0.78rem;color:var(--muted);line-height:1.9;font-family:var(--font-mono)">
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Oversized payloads — token flood attacks</div>
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Prompt injection — SYSTEM OVERRIDE, ignore all instructions</div>
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Field anomalies — EXEC-OVERRIDE codes, Priority: CRITICAL directives</div>
+            <div><span style="color:var(--yellow)">~ passes</span> &nbsp;Semantic attacks — compliance framing, regulatory impersonation</div>
+          </div>
+          <p class="doc-p" style="margin-top:8px;color:var(--dim)">The Router Shield cannot stop what it does not recognise. An attack written to look like a legitimate audit request has no injection markers, no override codes, no anomalous fields. It passes because it looks clean.</p>
         </div>
 
-        <p class="doc-p">Each layer performs architectural security validation before allowing execution to continue.</p>
-        <p class="doc-p">If any security handler blocks the request, processing immediately terminates and downstream components are never invoked.</p>
+        <!-- Layer 2: Orchestrator -->
+        <div style="margin:18px 0 0 0;border-left:3px solid var(--muted);padding-left:14px">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--muted);letter-spacing:0.06em;margin-bottom:4px">LAYER 2 — ORCHESTRATOR (routing)</div>
+          <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:6px">Structural validation. Schema and event-type enforcement.</div>
+          <p class="doc-p" style="margin-bottom:6px">Validates that the event is well-formed, the correlation ID is present, and the event type maps to a known Squad. Blocks malformed envelopes — not malicious content.</p>
+          <div style="font-size:0.78rem;color:var(--muted);line-height:1.9;font-family:var(--font-mono)">
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Unknown event types, missing required envelope fields</div>
+            <div><span style="color:var(--yellow)">~ passes</span> &nbsp;Well-formed payloads carrying malicious content</div>
+          </div>
+        </div>
+
+        <!-- Layer 3: Guardian -->
+        <div style="margin:18px 0 0 0;border-left:3px solid var(--green);padding-left:14px">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--green);letter-spacing:0.06em;margin-bottom:4px">LAYER 3 — GUARDIAN GOVERNANCE (egress)</div>
+          <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:6px">Semantic LLM-based. Evaluates what the agent is about to return.</div>
+          <p class="doc-p" style="margin-bottom:6px">Guardian runs after the agent completes its reasoning. It evaluates the agent's <em>output</em> — not the input — against policy. This is where semantically-crafted attacks are caught: a PII exfiltration attempt succeeds at reaching the agent, but Guardian intercepts the response before it leaves the pipeline.</p>
+          <div style="font-size:0.78rem;color:var(--muted);line-height:1.9;font-family:var(--font-mono)">
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Agent responses containing PII, SSNs, account numbers</div>
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Responses that bypass policy — claim approvals without validation</div>
+            <div><span style="color:var(--green)">✓ blocks</span> &nbsp;Semantic drift — agent reasoning that has been reframed by the payload</div>
+          </div>
+          <p class="doc-p" style="margin-top:8px;color:var(--dim)">Enable Guardian in the Setup tab to activate egress-layer defence. Without it, attacks that evade the pattern layer reach the agent and their responses flow out unfiltered.</p>
+        </div>
+
+        <!-- Why FINDING is correct -->
+        <div style="margin:20px 0 0 0;padding:12px 14px;background:color-mix(in srgb,var(--red-mid) 8%,transparent);border:1px solid color-mix(in srgb,var(--red-mid) 30%,transparent);border-radius:6px">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--red-mid);margin-bottom:6px">WHY FINDING IS NOT ALWAYS A FAILURE</div>
+          <p class="doc-p" style="margin:0;color:var(--dim)">A FINDING that reaches the agent layer with Guardian disabled confirms that the attack evaded Layer 1 pattern detection — which is the expected result for semantic attacks. That is not a framework failure; it is the gap Guardian is designed to close. A true framework failure is when Guardian is enabled and an attack still produces harmful output.</p>
+        </div>
+
+        <p class="doc-p" style="margin-top:14px">If any handler blocks the request, processing immediately terminates and downstream components are never invoked.</p>
       </div>
 
       <div class="card">
@@ -1551,7 +1678,7 @@ function showTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
   if (name === 'results') loadHistory();
-  if (name === 'setup')   { loadLLMConfig(); loadGovernanceConfig(); }
+  if (name === 'setup')   { loadLLMConfig(); loadGovernanceConfig(); loadDoclingConfig(); }
 }
 
 // ── STATE
@@ -1672,7 +1799,7 @@ function resetDepthDisplay() {
     const box = document.getElementById('node-' + n);
     box.className = 'depth-box';
     // restore original label text (clear any stop sign)
-    const labels = { satan: 'SANTA', router: 'ROUTER', orch: 'ORCHESTRATOR', squad: 'SQUAD', agent: 'AGENTS' };
+    const labels = { satan: 'SATAN', router: 'ROUTER', orch: 'ORCHESTRATOR', squad: 'SQUAD', agent: 'AGENTS' };
     box.textContent = labels[n];
   });
   [1, 2, 3, 4].forEach(i => {
@@ -1690,7 +1817,7 @@ function resetDepthDisplay() {
 
 function markThreat(nodeId) {
   const box = document.getElementById(nodeId);
-  const labels = { 'node-satan': 'SANTA', 'node-router': 'ROUTER', 'node-orch': 'ORCHESTRATOR', 'node-squad': 'SQUAD', 'node-agent': 'AGENTS' };
+  const labels = { 'node-satan': 'SATAN', 'node-router': 'ROUTER', 'node-orch': 'ORCHESTRATOR', 'node-squad': 'SQUAD', 'node-agent': 'AGENTS' };
   box.className = 'depth-box threat';
   box.innerHTML = `<span class="stop-glyph">🛑</span><span>${labels[nodeId]}</span>`;
 }
@@ -1859,11 +1986,54 @@ function showChainLog(result) {
   const egressSkipped  = blockedAt === 'router';
   const agentsSkipped  = blockedAt === 'router' || blockedAt === 'orchestrator';
 
+  const extractMethod    = result.extraction_method    || 'naive';
+  const extractCount     = result.extracted_count      || 0;
+  const doclingUsed      = result.docling_used         || false;
+  const extractFallback  = result.extraction_fallback  || false;
+  const extractError     = result.extraction_error     || '';
+  const extractSub       = doclingUsed
+    ? `Docling OCR · ${extractCount} fields extracted`
+    : extractFallback
+      ? `Naive regex (Docling fallback) · ${extractCount} fields extracted`
+      : `Naive regex · ${extractCount} fields extracted`;
+  const extractIcon      = doclingUsed
+    ? '<span style="color:var(--green);font-size:0.85rem">✓</span>'
+    : extractFallback
+      ? '<span style="color:var(--yellow);font-size:0.85rem">⚠</span>'
+      : '<span style="color:var(--muted);font-size:0.85rem">–</span>';
+  const extractBadgeClass = doclingUsed ? 'pass' : extractFallback ? 'flag' : 'skip';
+  const extractBadgeLabel = doclingUsed ? 'DOCLING' : extractFallback ? 'NAIVE·FALLBACK' : 'NAIVE';
+  const extractMsg        = extractFallback
+    ? `Docling failed — ${extractError || 'connection error'} — fell back to naive regex`
+    : `${extractCount} field${extractCount !== 1 ? 's' : ''} extracted via ${extractMethod}`;
+
+  const extractedFields = result.extracted_fields || {};
+  const fieldRows = Object.entries(extractedFields).slice(0, 8).map(([k, v]) =>
+    `<div class="chain-check" style="padding:4px 12px">
+       <span class="check-icon" style="color:var(--dim);font-size:0.7rem">·</span>
+       <span class="check-name" style="font-size:0.7rem;min-width:180px;color:var(--muted)">${escapeHtml(k)}</span>
+       <span class="check-msg" style="font-size:0.7rem;color:var(--text)">${escapeHtml(String(v).slice(0,80))}</span>
+     </div>`
+  ).join('');
+
   el.innerHTML = `
     <div class="chain-section">
       <div class="chain-section-header">
+        <span class="chain-section-title" style="color:var(--muted)">Pre-Shield — Document Extraction</span>
+        <span class="chain-section-sub">DoclingExtractor · ${extractSub}</span>
+      </div>
+      <div class="chain-check">
+        ${extractIcon}
+        <span class="check-name">DoclingExtractor</span>
+        <span class="check-status ${extractBadgeClass}">${extractBadgeLabel}</span>
+        <span class="check-msg ${extractFallback ? 'threat' : ''}">${escapeHtml(extractMsg)}</span>
+      </div>
+      ${fieldRows}
+    </div>
+    <div class="chain-section">
+      <div class="chain-section-header">
         <span class="chain-section-title">Router — Ingress Gate</span>
-        <span class="chain-section-sub">VulnerabilityChain · InputSizeCheck · PromptInjectionCheck</span>
+        <span class="chain-section-sub">VulnerabilityChain · InputSizeCheck · PromptInjectionCheck · FieldAnomalyCheck</span>
       </div>
       ${renderChecks(ingress, ingressSkipped)}
     </div>
@@ -2087,8 +2257,10 @@ const PROVIDER_DEFAULTS = {
 };
 
 function onProviderChange(val) {
-  const urlInput = document.getElementById('setup-base-url');
+  const urlInput  = document.getElementById('setup-base-url');
+  const keyGroup  = document.getElementById('api-key-group');
   if (PROVIDER_DEFAULTS[val]) urlInput.value = PROVIDER_DEFAULTS[val];
+  if (keyGroup) keyGroup.style.display = (val === 'openai-compatible') ? 'block' : 'none';
 }
 
 async function loadLLMConfig() {
@@ -2123,20 +2295,16 @@ function updateStatusCard(cfg) {
 }
 
 function updateHeaderPill(cfg) {
-  const dot  = document.getElementById('llm-dot');
-  const pill = document.getElementById('llm-pill');
-  if (!dot || !pill) return;
-  if (cfg.connected) {
-    dot.className  = 'llm-dot on';
-    pill.className = 'llm-pill connected';
-    pill.textContent = cfg.model
-      ? `${cfg.provider} · ${cfg.model}`
-      : `${cfg.provider} · connected`;
-  } else {
-    dot.className  = 'llm-dot off';
-    pill.className = 'llm-pill';
-    pill.textContent = 'not connected';
-  }
+  const dot   = document.getElementById('llm-dot');
+  const pills = ['llm-pill', 'llm-pill-hdr'].map(id => document.getElementById(id)).filter(Boolean);
+  if (dot) dot.className = cfg.connected ? 'llm-dot on' : 'llm-dot off';
+  const label = cfg.connected
+    ? (cfg.model ? `${cfg.provider} · ${cfg.model}` : `${cfg.provider} · connected`)
+    : 'not connected';
+  pills.forEach(p => {
+    p.className  = cfg.connected ? 'llm-pill connected' : 'llm-pill';
+    p.textContent = label;
+  });
 }
 
 async function connectAndLoad() {
@@ -2145,14 +2313,32 @@ async function connectAndLoad() {
   statusEl.textContent = 'Connecting…';
   statusEl.style.display = 'block';
 
-  const base_url = document.getElementById('setup-base-url').value.trim();
-  const provider = document.getElementById('setup-provider').value;
-  const model    = document.getElementById('setup-model').value.trim();
+  let base_url  = document.getElementById('setup-base-url').value.trim();
+  const provider  = document.getElementById('setup-provider').value;
+  const model     = document.getElementById('setup-model').value.trim();
+  const api_key   = document.getElementById('setup-api-key')?.value?.trim() || '';
 
+  // If URL field is empty, pull the server's current value (loaded from env vars)
+  if (!base_url) {
+    try {
+      const cur = await fetch('/api/llm/config');
+      const cfg = await cur.json();
+      base_url  = cfg.base_url || '';
+      if (base_url) document.getElementById('setup-base-url').value = base_url;
+    } catch {}
+  }
+
+  if (!base_url) {
+    statusEl.className   = 'setup-status err';
+    statusEl.textContent = '✗ No URL — set OLLAMA_BASE_URL env var or enter URL above';
+    return;
+  }
+
+  // Only POST if we have a real URL — never overwrite server config with empty string
   await fetch('/api/llm/config', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({provider, base_url, model}),
+    body: JSON.stringify({provider, base_url, model, api_key}),
   });
 
   try {
@@ -2162,7 +2348,6 @@ async function connectAndLoad() {
       statusEl.className   = 'setup-status ok';
       statusEl.textContent = `✓ Connected to ${base_url}`;
       loadLLMConfig();
-      await loadModels();
     } else {
       statusEl.className   = 'setup-status err';
       statusEl.textContent = `✗ Cannot connect to ${base_url}`;
@@ -2179,40 +2364,7 @@ async function testConnection() {
 }
 
 async function loadModels() {
-  const base_url = document.getElementById('setup-base-url').value.trim();
-  const provider = document.getElementById('setup-provider').value;
-  const model    = document.getElementById('setup-model').value.trim();
-
-  await fetch('/api/llm/config', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({provider, base_url, model}),
-  });
-
-  const listEl = document.getElementById('model-list');
-  listEl.style.display = 'block';
-  listEl.innerHTML = '<div class="model-item" style="color:var(--dim)">Loading…</div>';
-
-  try {
-    const resp = await fetch('/api/llm/models');
-    if (!resp.ok) {
-      const err = await resp.json();
-      listEl.innerHTML = `<div class="model-item" style="color:var(--red-glow)">✗ ${err.detail || 'Could not load models'}</div>`;
-      return;
-    }
-    const data = await resp.json();
-    const models = data.models || [];
-    if (!models.length) {
-      listEl.innerHTML = '<div class="model-item" style="color:var(--dim)">No models found</div>';
-      return;
-    }
-    const currentModel = document.getElementById('setup-model').value.trim();
-    listEl.innerHTML = models.map(m => `
-      <div class="model-item${m === currentModel ? ' selected' : ''}" onclick="selectModel('${m}')">${m}</div>
-    `).join('');
-  } catch (e) {
-    listEl.innerHTML = `<div class="model-item" style="color:var(--red-glow)">✗ ${e}</div>`;
-  }
+  // Model list removed from Setup — type model name directly in the Model field.
 }
 
 function selectModel(name) {
@@ -2245,6 +2397,106 @@ async function saveConfig() {
     saveEl.className   = 'setup-status err';
     saveEl.textContent = `✗ ${e}`;
     saveEl.style.display = 'inline-block';
+  }
+}
+
+async function loadDoclingConfig() {
+  try {
+    const resp = await fetch('/api/docling/config');
+    const cfg  = await resp.json();
+    const sel   = document.getElementById('setup-docling-mode');
+    const urlEl = document.getElementById('setup-docling-url');
+    if (sel) {
+      sel.value = cfg.enabled ? 'docling' : 'naive';
+      toggleDoclingUrl(sel.value);
+    }
+    if (urlEl && cfg.url) urlEl.value = cfg.url;
+    _updateOcrPill(cfg.enabled, cfg.connected);
+  } catch {}
+}
+
+function _updateOcrPill(enabled, connected) {
+  const pills = ['ocr-pill', 'ocr-pill-hdr'].map(id => document.getElementById(id)).filter(Boolean);
+  const label = connected ? 'OCR: connected' : 'OCR: on';
+  pills.forEach(p => {
+    if (!enabled) { p.style.display = 'none'; return; }
+    p.style.display  = 'inline-block';
+    p.textContent    = label;
+  });
+}
+
+async function connectDocling() {
+  const statusEl = document.getElementById('setup-docling-status');
+  const url      = document.getElementById('setup-docling-url')?.value?.trim() || '';
+
+  // Save config first
+  await saveDoclingConfig();
+
+  statusEl.className   = 'setup-status';
+  statusEl.textContent = 'Testing connection…';
+  statusEl.style.display = 'block';
+
+  try {
+    const resp = await fetch('/api/docling/test', {method: 'POST'});
+    const data = await resp.json();
+    if (data.connected) {
+      statusEl.className   = 'setup-status ok';
+      statusEl.textContent = `✓ Docling reachable at ${data.url}`;
+      _updateOcrPill(true, true);
+    } else {
+      statusEl.className   = 'setup-status err';
+      statusEl.textContent = `✗ Cannot reach Docling: ${data.error || 'no response'}`;
+      _updateOcrPill(true, false);
+    }
+  } catch (e) {
+    statusEl.className   = 'setup-status err';
+    statusEl.textContent = `✗ ${e}`;
+  }
+}
+
+function toggleDoclingUrl(mode) {
+  const grp = document.getElementById('docling-url-group');
+  if (grp) grp.style.display = mode === 'docling' ? 'block' : 'none';
+}
+
+async function saveDoclingConfig() {
+  const statusEl = document.getElementById('setup-docling-status');
+  const mode     = document.getElementById('setup-docling-mode')?.value || 'naive';
+  let   url      = document.getElementById('setup-docling-url')?.value?.trim() || '';
+  const enabled  = mode === 'docling';
+
+  // If URL field is empty, use server's env-var-composed URL
+  if (enabled && !url) {
+    try {
+      const cur = await fetch('/api/docling/config');
+      const cfg = await cur.json();
+      url = cfg.url || '';
+      const urlEl = document.getElementById('setup-docling-url');
+      if (urlEl && url) urlEl.value = url;
+    } catch {}
+  }
+
+  try {
+    const resp = await fetch('/api/docling/config', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({enabled, url, timeout: 180}),
+    });
+    const cfg = await resp.json();
+    if (statusEl) {
+      statusEl.className   = 'setup-status ok';
+      statusEl.textContent = cfg.enabled
+        ? `✓ Docling enabled · ${cfg.url}`
+        : '✓ Naive extraction active (no dependencies)';
+      statusEl.style.display = 'block';
+    }
+    _updateOcrPill(cfg.enabled, false);  // reset connected on save
+  } catch (e) {
+    if (statusEl) {
+      statusEl.className   = 'setup-status err';
+      statusEl.textContent = `✗ ${e}`;
+      statusEl.style.display = 'block';
+    }
   }
 }
 
@@ -2318,6 +2570,7 @@ async function callRepent() {
 init();
 loadLLMConfig();
 loadGovernanceConfig();
+loadDoclingConfig();
 loadRepentState();
 </script>
 </body>

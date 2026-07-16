@@ -45,3 +45,10 @@ governance:
   provider: noop            # noop | guardian — override via /api/governance/config at runtime
   guardian_model: "granite4.1-guardian:8b"
   timeout: 30               # seconds per Guardian call
+
+docling:
+  enabled: false            # true requires: pip install docling (or running Docling server)
+  # url is composed from DOCLING_URL + DOCLING_PORT env vars (see extractor.py).
+  # Full URL:  DOCLING_URL=http://host:5001
+  # Split:     DOCLING_URL=host  DOCLING_PORT=5001
+  timeout: 180              # seconds — OCR on large PDFs can take time

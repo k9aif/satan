@@ -1,5 +1,5 @@
 #!/bin/bash
-# K9x Santa — start dashboard + fake search server
+# K9x Satan — start dashboard + fake search server
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -19,15 +19,15 @@ echo ""
 VENV_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)/k9-aif-framework/.venv"
 
 if [ ! -d "$VENV_DIR" ]; then
-  echo "[Santa] ERROR: shared venv not found at $VENV_DIR"
+  echo "[Satan] ERROR: shared venv not found at $VENV_DIR"
   echo "  Run: cd ../../k9-aif-framework && python3.11 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt"
   exit 1
 fi
 
 source "$VENV_DIR/bin/activate"
 
-# Install Santa deps into shared venv if needed
-pip install -q fastapi uvicorn requests python-multipart
+# Install Satan deps into shared venv if needed
+pip install -q fastapi uvicorn requests python-multipart python-dotenv
 
 # Load .env if present
 if [ -f "$SCRIPT_DIR/.env" ]; then
@@ -46,7 +46,7 @@ python -m k9x_satan.fake_search.server &
 FAKE_PID=$!
 sleep 1
 
-echo "[+] Santa dashboard → http://localhost:6660"
+echo "[+] Satan dashboard → http://localhost:6660"
 echo "[+] Target pipeline wired with K9X Shield"
 echo ""
 python -m uvicorn k9x_satan.app:app --host 0.0.0.0 --port 6660 --reload

@@ -31,6 +31,11 @@ REPENT = [
     ("k9x Satan",  "k9x Santa"),
     ("SATAN",      "SANTA"),
     ("Satan",      "Santa"),
+    # Acronym expansion — S·A·T·A·N → S·A·N·T·A
+    (
+        "Security &nbsp;\xb7&nbsp; Analysis &nbsp;\xb7&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;\xb7&nbsp; Networks",
+        "Security &nbsp;\xb7&nbsp; Analysis &nbsp;\xb7&nbsp; Networks &nbsp;\xb7&nbsp; Testing &nbsp;\xb7&nbsp; Agentic",
+    ),
 ]
 
 RELAPSE = [(b, a) for a, b in REPENT]
