@@ -1,4 +1,4 @@
-"""K9x Satan — dashboard backend + target pipeline host."""
+"""K9x Santa — dashboard backend + target pipeline host."""
 
 import logging
 import os
@@ -12,17 +12,21 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("k9x_satan.app")
 
-app = FastAPI(title="K9x Satan", version="1.0.0")
+app = FastAPI(title="K9x Santa", version="1.0.0")
 
 _run_history: list = []
 
 # ── LLM config (in-memory, persists per server session) ──────────────────────
 
 _llm_config = {
-    "provider":  os.environ.get("SATAN_LLM_PROVIDER", "ollama"),
-    "base_url":  os.environ.get("SATAN_LLM_BASE_URL", "http://localhost:11434"),
-    "model":     os.environ.get("SATAN_LLM_MODEL", ""),
+    "provider":  os.environ.get("SANTA_LLM_PROVIDER", "ollama"),
+    "base_url":  os.environ.get("SANTA_LLM_BASE_URL", "http://localhost:11434"),
+    "model":     os.environ.get("SANTA_LLM_MODEL", ""),
     "connected": False,
+}
+
+_governance_config = {
+    "provider": os.environ.get("SANTA_GOVERNANCE", "noop"),  # noop | guardian
 }
 
 # ── Pre-built poisonous document corpus ──────────────────────────────────────
@@ -203,14 +207,19 @@ async def fire(
         "correlation_id": f"satan-{source}",
     }
 
-    result = run_pipeline(payload)
-    result["source"]        = source
-    result["document_size"] = len(document_text)
-    result["document_text"] = document_text
-    result["is_evil"]       = CORPUS[corpus_key]["evil"] if corpus_key and corpus_key in CORPUS else True
+    from k9x_satan.target.pipeline import load_config
+    cfg = load_config()
+    cfg.setdefault("governance", {})["provider"] = _governance_config["provider"]
+
+    result = run_pipeline(payload, config=cfg)
+    result["source"]              = source
+    result["document_size"]       = len(document_text)
+    result["document_text"]       = document_text
+    result["is_evil"]             = CORPUS[corpus_key]["evil"] if corpus_key and corpus_key in CORPUS else True
+    result["governance_provider"] = _governance_config["provider"]
 
     _run_history.append(result)
-    log.info("[Satan] fire result: status=%s depth=%s", result["status"], result["penetration_depth"])
+    log.info("[Santa] fire result: status=%s depth=%s", result["status"], result["penetration_depth"])
     return result
 
 
@@ -249,7 +258,7 @@ def set_llm_config(req: LLMConfigRequest):
     _llm_config["base_url"]  = req.base_url.rstrip("/")
     _llm_config["model"]     = req.model
     _llm_config["connected"] = False
-    log.info("[Satan] LLM config updated: provider=%s base_url=%s model=%s",
+    log.info("[Santa] LLM config updated: provider=%s base_url=%s model=%s",
              req.provider, req.base_url, req.model)
     return _llm_config
 
@@ -290,7 +299,7 @@ def test_llm_connection():
                 r = requests.get(f"{base_url}{path}", timeout=4)
                 if r.ok:
                     _llm_config["connected"] = True
-                    log.info("[Satan] LLM connection OK at %s%s", base_url, path)
+                    log.info("[Santa] LLM connection OK at %s%s", base_url, path)
                     return {"connected": True, "base_url": base_url}
             except Exception:
                 pass
@@ -299,6 +308,41 @@ def test_llm_connection():
     except Exception as exc:
         _llm_config["connected"] = False
         return {"connected": False, "error": str(exc)}
+
+
+# ── Governance Config API ─────────────────────────────────────────────────────
+
+class GovernanceConfigRequest(BaseModel):
+    provider: str  # noop | guardian
+
+@app.get("/api/governance/config")
+def get_governance_config():
+    return _governance_config
+
+@app.post("/api/governance/config")
+def set_governance_config(req: GovernanceConfigRequest):
+    if req.provider not in ("noop", "guardian"):
+        raise HTTPException(status_code=400, detail="provider must be noop or guardian")
+    _governance_config["provider"] = req.provider
+    log.info("[Santa] governance provider set to %s", req.provider)
+    return _governance_config
+
+
+# ── Repent API ────────────────────────────────────────────────────────────────
+
+@app.get("/api/repent/state")
+def repent_state():
+    """Tell the UI whether we are currently in SANTA mode."""
+    from k9x_satan.repent import _is_repented
+    return {"repented": _is_repented()}
+
+@app.post("/api/repent")
+def repent(undo: bool = False):
+    """Run repent.py — rename SANTA → SANTA (or back). Reloading the page applies the change."""
+    from k9x_satan.repent import run as repent_run
+    result = repent_run(undo=undo)
+    log.info("[Santa] repent called: undo=%s changes=%d", undo, result["changes"])
+    return result
 
 
 if __name__ == "__main__":

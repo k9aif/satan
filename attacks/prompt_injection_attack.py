@@ -1,7 +1,14 @@
 """PromptInjectionAttack — embeds malicious instructions in document content."""
 
+import os
+import sys
 import requests
-from k9x_satan.attacks.base_attack import (
+
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "k9-aif-framework"))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+
+from k9_aif_abb.k9_security.attacks.base_attack import (
     BaseAttack, AttackResult, AttackOutcome, AttackSurface, PenetrationDepth
 )
 

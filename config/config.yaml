@@ -1,0 +1,47 @@
+# K9x Satan — configuration
+# SBB solution config for the red-team harness.
+# Follows the same structure as k9-aif-framework SBB configs.
+
+k9_env: development   # Satan is a test harness — NoopGovernance is permitted
+
+inference:
+  llm_factory:
+    models:
+      general:
+        model: "${SATAN_LLM_MODEL:-llama3.2:1b}"
+        temperature: 0.3
+        max_tokens: 2048
+      reasoning:
+        model: "${SATAN_LLM_MODEL:-granite3-dense:2b}"
+        temperature: 0.2
+        max_tokens: 4096
+
+  model_catalog:
+    default_model: general
+    models:
+      general:
+        provider: ollama
+        llm_ref: general
+        capabilities: [general, extraction, summarization]
+        latency_tier: realtime
+        cost_tier: minimal
+      reasoning:
+        provider: ollama
+        llm_ref: reasoning
+        capabilities: [reasoning, analysis]
+        latency_tier: interactive
+        cost_tier: standard
+
+  router:
+    type: default
+    default_model: general
+    persistence:
+      enabled: false   # no DB needed for red-team runs
+
+ollama:
+  base_url: "${OLLAMA_BASE_URL:-http://localhost:11434}"
+
+governance:
+  provider: noop            # noop | guardian — override via /api/governance/config at runtime
+  guardian_model: "granite4.1-guardian:8b"
+  timeout: 30               # seconds per Guardian call

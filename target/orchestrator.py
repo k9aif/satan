@@ -21,6 +21,18 @@ from k9_aif_abb.k9_security.vulnerability.checks.semantic_drift_check import Sem
 from k9_aif_abb.k9_security.vulnerability.checks.execution_guard_check import ExecutionGuardCheck
 from k9x_satan.target.squad import DocumentProcessingSquad
 
+
+def _serialize_chain(chain_result) -> list:
+    return [
+        {
+            "name":     r.check_name,
+            "status":   r.status.value,
+            "message":  r.message,
+            "severity": getattr(r, "severity", "info"),
+        }
+        for r in chain_result.results
+    ]
+
 log = logging.getLogger("k9x_satan.target")
 
 
@@ -63,6 +75,8 @@ class DocumentOrchestrator(BaseOrchestrator):
         egress_chain  = self._build_egress_chain()
         egress_result = egress_chain.run({**payload, **squad_output})
 
+        egress_checks = _serialize_chain(egress_result)
+
         if egress_result.blocked:
             log.warning("[DocumentOrchestrator] BLOCKED by %s", egress_result.blocked_by)
             blocked_check = next((r for r in egress_result.results if r.blocked), None)
@@ -76,14 +90,17 @@ class DocumentOrchestrator(BaseOrchestrator):
                 "squad_reached":     True,
                 "agents_reached":    agents_reached,
                 "shield_held":       True,
+                "egress_checks":     egress_checks,
             }
 
         log.info("[DocumentOrchestrator] pipeline complete — no threats at egress")
+        depth = "agent" if agents_reached else "orchestrator"
         return {
             "status":            "completed",
-            "penetration_depth": "agent",
+            "penetration_depth": depth,
             "squad_reached":     True,
             "agents_reached":    agents_reached,
             "squad_result":      squad_output,
             "shield_held":       False,
+            "egress_checks":     egress_checks,
         }

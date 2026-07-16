@@ -16,13 +16,27 @@ from k9_aif_abb.k9_squad.base_squad import BaseSquad
 from k9x_satan.target.agents import DocumentExtractionAgent, AuditAgent
 
 
+def _make_governance(config: dict):
+    """Return the configured governance instance, or None for NoopGovernance default."""
+    provider = config.get("governance", {}).get("provider", "noop")
+    if provider == "guardian":
+        from k9x_satan.target.guardian_governance import GuardianGovernance
+        return GuardianGovernance(config=config)
+    return None  # BaseAgent.require_governance → NoopGovernance (dev env)
+
+
 class DocumentProcessingSquad(BaseSquad):
     """SBB: Coordinates document extraction and audit agents."""
 
     def __init__(self, config=None):
+        cfg = config or {}
+        gov = _make_governance(cfg)
         super().__init__(
             squad_id="DocumentProcessingSquad",
-            agents=[DocumentExtractionAgent(config=config or {}), AuditAgent(config=config or {})],
+            agents=[
+                DocumentExtractionAgent(config=cfg, governance=gov),
+                AuditAgent(config=cfg, governance=gov),
+            ],
         )
         self.description = "Extract and audit a document payload."
         self.flow = [

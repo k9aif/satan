@@ -45,6 +45,8 @@ class DocumentRouter(BaseRouter):
         ingress        = self._build_ingress_chain()
         ingress_result = ingress.run(payload)
 
+        ingress_checks = _serialize_chain(ingress_result)
+
         if ingress_result.blocked:
             log.warning("[DocumentRouter] BLOCKED by %s", ingress_result.blocked_by)
             blocked_check = next((r for r in ingress_result.results if r.blocked), None)
@@ -58,6 +60,8 @@ class DocumentRouter(BaseRouter):
                 "squad_reached":     False,
                 "agents_reached":    [],
                 "shield_held":       True,
+                "ingress_checks":    ingress_checks,
+                "egress_checks":     [],
             }
 
         flagged_by = [r.check_name for r in ingress_result.results if r.status.value == "flag"]
@@ -69,4 +73,18 @@ class DocumentRouter(BaseRouter):
             raise RuntimeError("[DocumentRouter] No orchestrator registered for 'document_processing'")
 
         log.info("[DocumentRouter] forwarding to DocumentOrchestrator")
-        return orchestrator.execute_flow(payload)
+        result = orchestrator.execute_flow(payload)
+        result["ingress_checks"] = ingress_checks
+        return result
+
+
+def _serialize_chain(chain_result) -> list:
+    return [
+        {
+            "name":     r.check_name,
+            "status":   r.status.value,
+            "message":  r.message,
+            "severity": getattr(r, "severity", "info"),
+        }
+        for r in chain_result.results
+    ]

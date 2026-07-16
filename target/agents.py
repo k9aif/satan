@@ -1,50 +1,176 @@
 """
 K9x Satan — Target Agent SBBs
 
-Stub agents that extend BaseAgent. No LLM — the test is about Shield,
-not inference. Real SBBs would call llm_invoke here.
+Real SBBs extending BaseAgent with:
+  - enforce_governance()        pre-flight check
+  - governance.pre_process()    sanitise/validate input before LLM
+  - llm_invoke()                actual LLM call (falls back gracefully if unavailable)
+  - governance.post_process()   validate/redact output after LLM
+  - publish_event()             audit trail
+
+LLM calls will fail gracefully if no inference config is wired — Satan's
+primary test is the Shield chain, not inference quality.
 """
 
 import logging
 import os
 import sys
+from typing import Any, Dict, Optional
 
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "k9-aif-framework"))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from k9_aif_abb.k9_core.agent.base_agent import BaseAgent
+from k9_aif_abb.k9_inference.models.inference_request import InferenceRequest
+from k9_aif_abb.k9_utils.llm_invoke import llm_invoke
 
 log = logging.getLogger("k9x_satan.target")
 
 
+def _pre(agent: BaseAgent, payload: dict) -> dict:
+    """Sync wrapper for governance.pre_process — avoids asyncio complexity."""
+    return agent.governance.pre_process(payload, agent._governance_context())
+
+
+def _post(agent: BaseAgent, result: dict) -> dict:
+    """Sync wrapper for governance.post_process — avoids asyncio complexity."""
+    return agent.governance.post_process(result, agent._governance_context())
+
+
 class DocumentExtractionAgent(BaseAgent):
-    """SBB: Extracts structured content from document text."""
+    """
+    SBB: Extracts structured content from document text.
+
+    Pre-governance:  sanitise input payload
+    LLM:             extract fields, detect anomalies in the text
+    Post-governance: validate/redact output before returning to squad
+    """
 
     layer = "Satan.Target DocumentExtractionAgent SBB"
 
-    def execute(self, payload: dict) -> dict:
+    def execute(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        # ── 1. governance pre-flight ──────────────────────────────────────────
+        self.enforce_governance()
+        payload = _pre(self, payload)
+
         text = payload.get("document_text", "")
         log.info("[DocumentExtractionAgent] processing %d chars", len(text))
-        return {
+
+        # ── 2. LLM call ───────────────────────────────────────────────────────
+        llm_output = None
+        model_used = None
+        try:
+            role = self.config.get("role", "You are a document extraction agent.")
+            goal = self.config.get("goal", "Extract key fields and flag anomalies.")
+            prompt = (
+                f"{role}\n{goal}\n\n"
+                f"Document:\n{text[:2000]}\n\n"
+                f"Extract: claimant, policy_number, amount, date, anomalies."
+            )
+            req = InferenceRequest(
+                prompt=prompt,
+                task_type=self.config.get("model", "general"),
+                metadata={"agent": self.layer},
+            )
+            resp     = llm_invoke(self.config, req)
+            llm_output = resp.output.strip()
+            model_used = resp.model_alias
+            log.info("[DocumentExtractionAgent] LLM responded (%d chars)", len(llm_output))
+        except Exception as exc:
+            log.warning("[DocumentExtractionAgent] LLM unavailable: %s — using stub extraction", exc)
+            llm_output = f"[stub] extracted first 200 chars: {text[:200]}"
+            model_used = "unavailable"
+
+        result = {
             "agent":      "DocumentExtractionAgent",
-            "extracted":  text[:200],
+            "extracted":  llm_output,
             "char_count": len(text),
+            "model_used": model_used,
             "status":     "extracted",
         }
 
+        # ── 3. governance post-process ────────────────────────────────────────
+        result = _post(self, result)
+
+        # ── 4. audit trail ────────────────────────────────────────────────────
+        self.publish_event({
+            "type":       "DocumentExtractionCompleted",
+            "agent":      self.layer,
+            "char_count": len(text),
+            "model_used": model_used,
+        })
+
+        return result
+
 
 class AuditAgent(BaseAgent):
-    """SBB: Audits the extraction result for completeness and integrity."""
+    """
+    SBB: Audits the extraction result for completeness and integrity.
+
+    Pre-governance:  sanitise input payload
+    LLM:             assess quality of extraction, flag compliance gaps
+    Post-governance: validate/redact output before returning to squad
+    """
 
     layer = "Satan.Target AuditAgent SBB"
 
-    def execute(self, payload: dict) -> dict:
+    def execute(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        # ── 1. governance pre-flight ──────────────────────────────────────────
+        self.enforce_governance()
+        payload = _pre(self, payload)
+
         extracted = payload.get("DocumentExtractionAgent", {})
-        log.info("[AuditAgent] auditing extraction result")
-        return {
+        extracted_text = extracted.get("extracted", "")
+        char_count     = extracted.get("char_count", 0)
+        log.info("[AuditAgent] auditing extraction — %d chars reviewed", char_count)
+
+        # ── 2. LLM call ───────────────────────────────────────────────────────
+        llm_output  = None
+        model_used  = None
+        audit_status = "clean"
+        try:
+            role = self.config.get("role", "You are a compliance audit agent.")
+            goal = self.config.get("goal", "Verify extraction completeness and flag compliance gaps.")
+            prompt = (
+                f"{role}\n{goal}\n\n"
+                f"Extraction result:\n{extracted_text}\n\n"
+                f"Is the extraction complete? Any compliance gaps or missing required fields?"
+            )
+            req = InferenceRequest(
+                prompt=prompt,
+                task_type=self.config.get("model", "general"),
+                metadata={"agent": self.layer},
+            )
+            resp       = llm_invoke(self.config, req)
+            llm_output = resp.output.strip()
+            model_used = resp.model_alias
+            audit_status = "reviewed"
+            log.info("[AuditAgent] LLM responded (%d chars)", len(llm_output))
+        except Exception as exc:
+            log.warning("[AuditAgent] LLM unavailable: %s — stub audit", exc)
+            llm_output = "[stub] audit complete — no LLM available"
+            model_used = "unavailable"
+            audit_status = "stub"
+
+        result = {
             "agent":          "AuditAgent",
-            "audit_status":   "clean",
-            "chars_reviewed": extracted.get("char_count", 0),
+            "audit_status":   audit_status,
+            "audit_notes":    llm_output,
+            "chars_reviewed": char_count,
+            "model_used":     model_used,
             "status":         "audited",
         }
+
+        # ── 3. governance post-process ────────────────────────────────────────
+        result = _post(self, result)
+
+        # ── 4. audit trail ────────────────────────────────────────────────────
+        self.publish_event({
+            "type":         "AuditCompleted",
+            "agent":        self.layer,
+            "audit_status": audit_status,
+            "model_used":   model_used,
+        })
+
+        return result
