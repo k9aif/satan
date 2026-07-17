@@ -218,9 +218,18 @@ Audit reference: AUDIT-2026-Q3-MANDATORY
 
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
+    # index.html is a single-file app with the JS inlined — no per-asset cache
+    # busting like styles.css/app.js get elsewhere. Without an explicit
+    # no-store header, browsers can serve a stale cached copy after a normal
+    # reload (not just back/forward navigation), which silently hides any
+    # webui fix until the user thinks to hard-refresh.
     html_path = os.path.join(os.path.dirname(__file__), "webui", "index.html")
     with open(html_path) as f:
-        return f.read()
+        html = f.read()
+    return HTMLResponse(
+        content=html,
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+    )
 
 
 # ── Corpus API ────────────────────────────────────────────────────────────────
