@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "k9x-satan"
-version = "0.1.1"
+version = "0.1.2"
 description = "K9X Satan — adversarial red-team harness for K9-AIF. Fires structured attacks at a live K9-AIF pipeline and proves K9X Shield containment."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 
 dependencies = [
-    "k9-aif>=1.8.1",
+    "k9-aif>=1.8.2",
     "fastapi>=0.111.0",
     "uvicorn[standard]>=0.29.0",
     "pydantic>=2.0",
