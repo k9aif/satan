@@ -247,7 +247,32 @@ async def fire(
 
     if file:
         content = await file.read()
-        document_text = content.decode("utf-8", errors="replace")
+        ext = os.path.splitext(file.filename or "")[1].lower()
+
+        if ext in (".txt", ".md", ""):
+            # Genuinely plain text — safe to decode directly.
+            document_text = content.decode("utf-8", errors="replace")
+        elif ext in (".pdf", ".docx"):
+            # Binary formats have no safe text fallback — naively decoding
+            # PDF/DOCX bytes as UTF-8 produces garbage (compressed streams,
+            # binary object references misread as characters). Docling is
+            # required, not optional, for these — reject cleanly rather than
+            # silently processing corrupted content.
+            if not _docling_config["enabled"]:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"{ext} files require Docling OCR — enable it in "
+                           f"Setup → Document Extraction before uploading this file type.",
+                )
+            from k9x_satan.target.extractor import DoclingExtractor
+            extractor = DoclingExtractor(config={"docling": _docling_config})
+            try:
+                document_text = extractor.convert_upload_to_text(content, file.filename)
+            except Exception as exc:
+                raise HTTPException(status_code=502, detail=f"Docling conversion failed: {exc}")
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {ext}")
+
         source = f"upload:{file.filename}"
     elif corpus_key and corpus_key in CORPUS:
         document_text = CORPUS[corpus_key]["text"]

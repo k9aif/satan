@@ -61,6 +61,28 @@ class DoclingExtractor:
 
     # ── public API ────────────────────────────────────────────────────────────
 
+    def convert_upload_to_text(self, raw_bytes: bytes, filename: str) -> str:
+        """
+        Convert a raw binary upload (PDF, DOCX, ...) to clean text via Docling.
+
+        Binary formats have no safe fallback — naively decoding PDF/DOCX bytes
+        as UTF-8 text produces garbage (this is what app.py did before this
+        method existed). Docling is required for these formats; this method
+        raises RuntimeError rather than silently returning corrupted text.
+        """
+        if not self._enabled:
+            raise RuntimeError(
+                "Docling is not enabled — this file type requires OCR/conversion, "
+                "not a plain-text fallback. Enable it in Setup → Document Extraction."
+            )
+        try:
+            return self._docling_library_convert(raw_bytes, filename)
+        except ImportError:
+            pass
+        if self._url:
+            return self._docling_endpoint_convert(raw_bytes, filename)
+        raise RuntimeError("docling not installed and no endpoint configured")
+
     def enrich(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Return a new payload dict enriched with field extraction results."""
         text = payload.get("document_text", "")
@@ -212,6 +234,71 @@ class DoclingExtractor:
             if "text" in data:
                 return self._naive_extract(str(data["text"]))
         return self._naive_extract(str(data))
+
+    def _extract_response_text(self, data: Any) -> str:
+        """Pull the converted markdown/text out of any docling-serve response shape."""
+        if isinstance(data, dict):
+            doc = data.get("document", {})
+            if isinstance(doc, dict):
+                for key in ("md_content", "text", "content"):
+                    if key in doc:
+                        return str(doc[key])
+            if "text" in data:
+                return str(data["text"])
+        return str(data)
+
+    # ── binary upload conversion (PDF, DOCX, ...) — real OCR/parsing, not a
+    # naive-text fallback. Called directly from app.py before document_text
+    # exists at all, so the raw bytes never get corrupted by a premature
+    # UTF-8 decode. ─────────────────────────────────────────────────────────
+
+    def _docling_library_convert(self, raw_bytes: bytes, filename: str) -> str:
+        """Use the installed docling package to convert a real binary file."""
+        import tempfile
+        from docling.document_converter import DocumentConverter  # type: ignore
+
+        suffix = os.path.splitext(filename)[1] or ".bin"
+        with tempfile.NamedTemporaryFile(suffix=suffix, mode="wb", delete=False) as f:
+            f.write(raw_bytes)
+            tmp = f.name
+
+        try:
+            converter = DocumentConverter()
+            result    = converter.convert(tmp)
+            return result.document.export_to_markdown()
+        finally:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+
+    def _docling_endpoint_convert(self, raw_bytes: bytes, filename: str) -> str:
+        """
+        Send the actual file bytes to docling-serve's /v1/convert/file with
+        the real filename/content-type — unlike _docling_endpoint() (which
+        only ever handles already-decoded text and relabels it as .md), this
+        sends genuine binary content so Docling can actually OCR/parse it.
+        """
+        import io, mimetypes, requests  # type: ignore
+        base = self._url.rstrip("/")
+
+        content_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+        upload_url = f"{base}/v1/convert/file"
+        try:
+            resp = requests.post(
+                upload_url,
+                files={"files": (filename, io.BytesIO(raw_bytes), content_type)},
+                timeout=self._timeout,
+            )
+            resp.raise_for_status()
+        except requests.exceptions.ConnectionError as exc:
+            raise RuntimeError(f"Cannot connect to {base}: {exc}") from exc
+        except requests.exceptions.Timeout as exc:
+            raise RuntimeError(f"Timeout reaching {base}") from exc
+        except requests.exceptions.HTTPError as exc:
+            raise RuntimeError(f"Docling rejected {filename}: {exc}") from exc
+
+        return self._extract_response_text(resp.json())
 
 
 def _normalize_key(raw: str) -> str:
