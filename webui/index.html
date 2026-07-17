@@ -2132,6 +2132,18 @@ async function fireAttack() {
   try {
     const resp   = await fetch('/api/fire', { method: 'POST', body: fd });
     const result = await resp.json();
+    if (!resp.ok) {
+      // Backend rejected the request before it ever reached the pipeline
+      // (e.g. "PDF requires Docling OCR") — result is {"detail": "..."}
+      // shaped, not a real pipeline result. Surface the actual reason
+      // instead of falling through to a silent "unknown" status, and don't
+      // record it to history/stats since nothing was actually fired.
+      showDepthResult({ status: 'rejected', penetration_depth: 'unknown', error: result.detail || `HTTP ${resp.status}` });
+      btn.classList.remove('firing');
+      btn.disabled = false;
+      btn.textContent = '⚡ Fire';
+      return;
+    }
     showDepthResult(result);
     updateLastResult(result);
     _history.unshift(result);
@@ -2243,6 +2255,12 @@ function showDepthResult(result) {
   } else if (status === 'completed') {
     vb.className   = 'verdict-box finding';
     vb.textContent = '✗ FINDING — attack reached agent layer. Shield did not contain this payload.';
+  } else if (status === 'rejected') {
+    vb.className   = 'verdict-box flagged';
+    vb.textContent = `⚠ REJECTED — ${result.error || 'the request was not accepted'}`;
+  } else if (status === 'error') {
+    vb.className   = 'verdict-box flagged';
+    vb.textContent = `⚠ ERROR — ${result.error || 'request failed'}`;
   } else {
     vb.className   = 'verdict-box flagged';
     vb.textContent = `⚠ ${status.toUpperCase()}`;
