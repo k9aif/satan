@@ -57,7 +57,7 @@ class DoclingExtractor:
         docling_cfg    = cfg.get("docling", {})
         self._enabled  = bool(docling_cfg.get("enabled", False))
         self._url     = docling_cfg.get("url") or _compose_docling_url()
-        self._timeout = int(docling_cfg.get("timeout", 180))
+        self._timeout = int(docling_cfg.get("timeout", 300))
 
     # ── public API ────────────────────────────────────────────────────────────
 

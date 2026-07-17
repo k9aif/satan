@@ -62,7 +62,10 @@ docling:
   # url is composed from DOCLING_URL + DOCLING_PORT env vars (see extractor.py).
   # Full URL:  DOCLING_URL=http://host:5001
   # Split:     DOCLING_URL=host  DOCLING_PORT=5001
-  timeout: 180              # seconds — OCR on large PDFs can take time
+  # Override via DOCLING_TIMEOUT env var or Setup → Document Extraction in the
+  # webui. Raise this on resource-constrained hosts (e.g. a Podman container
+  # with limited CPU) — OCR on large/scan-heavy PDFs can take several minutes.
+  timeout: 300              # seconds
 
 cache:
   provider: in_memory       # in_memory | redis — backs MemoryPoisoningCheck + RequestFrequencyCheck

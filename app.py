@@ -57,12 +57,13 @@ def _reject_if_locked():
 # ── LLM config (in-memory, persists per server session) ──────────────────────
 
 _llm_config = {
-    "provider":  os.environ.get("SATAN_LLM_PROVIDER", "ollama"),
-    "base_url":  (os.environ.get("SATAN_LLM_BASE_URL")
-                  or os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")),
-    "model":     os.environ.get("SATAN_LLM_MODEL", ""),
-    "api_key":   os.environ.get("SATAN_LLM_API_KEY", ""),
-    "connected": False,
+    "provider":   os.environ.get("SATAN_LLM_PROVIDER", "ollama"),
+    "base_url":   (os.environ.get("SATAN_LLM_BASE_URL")
+                   or os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")),
+    "model":      os.environ.get("SATAN_LLM_MODEL", ""),
+    "api_key":    os.environ.get("SATAN_LLM_API_KEY", ""),
+    "project_id": os.environ.get("WATSONX_PROJECT_ID", ""),  # watsonx only
+    "connected":  False,
 }
 
 _governance_config = {
@@ -79,7 +80,7 @@ def _build_docling_url() -> str:
 _docling_config = {
     "enabled":   os.environ.get("SATAN_DOCLING", "false").lower() == "true",
     "url":       _build_docling_url(),
-    "timeout":   180,
+    "timeout":   int(os.environ.get("DOCLING_TIMEOUT", "300")),
     "connected": False,
 }
 
@@ -290,6 +291,7 @@ async def fire(
     cfg = load_config()
     cfg.setdefault("governance", {})["provider"] = _governance_config["provider"]
     cfg.setdefault("docling", {}).update(_docling_config)
+    cfg = _apply_llm_overrides(cfg)
 
     result = run_pipeline(payload, config=cfg)
     result["source"]              = source
@@ -335,6 +337,7 @@ async def attack_fire(payload: Dict[str, Any] = Body(...)):
     cfg = load_config()
     cfg.setdefault("governance", {})["provider"] = governance_provider
     cfg.setdefault("docling", {}).update(_docling_config)
+    cfg = _apply_llm_overrides(cfg)
 
     result = run_pipeline(payload, config=cfg)
     result["source"]              = "attack"
@@ -371,6 +374,7 @@ class LLMConfigRequest(BaseModel):
     base_url: str
     model: str
     api_key: str = ""
+    project_id: str = ""
 
 @app.get("/api/llm/config")
 def get_llm_config():
@@ -381,62 +385,166 @@ def get_llm_config():
 @app.post("/api/llm/config")
 def set_llm_config(req: LLMConfigRequest):
     _reject_if_locked()
-    _llm_config["provider"]  = req.provider
-    _llm_config["base_url"]  = req.base_url.rstrip("/")
-    _llm_config["model"]     = req.model
+    _llm_config["provider"]   = req.provider
+    _llm_config["base_url"]   = req.base_url.rstrip("/")
+    _llm_config["model"]      = req.model
     if req.api_key and req.api_key != "***":
         _llm_config["api_key"] = req.api_key
-    _llm_config["connected"] = False
+    _llm_config["project_id"] = req.project_id
+    _llm_config["connected"]  = False
     log.info("[Satan] LLM config updated: provider=%s base_url=%s model=%s",
              req.provider, req.base_url, req.model)
+    _reset_llm_pipeline_caches()
     return _llm_config
+
+
+_LLM_BACKEND_MAP = {
+    "ollama":            "ollama",
+    "lm-studio":         "openai-compatible",  # LM Studio speaks the OpenAI-compatible API
+    "openai":            "openai",
+    "openai-compatible": "openai-compatible",
+    "watsonx":           "watsonx",
+}
+
+
+def _apply_llm_overrides(cfg: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Bridge the Setup screen's runtime LLM selection into the framework's
+    llm_invoke() -> LLMFactory -> ProviderAdapterRegistry path — the same
+    path DocumentExtractionAgent/AuditAgent use for every real call. Only
+    inference.llm_factory is touched; model_catalog capability metadata is
+    left as config.yaml defines it (backend resolution doesn't read it).
+
+    Credential rule preserved: the raw API key never enters cfg. It's
+    exported to an env var and referenced by name (api_key_env), matching
+    OpenAIProviderAdapter/WatsonxProviderAdapter's existing resolution order.
+    """
+    provider = _llm_config.get("provider", "ollama")
+    llm_factory_cfg = cfg.setdefault("inference", {}).setdefault("llm_factory", {})
+    llm_factory_cfg["backend"] = _LLM_BACKEND_MAP.get(provider, provider)
+
+    base_url = _llm_config.get("base_url", "").strip()
+    if base_url:
+        llm_factory_cfg["base_url"] = base_url
+
+    api_key = _llm_config.get("api_key", "").strip()
+    if api_key:
+        os.environ["SATAN_LLM_API_KEY"] = api_key
+        llm_factory_cfg["api_key_env"] = "SATAN_LLM_API_KEY"
+
+    project_id = _llm_config.get("project_id", "").strip()
+    if project_id:
+        llm_factory_cfg["project_id"] = project_id
+
+    model = _llm_config.get("model", "").strip()
+    if model:
+        for alias_cfg in llm_factory_cfg.get("models", {}).values():
+            if isinstance(alias_cfg, dict):
+                alias_cfg["model"] = model
+
+    return cfg
+
+
+def _reset_llm_pipeline_caches() -> None:
+    """
+    LLMFactory / ModelRouterFactory are process-wide singletons that cache
+    the first provider/model they're bootstrapped with (see k9-aif-framework
+    CLAUDE.md — Factory pattern). Without this, changing provider in Setup
+    would update _llm_config but the pipeline would keep calling whichever
+    LLM instance got cached on the very first fire.
+    """
+    from k9x_satan.target import pipeline as _pipeline  # noqa: F401 — triggers sys.path bootstrap
+    from k9_aif_abb.k9_factories.llm_factory import LLMFactory
+    from k9_aif_abb.k9_factories.model_router_factory import ModelRouterFactory
+    LLMFactory.reset()
+    ModelRouterFactory.reset()
+
+
+def _probe_provider(list_models: bool):
+    """
+    Lightweight, provider-shaped liveness probe for the Setup screen's
+    Connect/Test button. Deliberately separate from the framework's
+    LLMFactory/ProviderAdapterRegistry path used by the real pipeline —
+    this only answers "can Satan reach this endpoint with this key",
+    it never constructs a real BaseLLM instance. Returns (ok, models, error).
+    """
+    provider = _llm_config.get("provider", "ollama")
+    base_url = _llm_config.get("base_url", "").rstrip("/")
+    api_key  = _llm_config.get("api_key", "").strip()
+
+    if provider == "watsonx":
+        # An unauthenticated GET against watsonx.ai returns 200 regardless of
+        # whether the API key is valid — the meaningful check is the IAM
+        # token exchange itself, not reaching base_url.
+        if not api_key:
+            return False, [], "API key required for watsonx"
+        try:
+            r = requests.post(
+                "https://iam.cloud.ibm.com/identity/token",
+                data={"grant_type": "urn:ibm:params:oauth:grant-type:apikey", "apikey": api_key},
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=5,
+            )
+            if r.ok:
+                return True, [], None
+            return False, [], f"IAM auth failed: HTTP {r.status_code}"
+        except requests.exceptions.RequestException as exc:
+            return False, [], str(exc)
+
+    if not base_url:
+        return False, [], "base_url not configured"
+
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+
+    try:
+        if provider == "ollama":
+            # Ollama's own listing endpoint — proprietary, not OpenAI-shaped.
+            # base_url convention here is bare host:port (no /v1).
+            resp = requests.get(f"{base_url}/api/tags", timeout=5)
+            if resp.ok:
+                models = [m["name"] for m in resp.json().get("models", [])] if list_models else []
+                return True, models, None
+            return False, [], f"HTTP {resp.status_code}"
+
+        if provider in ("openai", "openai-compatible", "lm-studio"):
+            # LM Studio is genuinely OpenAI-compatible (that's its whole
+            # premise) — same probe as real OpenAI, not Ollama's /api/tags.
+            # base_url convention here matches the OpenAI SDK: it already
+            # includes /v1 (e.g. https://api.openai.com/v1,
+            # http://localhost:1234/v1) since that's what OpenAILLM passes
+            # straight through to AsyncOpenAI(base_url=...) with no path
+            # manipulation.
+            resp = requests.get(f"{base_url}/models", headers=headers, timeout=5)
+            if resp.ok:
+                models = [m["id"] for m in resp.json().get("data", [])] if list_models else []
+                return True, models, None
+            return False, [], f"HTTP {resp.status_code}"
+
+        return False, [], f"Unknown provider: {provider}"
+
+    except requests.exceptions.ConnectionError as exc:
+        return False, [], f"Cannot connect to {base_url}: {exc}"
+    except requests.exceptions.Timeout:
+        return False, [], f"Timeout connecting to {base_url}"
+
 
 @app.get("/api/llm/models")
 def list_llm_models():
     """Probe the configured provider for available models."""
-    base_url = _llm_config.get("base_url", "").rstrip("/")
-    provider = _llm_config.get("provider", "ollama")
-    if not base_url:
-        raise HTTPException(status_code=400, detail="base_url not configured")
-    try:
-        if provider in ("ollama", "lm-studio", "openai-compatible"):
-            resp = requests.get(f"{base_url}/api/tags", timeout=5)
-            if resp.ok:
-                data = resp.json()
-                models = [m["name"] for m in data.get("models", [])]
-                return {"models": models}
-            resp2 = requests.get(f"{base_url}/v1/models", timeout=5)
-            if resp2.ok:
-                data2 = resp2.json()
-                models2 = [m["id"] for m in data2.get("data", [])]
-                return {"models": models2}
-        raise HTTPException(status_code=502, detail=f"Cannot reach {base_url}")
-    except requests.exceptions.ConnectionError:
-        raise HTTPException(status_code=502, detail=f"Cannot connect to {base_url}")
-    except requests.exceptions.Timeout:
-        raise HTTPException(status_code=504, detail=f"Timeout connecting to {base_url}")
+    ok, models, error = _probe_provider(list_models=True)
+    if not ok:
+        raise HTTPException(status_code=502, detail=error or "Cannot reach provider")
+    return {"models": models}
 
 @app.post("/api/llm/test")
 def test_llm_connection():
-    """Quick connectivity check — tries /api/tags then /v1/models."""
-    base_url = _llm_config.get("base_url", "").rstrip("/")
-    if not base_url:
-        raise HTTPException(status_code=400, detail="base_url not configured")
-    try:
-        for path in ["/api/tags", "/v1/models"]:
-            try:
-                r = requests.get(f"{base_url}{path}", timeout=4)
-                if r.ok:
-                    _llm_config["connected"] = True
-                    log.info("[Satan] LLM connection OK at %s%s", base_url, path)
-                    return {"connected": True, "base_url": base_url}
-            except Exception:
-                pass
-        _llm_config["connected"] = False
-        return {"connected": False, "base_url": base_url}
-    except Exception as exc:
-        _llm_config["connected"] = False
-        return {"connected": False, "error": str(exc)}
+    """Quick connectivity check against the configured provider."""
+    ok, _, error = _probe_provider(list_models=False)
+    _llm_config["connected"] = ok
+    if ok:
+        log.info("[Satan] LLM connection OK (provider=%s)", _llm_config.get("provider"))
+        return {"connected": True, "base_url": _llm_config.get("base_url", "")}
+    return {"connected": False, "base_url": _llm_config.get("base_url", ""), "error": error}
 
 
 # ── Governance Config API ─────────────────────────────────────────────────────
@@ -463,7 +571,7 @@ def set_governance_config(req: GovernanceConfigRequest):
 class DoclingConfigRequest(BaseModel):
     enabled: bool
     url:     str = "http://localhost:5001"
-    timeout: int = 180
+    timeout: int = 300
 
 @app.get("/api/docling/config")
 def get_docling_config():

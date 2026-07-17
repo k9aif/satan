@@ -1012,10 +1012,6 @@
   <div class="header-left">
     <a class="logo-k9" href="https://k9x.ai" target="_blank">K9X <span style="font-size:0.55rem;font-weight:700;letter-spacing:0.08em;color:var(--muted);background:none;-webkit-text-fill-color:var(--muted);vertical-align:super">(Beta)</span></a>
     <div class="header-k9-sub">k9x.ai</div>
-    <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:nowrap">
-      <span class="llm-pill" id="llm-pill-hdr" style="white-space:nowrap">not connected</span>
-      <span class="llm-pill connected" id="ocr-pill-hdr" style="display:none;white-space:nowrap">OCR: on</span>
-    </div>
   </div>
   <div class="header-center">
     <div class="satan-title">SATAN</div>
@@ -1098,6 +1094,9 @@
       </div>
     </div>
     <div class="verdict-box" id="verdict-box"></div>
+    <div id="working-indicator" style="display:none;margin-top:10px;padding:10px 14px;background:#1a1400;border:1px solid var(--yellow);border-radius:4px;font-size:0.8rem;color:var(--yellow)">
+      <span class="working-spinner">⏳</span> <span id="working-message">Working…</span>
+    </div>
   </div>
 
   <div class="tab-bar">
@@ -1126,7 +1125,9 @@
           <select class="setup-select" id="setup-provider" onchange="onProviderChange(this.value)">
             <option value="ollama">Ollama (local)</option>
             <option value="lm-studio">LM Studio</option>
-            <option value="openai-compatible">OpenAI-Compatible Endpoint</option>
+            <option value="openai">OpenAI (api.openai.com)</option>
+            <option value="openai-compatible">OpenAI-Compatible Endpoint (incl. Grok/xAI)</option>
+            <option value="watsonx">IBM watsonx.ai</option>
           </select>
         </div>
 
@@ -1142,6 +1143,11 @@
         <div class="setup-group" id="api-key-group" style="display:none">
           <label class="setup-label">API Key</label>
           <input class="setup-input" id="setup-api-key" type="password" placeholder="from SATAN_LLM_API_KEY env var">
+        </div>
+
+        <div class="setup-group" id="project-id-group" style="display:none">
+          <label class="setup-label">Project ID</label>
+          <input class="setup-input" id="setup-project-id" type="text" placeholder="watsonx project_id (from WATSONX_PROJECT_ID env var)">
         </div>
 
         <div class="setup-group">
@@ -1196,6 +1202,14 @@
           <div style="font-size:0.72rem;color:var(--dim);margin-top:4px">
             Set <code>DOCLING_URL</code> env var or enter URL above.
             Leave blank to use local <code>pip install docling</code>.
+          </div>
+          <label class="setup-label" style="margin-top:10px">Timeout (seconds)</label>
+          <input class="setup-input" id="setup-docling-timeout" type="number" min="10" step="10"
+                 placeholder="loaded from DOCLING_TIMEOUT env var">
+          <div style="font-size:0.72rem;color:var(--dim);margin-top:4px">
+            OCR on large or scan-heavy PDFs can take several minutes on a resource-constrained
+            host — raise this if conversions are timing out. Set <code>DOCLING_TIMEOUT</code>
+            env var or enter seconds above.
           </div>
         </div>
         <div class="setup-row" style="margin-top:10px">
@@ -1846,6 +1860,34 @@ DocumentOrchestrator          extends BaseOrchestrator    (K9-AIF ABB)
   <div id="tab-documentation" class="tab-panel active">
     <div style="max-width:680px">
 
+      <div class="card" style="border-color:color-mix(in srgb,var(--red-mid) 40%,var(--border))">
+        <div class="doc-h2">The Big Picture</div>
+        <p class="doc-p" style="margin-top:10px">
+          <strong style="color:var(--text)">K9-AIF</strong> is an open-source, architecture-first framework for building
+          governed, modular agentic AI systems —
+          <a href="https://k9x.ai" target="_blank" rel="noopener" style="color:var(--red-mid)">k9x.ai</a>.
+        </p>
+        <p class="doc-p">
+          <strong style="color:var(--text)">K9x</strong> is the ecosystem of products built on that framework:
+          <strong style="color:var(--text)">Studio</strong> (visual drag-and-drop solution builder),
+          <strong style="color:var(--text)">Continuum</strong> (the catalog of reusable architectural assets — TOGAF's
+          Enterprise Continuum applied to K9-AIF),
+          <strong style="color:var(--text)">HIL</strong> (human-in-the-loop case management), and
+          <strong style="color:var(--text)">SATAN</strong> — this tool.
+        </p>
+        <p class="doc-p">
+          <strong style="color:var(--text)">K9X Shield</strong> isn't a separate product — it's the security and
+          vulnerability-checking component built into the framework itself: the Router/Orchestrator check chains,
+          governance hooks, and Chain-of-Responsibility pattern that every solution built on K9-AIF inherits, whether
+          it knows it or not.
+        </p>
+        <p class="doc-p" style="margin-bottom:0">
+          <strong style="color:var(--text)">K9X Satan</strong> is the tool that tests the framework — specifically,
+          it fires structured adversarial attacks at a live K9-AIF pipeline to prove K9X Shield actually contains
+          them, rather than just asserting that it does.
+        </p>
+      </div>
+
       <div class="card">
         <div class="doc-h2">Why the Name "SATAN"?</div>
         <p class="doc-p" style="margin-top:10px">The name K9X Satan is inspired by the pioneering <strong style="color:var(--text)">SATAN (Security Administrator Tool for Analyzing Networks)</strong>, released in 1995 by security researchers Dan Farmer and Wietse Venema.</p>
@@ -2112,6 +2154,28 @@ function onFileSelect(input) {
 }
 
 // ── FIRE
+// Kept slightly longer than the backend's docling.timeout so the server-side
+// Docling call times out first and returns a real error — this is a
+// last-resort client safety net, not the primary timeout. Updated whenever
+// the Docling config loads/saves (see _updateFireTimeout below); 300s
+// default matches the backend default before Setup has loaded.
+let FIRE_TIMEOUT_MS = 320000;
+
+function _updateFireTimeout(doclingTimeoutSeconds) {
+  const t = parseInt(doclingTimeoutSeconds, 10);
+  if (t > 0) FIRE_TIMEOUT_MS = (t * 1000) + 20000;
+}
+
+function _showWorking(message) {
+  const el = document.getElementById('working-indicator');
+  document.getElementById('working-message').textContent = message;
+  el.style.display = 'block';
+}
+
+function _hideWorking() {
+  document.getElementById('working-indicator').style.display = 'none';
+}
+
 async function fireAttack() {
   if (!_selectedCorpus && !_selectedFile) return;
 
@@ -2124,14 +2188,24 @@ async function fireAttack() {
   document.getElementById('node-satan').className = 'depth-box active';
 
   const fd = new FormData();
+  const isBinaryUpload = _selectedFile && /\.(pdf|docx)$/i.test(_selectedFile.name || '');
   if (_selectedFile) {
     fd.append('file', _selectedFile);
+    _showWorking(
+      isBinaryUpload
+        ? 'Working… waiting for Docling / OCR conversion. Large documents can take a few minutes.'
+        : 'Working… firing payload.'
+    );
   } else {
     fd.append('corpus_key', _selectedCorpus);
+    _showWorking('Working… firing payload.');
   }
 
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), FIRE_TIMEOUT_MS);
+
   try {
-    const resp   = await fetch('/api/fire', { method: 'POST', body: fd });
+    const resp   = await fetch('/api/fire', { method: 'POST', body: fd, signal: controller.signal });
     const result = await resp.json();
     if (!resp.ok) {
       // Backend rejected the request before it ever reached the pipeline
@@ -2140,9 +2214,6 @@ async function fireAttack() {
       // instead of falling through to a silent "unknown" status, and don't
       // record it to history/stats since nothing was actually fired.
       showDepthResult({ status: 'rejected', penetration_depth: 'unknown', error: result.detail || `HTTP ${resp.status}` });
-      btn.classList.remove('firing');
-      btn.disabled = false;
-      btn.textContent = '⚡ Fire';
       return;
     }
     showDepthResult(result);
@@ -2151,7 +2222,17 @@ async function fireAttack() {
     updateStats();
     updateCharts();
   } catch (e) {
-    showDepthResult({ status: 'error', penetration_depth: 'unknown', error: String(e) });
+    const timedOut = e && e.name === 'AbortError';
+    showDepthResult({
+      status: timedOut ? 'timeout' : 'error',
+      penetration_depth: 'unknown',
+      error: timedOut
+        ? `Timed out after ${FIRE_TIMEOUT_MS / 1000}s — Docling/OCR may be unreachable or the document too large.`
+        : String(e),
+    });
+  } finally {
+    clearTimeout(timeoutId);
+    _hideWorking();
   }
 
   btn.classList.remove('firing');
@@ -2262,6 +2343,9 @@ function showDepthResult(result) {
   } else if (status === 'error') {
     vb.className   = 'verdict-box flagged';
     vb.textContent = `⚠ ERROR — ${result.error || 'request failed'}`;
+  } else if (status === 'timeout') {
+    vb.className   = 'verdict-box flagged';
+    vb.textContent = `⏱ TIMEOUT — ${result.error || 'the request took too long'}`;
   } else {
     vb.className   = 'verdict-box flagged';
     vb.textContent = `⚠ ${status.toUpperCase()}`;
@@ -2751,17 +2835,28 @@ function makeChart(id, type, data, extraOptions = {}) {
 }
 
 // ── SETUP
+// openai / openai-compatible / lm-studio base URLs include /v1 — that's the
+// OpenAI SDK's own convention (OpenAILLM passes base_url straight through
+// to AsyncOpenAI(base_url=...) with no path manipulation). Ollama is the
+// odd one out: bare host:port, no /v1 — it uses its own proprietary
+// /api/tags listing endpoint instead.
 const PROVIDER_DEFAULTS = {
   'ollama':            'http://localhost:11434',
-  'lm-studio':         'http://localhost:1234',
-  'openai-compatible': 'http://localhost:8080',
+  'lm-studio':         'http://localhost:1234/v1',
+  'openai':            'https://api.openai.com/v1',
+  'openai-compatible': 'http://localhost:8080/v1',
+  'watsonx':           'https://us-south.ml.cloud.ibm.com',
 };
+const PROVIDERS_NEEDING_KEY        = ['openai', 'openai-compatible', 'watsonx'];
+const PROVIDERS_NEEDING_PROJECT_ID = ['watsonx'];
 
 function onProviderChange(val) {
-  const urlInput  = document.getElementById('setup-base-url');
-  const keyGroup  = document.getElementById('api-key-group');
+  const urlInput      = document.getElementById('setup-base-url');
+  const keyGroup      = document.getElementById('api-key-group');
+  const projectGroup  = document.getElementById('project-id-group');
   if (PROVIDER_DEFAULTS[val]) urlInput.value = PROVIDER_DEFAULTS[val];
-  if (keyGroup) keyGroup.style.display = (val === 'openai-compatible') ? 'block' : 'none';
+  if (keyGroup)     keyGroup.style.display     = PROVIDERS_NEEDING_KEY.includes(val) ? 'block' : 'none';
+  if (projectGroup) projectGroup.style.display = PROVIDERS_NEEDING_PROJECT_ID.includes(val) ? 'block' : 'none';
 }
 
 async function loadLLMConfig() {
@@ -2773,12 +2868,15 @@ async function loadLLMConfig() {
 }
 
 function applyLLMConfig(cfg) {
-  const providerSel = document.getElementById('setup-provider');
-  const urlInput    = document.getElementById('setup-base-url');
-  const modelInput  = document.getElementById('setup-model');
-  if (providerSel && cfg.provider) providerSel.value = cfg.provider;
-  if (urlInput    && cfg.base_url) urlInput.value    = cfg.base_url;
-  if (modelInput  && cfg.model)    modelInput.value  = cfg.model;
+  const providerSel  = document.getElementById('setup-provider');
+  const urlInput     = document.getElementById('setup-base-url');
+  const modelInput   = document.getElementById('setup-model');
+  const projectInput = document.getElementById('setup-project-id');
+  if (providerSel && cfg.provider)    providerSel.value  = cfg.provider;
+  if (urlInput    && cfg.base_url)    urlInput.value     = cfg.base_url;
+  if (modelInput  && cfg.model)       modelInput.value   = cfg.model;
+  if (projectInput && cfg.project_id) projectInput.value = cfg.project_id;
+  if (providerSel) onProviderChange(providerSel.value);
   updateStatusCard(cfg);
   updateHeaderPill(cfg);
 }
@@ -2797,7 +2895,7 @@ function updateStatusCard(cfg) {
 
 function updateHeaderPill(cfg) {
   const dot   = document.getElementById('llm-dot');
-  const pills = ['llm-pill', 'llm-pill-hdr'].map(id => document.getElementById(id)).filter(Boolean);
+  const pills = ['llm-pill'].map(id => document.getElementById(id)).filter(Boolean);
   if (dot) dot.className = cfg.connected ? 'llm-dot on' : 'llm-dot off';
   const label = cfg.connected
     ? (cfg.model ? `${cfg.provider} · ${cfg.model}` : `${cfg.provider} · connected`)
@@ -2815,9 +2913,10 @@ async function connectAndLoad() {
   statusEl.style.display = 'block';
 
   let base_url  = document.getElementById('setup-base-url').value.trim();
-  const provider  = document.getElementById('setup-provider').value;
-  const model     = document.getElementById('setup-model').value.trim();
-  const api_key   = document.getElementById('setup-api-key')?.value?.trim() || '';
+  const provider   = document.getElementById('setup-provider').value;
+  const model      = document.getElementById('setup-model').value.trim();
+  const api_key    = document.getElementById('setup-api-key')?.value?.trim() || '';
+  const project_id = document.getElementById('setup-project-id')?.value?.trim() || '';
 
   // If URL field is empty, pull the server's current value (loaded from env vars)
   if (!base_url) {
@@ -2839,7 +2938,7 @@ async function connectAndLoad() {
   await fetch('/api/llm/config', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({provider, base_url, model, api_key}),
+    body: JSON.stringify({provider, base_url, model, api_key, project_id}),
   });
 
   try {
@@ -2876,9 +2975,11 @@ function selectModel(name) {
 }
 
 async function saveConfig() {
-  const provider = document.getElementById('setup-provider').value;
-  const base_url = document.getElementById('setup-base-url').value.trim();
-  const model    = document.getElementById('setup-model').value.trim();
+  const provider   = document.getElementById('setup-provider').value;
+  const base_url   = document.getElementById('setup-base-url').value.trim();
+  const model      = document.getElementById('setup-model').value.trim();
+  const api_key    = document.getElementById('setup-api-key')?.value?.trim() || '';
+  const project_id = document.getElementById('setup-project-id')?.value?.trim() || '';
 
   const saveEl = document.getElementById('setup-save-status');
 
@@ -2886,7 +2987,7 @@ async function saveConfig() {
     const resp = await fetch('/api/llm/config', {
       method:  'POST',
       headers: {'Content-Type': 'application/json'},
-      body:    JSON.stringify({provider, base_url, model}),
+      body:    JSON.stringify({provider, base_url, model, api_key, project_id}),
     });
     const cfg = await resp.json();
     applyLLMConfig(cfg);
@@ -2905,19 +3006,22 @@ async function loadDoclingConfig() {
   try {
     const resp = await fetch('/api/docling/config');
     const cfg  = await resp.json();
-    const sel   = document.getElementById('setup-docling-mode');
-    const urlEl = document.getElementById('setup-docling-url');
+    const sel     = document.getElementById('setup-docling-mode');
+    const urlEl   = document.getElementById('setup-docling-url');
+    const timeoutEl = document.getElementById('setup-docling-timeout');
     if (sel) {
       sel.value = cfg.enabled ? 'docling' : 'naive';
       toggleDoclingUrl(sel.value);
     }
     if (urlEl && cfg.url) urlEl.value = cfg.url;
+    if (timeoutEl && cfg.timeout) timeoutEl.value = cfg.timeout;
+    _updateFireTimeout(cfg.timeout);
     _updateOcrPill(cfg.enabled, cfg.connected);
   } catch {}
 }
 
 function _updateOcrPill(enabled, connected) {
-  const pills = ['ocr-pill', 'ocr-pill-hdr'].map(id => document.getElementById(id)).filter(Boolean);
+  const pills = ['ocr-pill'].map(id => document.getElementById(id)).filter(Boolean);
   const label = connected ? 'OCR: connected' : 'OCR: on';
   pills.forEach(p => {
     if (!enabled) { p.style.display = 'none'; return; }
@@ -2964,6 +3068,7 @@ async function saveDoclingConfig() {
   const statusEl = document.getElementById('setup-docling-status');
   const mode     = document.getElementById('setup-docling-mode')?.value || 'naive';
   let   url      = document.getElementById('setup-docling-url')?.value?.trim() || '';
+  const timeout  = parseInt(document.getElementById('setup-docling-timeout')?.value, 10) || 300;
   const enabled  = mode === 'docling';
 
   // If URL field is empty, use server's env-var-composed URL
@@ -2981,16 +3086,17 @@ async function saveDoclingConfig() {
     const resp = await fetch('/api/docling/config', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({enabled, url, timeout: 180}),
+      body: JSON.stringify({enabled, url, timeout}),
     });
     const cfg = await resp.json();
     if (statusEl) {
       statusEl.className   = 'setup-status ok';
       statusEl.textContent = cfg.enabled
-        ? `✓ Docling enabled · ${cfg.url}`
+        ? `✓ Docling enabled · ${cfg.url} · ${cfg.timeout}s timeout`
         : '✓ Naive extraction active (no dependencies)';
       statusEl.style.display = 'block';
     }
+    _updateFireTimeout(cfg.timeout);
     _updateOcrPill(cfg.enabled, false);  // reset connected on save
   } catch (e) {
     if (statusEl) {
