@@ -1881,11 +1881,21 @@ DocumentOrchestrator          extends BaseOrchestrator    (K9-AIF ABB)
           governance hooks, and Chain-of-Responsibility pattern that every solution built on K9-AIF inherits, whether
           it knows it or not.
         </p>
-        <p class="doc-p" style="margin-bottom:0">
+        <p class="doc-p">
           <strong style="color:var(--text)">K9X Satan</strong> is the tool that tests the framework — specifically,
           it fires structured adversarial attacks at a live K9-AIF pipeline to prove K9X Shield actually contains
           them, rather than just asserting that it does.
         </p>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+          <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px">RUN IT YOURSELF</div>
+          <pre class="sample" style="margin:0 0 8px 0">pip install k9x-satan
+k9x-satan          # foreground, opens the dashboard at localhost:6660
+k9x-satan --bg     # or run it in the background</pre>
+          <p class="doc-p" style="margin-bottom:0;font-size:0.82rem">
+            Own instance, own K9-AIF pipeline, own LLM endpoint — nothing sent to this shared deployment.
+            <a href="https://pypi.org/project/k9x-satan/" target="_blank" rel="noopener" style="color:var(--red-mid)">pypi.org/project/k9x-satan</a>
+          </p>
+        </div>
       </div>
 
       <div class="card">
@@ -2219,6 +2229,7 @@ async function fireAttack() {
     showDepthResult(result);
     updateLastResult(result);
     _history.unshift(result);
+    renderHistory();
     updateStats();
     updateCharts();
   } catch (e) {
@@ -2799,19 +2810,43 @@ function updateCharts() {
       borderColor: '#0a0a12', borderWidth: 2 }],
   });
 
-  const depthCounts = {};
+  // Reaching 'squad'/'agent' depth means shield_held is false — but that's
+  // true for BOTH a genuine finding (attack got through) AND a clean control
+  // document correctly reaching the agent. A single red bar per depth level
+  // can't distinguish the two, so this used to make "clean run, 0 findings"
+  // look identical to "attack got through" whenever an earlier clean fire
+  // sat in the same session's history. Split into two stacked series instead.
+  const depthLabels = [];
+  const seenDepths = new Set();
   _history.forEach(r => {
     const d = r.penetration_depth || 'unknown';
-    depthCounts[d] = (depthCounts[d] || 0) + 1;
+    if (!seenDepths.has(d)) { seenDepths.add(d); depthLabels.push(d); }
+  });
+
+  const safeData    = [];
+  const findingData = [];
+  depthLabels.forEach(d => {
+    const atDepth  = _history.filter(r => (r.penetration_depth || 'unknown') === d);
+    const finding  = atDepth.filter(r => !r.shield_held && r.status === 'completed' && r.is_evil !== false).length;
+    findingData.push(finding);
+    safeData.push(atDepth.length - finding);
   });
 
   makeChart('chart-depth', 'bar', {
-    labels: Object.keys(depthCounts),
-    datasets: [{ label: 'Count', data: Object.values(depthCounts),
-      backgroundColor: Object.keys(depthCounts).map(d =>
-        (d === 'squad' || d === 'agent') ? '#ff2222' : '#882222'),
-      borderColor: '#cc2222', borderWidth: 1, borderRadius: 3 }],
-  }, { indexAxis: 'y' });
+    labels: depthLabels,
+    datasets: [
+      { label: 'Contained / clean', data: safeData,
+        backgroundColor: '#00cc44', borderColor: '#00aa33', borderWidth: 1, borderRadius: 3 },
+      { label: 'Finding', data: findingData,
+        backgroundColor: '#ff2222', borderColor: '#cc2222', borderWidth: 1, borderRadius: 3 },
+    ],
+  }, {
+    indexAxis: 'y',
+    scales: {
+      x: { stacked: true, ticks: { color: '#55556a' }, grid: { color: '#1a1a28' } },
+      y: { stacked: true, ticks: { color: '#55556a' }, grid: { color: '#1a1a28' } },
+    },
+  });
 }
 
 function makeChart(id, type, data, extraOptions = {}) {
