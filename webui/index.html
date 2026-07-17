@@ -2194,7 +2194,12 @@ function showDepthResult(result) {
   // node, where an uncaught payload's effects actually reached execution.
   const completedCls = 'safe';
   const arrowCls      = isClean ? 'clean' : 'live';
-  const isFinding      = !blockedAt && status === 'completed' && result.shield_held === false;
+  // A clean control document reaching the agent layer is the expected,
+  // correct outcome — there's nothing to catch. shield_held is false for
+  // BOTH that case and a genuine attack finding (the backend sets it based
+  // solely on whether a block occurred), so isClean must gate this too or
+  // every clean pass-through gets mismarked as a breach.
+  const isFinding      = !blockedAt && status === 'completed' && result.shield_held === false && !isClean;
 
   if (reached >= 1) {
     document.getElementById('arrow-1').className = 'depth-arrow ' + arrowCls;
@@ -2604,7 +2609,7 @@ function downloadReport() {
 
   const blocked  = _history.filter(r => r.status === 'blocked').length;
   const flagged  = _history.filter(r => r.status === 'flagged').length;
-  const findings = _history.filter(r => !r.shield_held && r.status === 'completed').length;
+  const findings = _history.filter(r => !r.shield_held && r.status === 'completed' && r.is_evil !== false).length;
 
   let md = `# K9x Satan — Attack Report\n\n`;
   md += `Generated: ${new Date().toISOString()}\n`;
@@ -2619,7 +2624,7 @@ function downloadReport() {
     md += `- Status: ${r.status}\n`;
     md += `- Penetration depth: ${r.penetration_depth || '—'}\n`;
     md += `- Blocked by: ${r.blocked_by || '—'}\n`;
-    md += `- Shield held: ${r.shield_held ? 'yes' : 'no'}\n`;
+    md += `- Shield held: ${r.is_evil === false ? 'N/A — clean pass' : r.shield_held ? 'yes' : 'no'}\n`;
     md += `- Governance: ${r.governance_provider || 'noop'}\n\n`;
     md += _checksToMarkdown(r.ingress_checks, 'Ingress checks') + '\n';
     md += _checksToMarkdown(r.egress_checks, 'Egress checks') + '\n';
@@ -2659,15 +2664,19 @@ function renderHistory() {
       <td><span class="badge ${badgeCls}">${badgeLabel}</span></td>
       <td style="font-size:0.65rem">${r.penetration_depth || '—'}</td>
       <td style="color:var(--muted);font-size:0.65rem">${r.blocked_by || '—'}</td>
-      <td style="font-size:0.65rem;color:${r.shield_held ? 'var(--green)' : 'var(--red-glow)'}">${r.shield_held ? '✓ Shield held' : '✗ FINDING'}</td>
+      <td style="font-size:0.65rem;color:${(r.shield_held || isClean) ? 'var(--green)' : 'var(--red-glow)'}">${isClean ? '✓ N/A — clean pass' : r.shield_held ? '✓ Shield held' : '✗ FINDING'}</td>
     </tr>`;
   }).join('');
 }
 
+// shield_held is false for BOTH a clean pass-through and a genuine attack
+// finding — the backend sets it based solely on whether a block occurred.
+// is_evil === false must gate every "finding" count below, or every clean
+// control document that correctly reaches the agent gets counted as a breach.
 function updateStats() {
   const blocked  = _history.filter(r => r.status === 'blocked').length;
   const flagged  = _history.filter(r => r.status === 'flagged').length;
-  const findings = _history.filter(r => !r.shield_held && r.status === 'completed').length;
+  const findings = _history.filter(r => !r.shield_held && r.status === 'completed' && r.is_evil !== false).length;
   document.getElementById('stat-total').textContent   = _history.length;
   document.getElementById('stat-blocked').textContent = blocked;
   document.getElementById('stat-flagged').textContent = flagged;
@@ -2677,7 +2686,7 @@ function updateStats() {
 function updateCharts() {
   const blocked  = _history.filter(r => r.status === 'blocked').length;
   const flagged  = _history.filter(r => r.status === 'flagged').length;
-  const findings = _history.filter(r => !r.shield_held && r.status === 'completed').length;
+  const findings = _history.filter(r => !r.shield_held && r.status === 'completed' && r.is_evil !== false).length;
   const clean    = _history.filter(r => r.is_evil === false && r.status === 'completed').length;
 
   makeChart('chart-outcomes', 'doughnut', {
