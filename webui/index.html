@@ -1335,11 +1335,11 @@
 
     <div class="chart-grid" style="margin-bottom:12px">
       <div class="chart-box">
-        <h4>Attack Outcomes</h4>
+        <h4>Attack Outcomes <span style="text-transform:none;color:var(--dim);font-weight:400">(aggregated from all runs)</span></h4>
         <canvas id="chart-outcomes"></canvas>
       </div>
       <div class="chart-box">
-        <h4>Penetration Depth</h4>
+        <h4>Penetration Depth <span style="text-transform:none;color:var(--dim);font-weight:400">(aggregated from all runs)</span></h4>
         <canvas id="chart-depth"></canvas>
       </div>
     </div>
@@ -2810,43 +2810,32 @@ function updateCharts() {
       borderColor: '#0a0a12', borderWidth: 2 }],
   });
 
-  // Reaching 'squad'/'agent' depth means shield_held is false — but that's
-  // true for BOTH a genuine finding (attack got through) AND a clean control
-  // document correctly reaching the agent. A single red bar per depth level
-  // can't distinguish the two, so this used to make "clean run, 0 findings"
-  // look identical to "attack got through" whenever an earlier clean fire
-  // sat in the same session's history. Split into two stacked series instead.
+  // Penetration Depth tracks how far ATTACKS got — a clean control document
+  // has no adversarial depth to report, so it doesn't belong on this chart at
+  // all (this was the actual bug: mixing a clean doc's "reached agent" in
+  // with real attack depth made a 0-finding session look like a breach).
+  // One solid color deliberately, not a severity gradient — this chart has a
+  // single dataset, so a legend can't label what a shade difference means
+  // (unlike Attack Outcomes, which has one legend entry per color). Which
+  // depth a bar is (router vs agent) already carries the meaning; the
+  // Attack History table's Shield column is where good/bad actually lives.
+  const attackHistory = _history.filter(r => r.is_evil !== false);
+
   const depthLabels = [];
   const seenDepths = new Set();
-  _history.forEach(r => {
+  attackHistory.forEach(r => {
     const d = r.penetration_depth || 'unknown';
     if (!seenDepths.has(d)) { seenDepths.add(d); depthLabels.push(d); }
   });
-
-  const safeData    = [];
-  const findingData = [];
-  depthLabels.forEach(d => {
-    const atDepth  = _history.filter(r => (r.penetration_depth || 'unknown') === d);
-    const finding  = atDepth.filter(r => !r.shield_held && r.status === 'completed' && r.is_evil !== false).length;
-    findingData.push(finding);
-    safeData.push(atDepth.length - finding);
-  });
+  const depthCounts = depthLabels.map(d =>
+    attackHistory.filter(r => (r.penetration_depth || 'unknown') === d).length
+  );
 
   makeChart('chart-depth', 'bar', {
     labels: depthLabels,
-    datasets: [
-      { label: 'Contained / clean', data: safeData,
-        backgroundColor: '#00cc44', borderColor: '#00aa33', borderWidth: 1, borderRadius: 3 },
-      { label: 'Finding', data: findingData,
-        backgroundColor: '#ff2222', borderColor: '#cc2222', borderWidth: 1, borderRadius: 3 },
-    ],
-  }, {
-    indexAxis: 'y',
-    scales: {
-      x: { stacked: true, ticks: { color: '#55556a' }, grid: { color: '#1a1a28' } },
-      y: { stacked: true, ticks: { color: '#55556a' }, grid: { color: '#1a1a28' } },
-    },
-  });
+    datasets: [{ label: 'Attacks reaching this depth', data: depthCounts,
+      backgroundColor: '#ff2222', borderColor: '#ff2222', borderWidth: 1, borderRadius: 3 }],
+  }, { indexAxis: 'y' });
 }
 
 function makeChart(id, type, data, extraOptions = {}) {
