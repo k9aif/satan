@@ -83,19 +83,41 @@ _attack_counter = 0   # monotonic — decoupled from len(_run_history), which
 # Not real authentication — there is no password, and this is deliberate.
 # The login screen exists purely to capture a display name ("for session
 # mgmt purpose") so the shared run history can show who fired what; it is
-# not an access-control boundary. A blank username gets an auto-generated
-# guest handle rather than being rejected. Session state is in-memory and
-# per-process — fine for the current single-container deployment; would
-# need a shared backend (e.g. Redis) if this ever moves to multiple
-# containers behind a load balancer.
+# not an access-control boundary. Session state is in-memory and per-process
+# — fine for the current single-container deployment; would need a shared
+# backend (e.g. Redis) if this ever moves to multiple containers behind a
+# load balancer.
+#
+# Usernames are ALWAYS auto-generated (adjective-noun codename), never
+# user-supplied free text. This history is shared across every visitor and
+# persisted to disk (SATAN_DATA_DIR/history.json, see below) — a free-text
+# field is an open invitation for someone to type a slur/profanity that then
+# sits there, visible to every other tester, until it eventually rotates out
+# of the 50-run cap. A blocklist only catches what you thought to list;
+# removing free text entirely closes the whole class of problem. The
+# word lists below are curated so names stay in the same "red team" spirit
+# as the tool itself (and its testers naming themselves Wick, Benelli M4...).
 
 _SESSION_COOKIE = "satan_session"
 _SESSION_TTL_SECONDS = 24 * 60 * 60
 _sessions: Dict[str, Dict[str, Any]] = {}  # session_id -> {"username", "created_at", "last_seen"}
 
+_CODENAME_ADJECTIVES = [
+    "shadow", "phantom", "silent", "rogue", "night", "crimson", "iron",
+    "ghost", "feral", "grim", "obsidian", "venomous", "razor", "cursed",
+    "hollow", "savage", "wicked", "midnight", "ashen", "rabid",
+]
+_CODENAME_NOUNS = [
+    "wolf", "viper", "reaper", "wraith", "hawk", "jackal", "cobra",
+    "panther", "raven", "specter", "hound", "scorpion", "falcon", "lynx",
+    "mantis", "vulture", "banshee", "golem", "wyrm", "sentinel",
+]
+
 
 def _generate_guest_username() -> str:
-    return f"guest-{secrets.token_hex(3)}"
+    adjective = secrets.choice(_CODENAME_ADJECTIVES)
+    noun = secrets.choice(_CODENAME_NOUNS)
+    return f"{adjective}-{noun}-{secrets.token_hex(2)}"
 
 
 def _prune_expired_sessions() -> None:
@@ -125,16 +147,13 @@ def _get_username(request: Request) -> str:
     return session["username"]
 
 
-class LoginRequest(BaseModel):
-    username: str = ""
-
-
 @app.post("/api/login")
-def login(req: LoginRequest, response: Response):
+def login(response: Response):
+    # No request body — username is always auto-generated (see
+    # _generate_guest_username's docstring above for why free text isn't
+    # accepted here).
     _prune_expired_sessions()
-    username = (req.username or "").strip()
-    if not username:
-        username = _generate_guest_username()
+    username = _generate_guest_username()
     session_id = str(uuid.uuid4())
     now = time.time()
     _sessions[session_id] = {"username": username, "created_at": now, "last_seen": now}
