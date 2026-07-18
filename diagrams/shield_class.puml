@@ -74,7 +74,7 @@ package "K9-AIF Framework OOB Checks" {
 
   class ToolArgumentCheck {
     +check(payload): CheckResult
-    ' Egress · catches: SQLi / command injection / path traversal / SSRF
+    ' Ingress + Egress · catches: SQLi / command injection / path traversal / SSRF
   }
 
   class ExecutionGuardCheck {
@@ -121,7 +121,7 @@ package "K9X Satan — Shield SBBs" {
     -_approved_tools: Set[str]
     -_approved_backends: List[str]
     +check(payload): CheckResult
-    ' Egress · catches: unapproved tool/backend (Zscaler Shadow AI)
+    ' Ingress + Egress · catches: unapproved tool/backend (Zscaler Shadow AI)
   }
 
   class SystemPromptLeakageCheck {
@@ -239,7 +239,8 @@ note bottom of MemoryPoisoningCheck
   Ingress chain order:
   RequestFrequencyCheck -> InputSizeCheck ->
   PromptInjectionCheck -> FieldAnomalyCheck ->
-  MemoryPoisoningCheck
+  MemoryPoisoningCheck -> ToolArgumentCheck ->
+  ToolAuthorizationCheck
 end note
 
 note bottom of OutputSanitizationCheck
@@ -248,6 +249,11 @@ note bottom of OutputSanitizationCheck
   PIIBoundaryCheck -> ToolArgumentCheck ->
   HardcodedCredentialCheck -> ToolAuthorizationCheck ->
   SystemPromptLeakageCheck -> OutputSanitizationCheck
+
+  ToolArgumentCheck/ToolAuthorizationCheck run at BOTH gates deliberately —
+  ingress catches caller-supplied fields before Squad/Agent runs; egress
+  catches a fresh tool call an agent generates mid-execution, which
+  doesn't exist yet at ingress time.
 end note
 
 @enduml

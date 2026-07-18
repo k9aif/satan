@@ -70,7 +70,7 @@ class "K9-AIF Framework OOB Checks (7)" as FrameworkChecks {
   ==
   ToolArgumentCheck
   --
-  Egress · SQLi / command injection / path traversal / SSRF
+  Ingress + Egress · SQLi / command injection / path traversal / SSRF
   ==
   ExecutionGuardCheck
   --
@@ -96,7 +96,7 @@ class "K9X Satan — Shield SBB Checks (6)" as SatanChecks {
   ==
   ToolAuthorizationCheck
   --
-  Egress · unapproved tool/backend (Shadow AI)
+  Ingress + Egress · unapproved tool/backend (Shadow AI)
   ==
   SystemPromptLeakageCheck
   --
@@ -194,11 +194,17 @@ end note
 
 note bottom of SatanChecks
   Ingress order: RequestFrequencyCheck -> InputSizeCheck ->
-  PromptInjectionCheck -> FieldAnomalyCheck -> MemoryPoisoningCheck
+  PromptInjectionCheck -> FieldAnomalyCheck -> MemoryPoisoningCheck ->
+  ToolArgumentCheck -> ToolAuthorizationCheck
 
   Egress order: SemanticDriftCheck -> ExecutionGuardCheck ->
   PIIBoundaryCheck -> ToolArgumentCheck -> HardcodedCredentialCheck ->
   ToolAuthorizationCheck -> SystemPromptLeakageCheck -> OutputSanitizationCheck
+
+  ToolArgumentCheck/ToolAuthorizationCheck run at BOTH gates deliberately —
+  ingress catches caller-supplied fields before Squad/Agent runs; egress
+  catches a fresh tool call an agent generates mid-execution, which
+  doesn't exist yet at ingress time.
 end note
 
 @enduml

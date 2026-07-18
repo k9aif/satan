@@ -68,15 +68,17 @@ previously-contained attack pass) is flagged as a bug, not a result.
 | 3 | `PromptInjectionCheck` | Ingress | Framework OOB | Indirect Prompt Injection — Zscaler #1 · OWASP LLM01 |
 | 4 | `FieldAnomalyCheck` | Ingress | Satan SBB | Authority-override social engineering |
 | 5 | `MemoryPoisoningCheck` | Ingress | Satan SBB | Memory Poisoning — Zscaler #3 · OWASP LLM04 |
-| 6 | `SemanticDriftCheck` | Egress | Framework OOB | Goal Hijacking & Privilege Escalation — Zscaler #2 · OWASP LLM06 |
-| 7 | `ExecutionGuardCheck` | Egress | Framework OOB | Destructive execution — Zscaler #2 · OWASP LLM06 |
-| 8 | `PIIBoundaryCheck` | Egress | Framework OOB | Sensitive Info Disclosure — OWASP LLM02 |
-| 9 | `ToolArgumentCheck` | Egress | Framework OOB | Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05 |
-| 10 | `HardcodedCredentialCheck` | Egress | Framework OOB | Supply chain / secret leakage — OWASP LLM03 |
-| 11 | `ToolAuthorizationCheck` | Egress | Satan SBB | Shadow AI — unapproved tool — Zscaler #4 |
+| 6 | `ToolArgumentCheck` | Ingress + Egress | Framework OOB | Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05 |
+| 7 | `ToolAuthorizationCheck` | Ingress + Egress | Satan SBB | Shadow AI — unapproved tool — Zscaler #4 |
+| 8 | `SemanticDriftCheck` | Egress | Framework OOB | Goal Hijacking & Privilege Escalation — Zscaler #2 · OWASP LLM06 |
+| 9 | `ExecutionGuardCheck` | Egress | Framework OOB | Destructive execution — Zscaler #2 · OWASP LLM06 |
+| 10 | `PIIBoundaryCheck` | Egress | Framework OOB | Sensitive Info Disclosure — OWASP LLM02 |
+| 11 | `HardcodedCredentialCheck` | Egress | Framework OOB | Supply chain / secret leakage — OWASP LLM03 |
 | 12 | `SystemPromptLeakageCheck` | Egress | Satan SBB | System Prompt Leakage — OWASP LLM07 |
 | 13 | `OutputSanitizationCheck` | Egress | Satan SBB | Improper Output Handling — OWASP LLM05 |
 | — | `GuardianGovernance` | Agent pre/post | Satan SBB | Semantic evasion of all 13 above (cross-cutting, optional) |
+
+`ToolArgumentCheck`/`ToolAuthorizationCheck` are deliberately wired at **both** gates. Ingress catches caller-supplied `tool_name`/`tool_arguments`/`*_backend` fields present in the payload before Squad/Agent ever runs — closing the "detected too late" gap from the pre-2026-07 egress-only layout. Egress stays wired too because a real agent can generate a *fresh* tool call mid-execution from LLM output, which doesn't exist yet at ingress — only egress (seeing `{**payload, **squad_output}`) has a chance at catching that case. Same defense-in-depth principle as Guardian (additive, never a replacement). Satan's own agents don't generate tool calls, so the egress copy is a dormant safety net in this harness — present for what a real deployment's agent would do.
 
 Out of scope by design (not runtime-checkable at the payload level): training-data
 poisoning, vector/embedding attacks (no RAG in this target), misinformation/hallucination.
@@ -88,8 +90,8 @@ poisoning, vector/embedding attacks (no RAG in this target), misinformation/hall
 ```
 k9x_satan/
 ├── target/               ← the pipeline under test (SBBs extending K9-AIF ABBs)
-│   ├── router.py              DocumentRouter — ingress Shield (5 checks)
-│   ├── orchestrator.py        DocumentOrchestrator — egress Shield (8 checks)
+│   ├── router.py              DocumentRouter — ingress Shield (7 checks)
+│   ├── orchestrator.py        DocumentOrchestrator — egress Shield (8 checks; 2 duplicated from ingress)
 │   ├── squad.py               DocumentProcessingSquad + governance selection
 │   ├── agents.py               DocumentExtractionAgent, AuditAgent
 │   ├── guardian_governance.py  IBM Granite Guardian semantic layer

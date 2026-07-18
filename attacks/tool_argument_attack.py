@@ -18,7 +18,7 @@ class ToolArgumentAttack(BaseAttack):
     Names an approved tool but poisons its arguments with a SQL injection
     payload — the tool identity should pass ToolAuthorizationCheck, so this
     isolates ToolArgumentCheck specifically.
-    Targets: Orchestrator egress ToolArgumentCheck.
+    Targets: Router ingress ToolArgumentCheck.
     """
 
     name    = "tool_argument_poison"

@@ -36,8 +36,8 @@ A block at any phase terminates execution — downstream phases never run. Both 
 ```
 k9x_satan/
 ├── target/            ← the pipeline under test (SBBs extending K9-AIF ABBs)
-│   ├── router.py           DocumentRouter(BaseRouter)          — ingress Shield (5 checks)
-│   ├── orchestrator.py     DocumentOrchestrator(BaseOrchestrator) — egress Shield (8 checks)
+│   ├── router.py           DocumentRouter(BaseRouter)          — ingress Shield (7 checks)
+│   ├── orchestrator.py     DocumentOrchestrator(BaseOrchestrator) — egress Shield (8 checks; 2 duplicated from ingress)
 │   ├── squad.py            DocumentProcessingSquad(BaseSquad) + governance selection (noop|guardian|shield)
 │   ├── agents.py           DocumentExtractionAgent, AuditAgent (BaseAgent) — enforce _guardian_blocked
 │   ├── field_anomaly_check.py, memory_poisoning_check.py, tool_authorization_check.py,
@@ -67,7 +67,8 @@ DoclingExtractor.enrich()              PRE-SHIELD — populates extracted_fields
   ↓
 DocumentRouter.route()                  extends BaseRouter
   ingress chain: RequestFrequencyCheck → InputSizeCheck → PromptInjectionCheck →
-                 FieldAnomalyCheck → MemoryPoisoningCheck
+                 FieldAnomalyCheck → MemoryPoisoningCheck →
+                 ToolArgumentCheck → ToolAuthorizationCheck
   BLOCK → return immediately, Orchestrator never runs
   ↓ (clean or flagged)
 DocumentOrchestrator.execute_flow()     extends BaseOrchestrator
@@ -82,7 +83,9 @@ DocumentOrchestrator.execute_flow()     extends BaseOrchestrator
 OUTPUT — status "completed"; if the payload was malicious, this is a FINDING (both gates missed it)
 ```
 
-`InputSizeCheck`, `PromptInjectionCheck`, `SemanticDriftCheck`, `PIIBoundaryCheck`, `ToolArgumentCheck`, `ExecutionGuardCheck`, `HardcodedCredentialCheck` are all framework OOB checks (`k9_aif_abb/k9_security/vulnerability/checks/`). `FieldAnomalyCheck`, `MemoryPoisoningCheck`, `ToolAuthorizationCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck` are Satan-local — each extends the same `BaseVulnerabilityCheck` contract, proving a solution can add its own handlers without modifying the framework.
+`ToolArgumentCheck`/`ToolAuthorizationCheck` are deliberately wired at **both** gates, not one or the other. Ingress catches attacker-supplied `tool_name`/`tool_arguments`/`*_backend` fields present in the original payload — before Squad/Agent ever runs, closing the "detected too late" gap that existed when these checks lived at egress only (pre-2026-07 layout). But a real agent can generate a *fresh* tool call mid-execution from LLM output — data that doesn't exist yet at ingress, only visible to egress via `{**payload, **squad_output}`. Same defense-in-depth principle as Guardian (additive over pattern checks, never a replacement) — see `k9-aif-framework/CLAUDE.md`'s Provider Adapter Pattern section for the parallel. In Satan's own harness specifically neither agent (`DocumentExtractionAgent`/`AuditAgent`) generates tool calls, so today the egress copy never fires in practice — it exists for the case a real deployment's agent would hit.
+
+`InputSizeCheck`, `PromptInjectionCheck`, `ToolArgumentCheck`, `SemanticDriftCheck`, `PIIBoundaryCheck`, `ExecutionGuardCheck`, `HardcodedCredentialCheck` are all framework OOB checks (`k9_aif_abb/k9_security/vulnerability/checks/`). `FieldAnomalyCheck`, `MemoryPoisoningCheck`, `ToolAuthorizationCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck` are Satan-local — each extends the same `BaseVulnerabilityCheck` contract, proving a solution can add its own handlers without modifying the framework.
 
 **Defense in depth, three governance options** (`squad.py._make_governance()`, selected via `governance.provider` in config.yaml or Setup → Governance in the webui):
 - `noop` (default) — passthrough, dev only

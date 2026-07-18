@@ -84,15 +84,17 @@ def main():
         attack_names = [args.attack]
     elif args.suite == "ingress":
         # Router ingress chain: RequestFrequencyCheck, InputSizeCheck,
-        # PromptInjectionCheck, FieldAnomalyCheck, MemoryPoisoningCheck
+        # PromptInjectionCheck, FieldAnomalyCheck, MemoryPoisoningCheck,
+        # ToolArgumentCheck, ToolAuthorizationCheck
         attack_names = ["prompt_injection_document", "search_poisoning", "payload_flood",
-                         "memory_poisoning", "request_flood"]
+                         "memory_poisoning", "request_flood",
+                         "tool_argument_poison", "shadow_tool"]
     elif args.suite == "egress":
         # Orchestrator egress chain: SemanticDriftCheck, ExecutionGuardCheck,
-        # PIIBoundaryCheck, ToolArgumentCheck, HardcodedCredentialCheck,
-        # ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck
+        # PIIBoundaryCheck, HardcodedCredentialCheck, SystemPromptLeakageCheck,
+        # OutputSanitizationCheck
         attack_names = ["semantic_drift", "execution_bypass", "pii_exfiltration",
-                         "tool_argument_poison", "hardcoded_credential", "shadow_tool",
+                         "hardcoded_credential",
                          "system_prompt_leakage", "output_sanitization"]
     else:
         attack_names = list(ATTACK_REGISTRY.keys())

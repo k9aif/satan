@@ -18,9 +18,11 @@ from k9_aif_abb.k9_core.router.base_router import BaseRouter
 from k9_aif_abb.k9_security.vulnerability.vulnerability_chain import VulnerabilityChain
 from k9_aif_abb.k9_security.vulnerability.checks.input_size_check import InputSizeCheck
 from k9_aif_abb.k9_security.vulnerability.checks.prompt_injection_check import PromptInjectionCheck
+from k9_aif_abb.k9_security.vulnerability.checks.tool_argument_check import ToolArgumentCheck
 from k9x_satan.target.field_anomaly_check import FieldAnomalyCheck
 from k9x_satan.target.memory_poisoning_check import MemoryPoisoningCheck
 from k9x_satan.target.request_frequency_check import RequestFrequencyCheck
+from k9x_satan.target.tool_authorization_check import ToolAuthorizationCheck
 
 log = logging.getLogger("k9x_satan.target")
 
@@ -44,6 +46,15 @@ class DocumentRouter(BaseRouter):
             .add(PromptInjectionCheck(self.config))
             .add(FieldAnomalyCheck(self.config))
             .add(MemoryPoisoningCheck(self.config))
+            # ToolArgumentCheck/ToolAuthorizationCheck inspect the tool_name /
+            # tool_arguments / *_backend fields a caller supplies up front —
+            # nothing about them depends on the Squad/Agent having run. Both
+            # checks' own docstrings say "before execution" / "before a tool
+            # call is dispatched" — that only means something if they gate
+            # ingress. Wiring them at Orchestrator egress (pre-move) let a
+            # poisoned tool call reach Squad/Agent before ever being caught.
+            .add(ToolArgumentCheck(self.config))
+            .add(ToolAuthorizationCheck(self.config))
         )
 
     def route(self, payload: Dict[str, Any]) -> Dict[str, Any]:

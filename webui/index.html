@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>K9x Satan — Security Analysis Tool for Agentic Networks</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
 <style>
   :root {
     --bg:        #0a0a12;
@@ -980,6 +981,41 @@
   .doc-list li { font-size: 0.88rem; color: var(--muted); line-height: 1.9; list-style: disc; }
   .doc-list li::marker { color: var(--red-mid); }
 
+  /* ── README TAB (marked.js-rendered markdown) ── */
+  .readme-body { line-height: 1.7; color: var(--muted); }
+  .readme-body h1, .readme-body h2, .readme-body h3 {
+    color: var(--text); font-weight: 600; margin: 22px 0 10px; letter-spacing: 0.02em;
+  }
+  .readme-body h1 { font-size: 1.3rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .readme-body h2 { font-size: 1.1rem; color: var(--red-mid); }
+  .readme-body h3 { font-size: 0.98rem; }
+  .readme-body p  { font-size: 0.95rem; margin-bottom: 10px; }
+  .readme-body a  { color: var(--red-mid); text-decoration: none; }
+  .readme-body a:hover { text-decoration: underline; }
+  .readme-body code {
+    font-family: var(--font-mono); font-size: 0.85rem; color: var(--text);
+    background: var(--panel); padding: 1px 5px; border-radius: 3px;
+  }
+  .readme-body pre {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 5px;
+    padding: 10px 14px; overflow-x: auto; margin: 10px 0;
+  }
+  .readme-body pre code { background: none; padding: 0; }
+  .readme-body ul, .readme-body ol { margin: 8px 0 10px 22px; }
+  .readme-body li { font-size: 0.95rem; margin-bottom: 4px; }
+  .readme-body hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+  .readme-body table {
+    width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 0.85rem;
+  }
+  .readme-body th, .readme-body td {
+    border: 1px solid var(--border); padding: 6px 10px; text-align: left;
+  }
+  .readme-body th { color: var(--text); background: var(--panel); }
+  .readme-body blockquote {
+    border-left: 3px solid var(--red-mid); margin: 10px 0; padding: 4px 14px;
+    color: var(--dim); background: color-mix(in srgb, var(--red-mid) 4%, transparent);
+  }
+
   .btn-ghost {
     background: none;
     border: 1px solid var(--border);
@@ -1105,6 +1141,7 @@
     <button onclick="showTab('attack', this)">Penetration Monitor</button>
     <button onclick="showTab('results', this)">Results</button>
     <button onclick="showTab('architecture', this)">Architecture</button>
+    <button onclick="showTab('readme', this)">README</button>
   </div>
 
   <!-- ── SETUP TAB ── -->
@@ -1405,7 +1442,8 @@
     <div class="card">
       <h3>Complete Check Inventory — Component × Threat Class</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
-        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">13 checks total</span> — 7 framework OOB, 6 Satan-local — plus Guardian as a cross-cutting semantic layer that wraps every agent regardless of chain position.
+        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">13 checks total</span> — 7 framework OOB, 6 Satan-local — plus Guardian as a cross-cutting semantic layer that wraps every agent regardless of chain position. Threat classes reference the
+        <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener" style="color:var(--red-mid)">OWASP Top 10 for LLM Applications</a>.
       </p>
       <div style="overflow-x:auto">
       <table class="history-table">
@@ -1426,12 +1464,12 @@
           <tr><td>3</td><td>PromptInjectionCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Indirect Prompt Injection — Zscaler #1 · OWASP LLM01</td><td>prompt_injection_document, search_poisoning</td></tr>
           <tr><td>4</td><td>FieldAnomalyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Authority-override social engineering — Zscaler #1 extension</td><td>prompt_injection_document</td></tr>
           <tr><td>5</td><td>MemoryPoisoningCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Memory Poisoning — Zscaler #3 · OWASP LLM04</td><td>memory_poisoning</td></tr>
-          <tr><td>6</td><td>SemanticDriftCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Goal Hijacking &amp; Privilege Escalation — Zscaler #2 · OWASP LLM06</td><td>semantic_drift</td></tr>
-          <tr><td>7</td><td>ExecutionGuardCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Destructive execution / privilege escalation — Zscaler #2 · OWASP LLM06</td><td>execution_bypass</td></tr>
-          <tr><td>8</td><td>PIIBoundaryCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Sensitive Info Disclosure — OWASP LLM02</td><td>pii_exfiltration</td></tr>
-          <tr><td>9</td><td>ToolArgumentCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05</td><td>tool_argument_poison</td></tr>
-          <tr><td>10</td><td>HardcodedCredentialCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Supply chain / secret leakage — OWASP LLM03</td><td>hardcoded_credential</td></tr>
-          <tr><td>11</td><td>ToolAuthorizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Shadow AI — unapproved tool/backend — Zscaler #4</td><td>shadow_tool</td></tr>
+          <tr><td>6</td><td>ToolArgumentCheck</td><td>Ingress + Egress</td><td>Router + Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05</td><td>tool_argument_poison</td></tr>
+          <tr><td>7</td><td>ToolAuthorizationCheck</td><td>Ingress + Egress</td><td>Router + Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Shadow AI — unapproved tool/backend — Zscaler #4</td><td>shadow_tool</td></tr>
+          <tr><td>8</td><td>SemanticDriftCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Goal Hijacking &amp; Privilege Escalation — Zscaler #2 · OWASP LLM06</td><td>semantic_drift</td></tr>
+          <tr><td>9</td><td>ExecutionGuardCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Destructive execution / privilege escalation — Zscaler #2 · OWASP LLM06</td><td>execution_bypass</td></tr>
+          <tr><td>10</td><td>PIIBoundaryCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Sensitive Info Disclosure — OWASP LLM02</td><td>pii_exfiltration</td></tr>
+          <tr><td>11</td><td>HardcodedCredentialCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Supply chain / secret leakage — OWASP LLM03</td><td>hardcoded_credential</td></tr>
           <tr><td>12</td><td>SystemPromptLeakageCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>System Prompt Leakage — OWASP LLM07</td><td>system_prompt_leakage</td></tr>
           <tr><td>13</td><td>OutputSanitizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Improper Output Handling — OWASP LLM05</td><td>output_sanitization</td></tr>
           <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Pre/Post — every agent</td><td>Agent</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Semantic evasion of all 13 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code></td><td>any attack, with Governance = GuardianGovernance</td></tr>
@@ -1465,7 +1503,7 @@
         <div class="arch-arrow red">→</div>
         <div class="arch-node">
           <div class="arch-box gate">ROUTER<br><span style="font-size:0.75rem;font-weight:400">Pre-Agent Shield</span></div>
-          <div class="arch-note">RequestFrequencyCheck<br>InputSizeCheck<br>PromptInjectionCheck<br>FieldAnomalyCheck<br>MemoryPoisoningCheck</div>
+          <div class="arch-note">RequestFrequencyCheck<br>InputSizeCheck<br>PromptInjectionCheck<br>FieldAnomalyCheck<br>MemoryPoisoningCheck<br>ToolArgumentCheck<br>ToolAuthorizationCheck</div>
           <div class="arch-stop">🛑 BLOCKED ✓</div>
         </div>
         <div class="arch-arrow">→</div>
@@ -1518,6 +1556,9 @@
       </div>
       <p style="font-size:0.99rem;color:var(--muted);margin-top:8px">
         ORCHESTRATOR and AGENT each appear once in IN and once in OUT — same objects both times. ORCHESTRATOR dispatches to Squad on the way in, then evaluates the returned result on the way out. AGENT screens input before calling the LLM, then screens its own output before returning it.
+      </p>
+      <p style="font-size:0.99rem;color:var(--muted);margin-top:8px">
+        <code style="font-size:0.96rem">ToolArgumentCheck</code>/<code style="font-size:0.96rem">ToolAuthorizationCheck</code> appear in <strong style="color:var(--text)">both</strong> chains, deliberately — not a duplication mistake. Ingress catches caller-supplied <code style="font-size:0.9rem">tool_name</code>/<code style="font-size:0.9rem">tool_arguments</code> present in the payload before Squad/Agent ever runs. Egress stays wired too because a real agent can generate a fresh tool call mid-execution from LLM output — data that doesn't exist yet at ingress, only visible to egress via the returned result. Same defense-in-depth principle as Guardian: additive, never a replacement.
       </p>
 
       <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:1.05rem;color:var(--text);line-height:1.7">
@@ -1713,6 +1754,24 @@
                 </div>
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">⑥</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">ToolArgumentCheck</span>
+                  <span style="color:var(--muted)"> · tool_name/tool_arguments fields — pattern scan</span>
+                  <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: SQL/command injection, path traversal, SSRF in tool call arguments. Moved here from Orchestrator egress (2026-07) — it inspects caller-supplied fields, not agent output, so gating it before Squad/Agent runs actually prevents the poisoned call instead of just detecting it afterward.</div>
+                </div>
+                <span style="margin-left:auto;color:var(--red-glow);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">⑦</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">ToolAuthorizationCheck</span>
+                  <span style="color:var(--muted)"> · tool_name/*_backend fields vs. approved allowlist</span>
+                  <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: unapproved tool identity, poisoned/attacker-controlled backend URL (Shadow AI). Same rationale as ToolArgumentCheck above — an authorization gate only means something if it runs before the call it's authorizing.</div>
+                </div>
+                <span style="margin-left:auto;color:var(--red-glow);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
             </div>
           </div>
 
@@ -1854,6 +1913,13 @@ DocumentOrchestrator          extends BaseOrchestrator    (K9-AIF ABB)
   ⚠ FINDING — both gates passed — response exited pipeline</pre>
     </div>
 
+  </div>
+
+  <!-- ── README TAB ── -->
+  <div id="tab-readme" class="tab-panel">
+    <div class="card readme-body" id="readme-content" style="max-width:900px">
+      <div style="text-align:center;color:var(--muted);padding:20px">Loading README…</div>
+    </div>
   </div>
 
   <!-- ── DOCUMENTATION TAB ── -->
@@ -2087,6 +2153,25 @@ function showTab(name, btn) {
   if (btn) btn.classList.add('active');
   if (name === 'results') loadHistory();
   if (name === 'setup')   { loadLLMConfig(); loadGovernanceConfig(); loadDoclingConfig(); }
+  if (name === 'readme')  loadReadme();
+}
+
+// ── README — fetched + rendered client-side (marked.js) rather than
+// hand-duplicated into the tab, so it can never drift from the actual
+// README.md the repo/PyPI page show.
+let _readmeLoaded = false;
+async function loadReadme() {
+  if (_readmeLoaded) return;
+  const el = document.getElementById('readme-content');
+  try {
+    const resp = await fetch('/api/readme');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const md = await resp.text();
+    el.innerHTML = marked.parse(md);
+    _readmeLoaded = true;
+  } catch (e) {
+    el.innerHTML = `<div style="text-align:center;color:var(--red-glow);padding:20px">Failed to load README: ${e}</div>`;
+  }
 }
 
 // ── STATE

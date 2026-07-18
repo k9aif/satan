@@ -18,7 +18,7 @@ class ShadowToolAttack(BaseAttack):
     Names a tool that is not on the approved allowlist — no injection markers,
     no dangerous arguments, just an unsanctioned tool identity. Proves the
     allowlist gate, not the argument-poisoning gate.
-    Targets: Orchestrator egress ToolAuthorizationCheck.
+    Targets: Router ingress ToolAuthorizationCheck.
     """
 
     name    = "shadow_tool"

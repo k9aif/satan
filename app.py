@@ -16,7 +16,7 @@ except ImportError:
     pass
 
 from fastapi import Body, FastAPI, HTTPException, UploadFile, File, Form
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -230,6 +230,19 @@ def dashboard():
         content=html,
         headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
     )
+
+
+@app.get("/api/readme", response_class=PlainTextResponse)
+def readme():
+    """Raw README.md — the README tab fetches and renders this client-side
+    (marked.js) so the webui always shows the same content as the repo/PyPI
+    page, with one source of truth instead of a hand-duplicated copy."""
+    readme_path = os.path.join(os.path.dirname(__file__), "README.md")
+    with open(readme_path) as f:
+        return PlainTextResponse(
+            content=f.read(),
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
 
 
 # ── Corpus API ────────────────────────────────────────────────────────────────

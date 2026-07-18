@@ -67,6 +67,15 @@ class DocumentOrchestrator(BaseOrchestrator):
         self._squad = DocumentProcessingSquad(config=self.config)
 
     def _build_egress_chain(self) -> VulnerabilityChain:
+        # ToolArgumentCheck/ToolAuthorizationCheck are ALSO wired at Router
+        # ingress (see DocumentRouter._build_ingress_chain) — deliberately
+        # duplicated, not moved. Ingress catches attacker-supplied tool_name/
+        # tool_arguments present in the original payload before Squad/Agent
+        # ever runs. But a real agent can generate a fresh tool call mid-
+        # execution from LLM output — data that doesn't exist yet at ingress.
+        # Egress sees {**payload, **squad_output}, so it's the only gate that
+        # can catch that case. Same defense-in-depth principle already used
+        # for Guardian (additive over pattern checks, never a replacement).
         pii_config = {**self.config, "block_on_match": True}
         return (
             VulnerabilityChain()

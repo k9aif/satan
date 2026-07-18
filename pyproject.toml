@@ -47,6 +47,7 @@ k9x_satan = "."
 
 [tool.setuptools.package-data]
 k9x_satan = [
+    "README.md",
     "webui/*.html",
     "corpus/*",
     "config/*.yaml",
