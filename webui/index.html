@@ -1102,6 +1102,7 @@
       <div class="llm-dot off" id="llm-dot"></div>
       <span class="llm-pill" id="llm-pill">not connected</span>
       <span class="llm-pill connected" id="ocr-pill" style="display:none">OCR: on</span>
+      <span id="current-doc-name" style="flex:1;text-align:center;font-size:0.78rem;color:var(--muted);font-weight:600"></span>
     </div>
     <div class="depth-pipeline">
       <div class="depth-node">
@@ -2321,6 +2322,13 @@ async function fireAttack() {
   resetDepthDisplay();
   document.getElementById('node-satan').className = 'depth-box active';
 
+  const docNameEl = document.getElementById('current-doc-name');
+  if (docNameEl) {
+    docNameEl.textContent = _selectedFile
+      ? _selectedFile.name
+      : (_corpus[_selectedCorpus]?.label || _selectedCorpus || '');
+  }
+
   const fd = new FormData();
   const isBinaryUpload = _selectedFile && /\.(pdf|docx)$/i.test(_selectedFile.name || '');
   if (_selectedFile) {
@@ -2640,6 +2648,17 @@ function showChainLog(result) {
      </div>`
   ).join('');
 
+  // Human-readable input document name, derived from result.source
+  // ("upload:<filename>" or "corpus:<key>") — shown as the first row so
+  // a fast-scrolling log still makes clear which document these fields
+  // came from.
+  const _src = result.source || '';
+  const inputDocName = _src.startsWith('upload:')
+    ? _src.slice('upload:'.length)
+    : _src.startsWith('corpus:')
+      ? (_corpus[_src.slice('corpus:'.length)]?.label || _src.slice('corpus:'.length))
+      : (_src || '—');
+
   const ingressSub = ingressSkipped
     ? 'VulnerabilityChain'
     : `VulnerabilityChain · ${ingress.length} check${ingress.length !== 1 ? 's' : ''}`;
@@ -2666,6 +2685,11 @@ function showChainLog(result) {
     <span class="check-status ${extractBadgeClass}">${extractBadgeLabel}</span>
     <span class="check-msg ${extractFallback ? 'threat' : ''}">${escapeHtml(extractMsg)}</span>
   </div>`);
+  steps.push(`<div class="chain-check" style="padding:4px 12px">
+     <span class="check-icon" style="color:var(--dim);font-size:0.85rem">·</span>
+     <span class="check-name" style="font-size:0.85rem;min-width:180px;color:var(--muted)">input document name</span>
+     <span class="check-msg" style="font-size:0.85rem;color:var(--text);font-weight:600">${escapeHtml(inputDocName)}</span>
+   </div>`);
   Object.entries(extractedFields).slice(0, 8).forEach(([k, v]) => {
     steps.push(`<div class="chain-check" style="padding:4px 12px">
        <span class="check-icon" style="color:var(--dim);font-size:0.85rem">·</span>
