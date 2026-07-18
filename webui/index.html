@@ -1933,7 +1933,9 @@ k9x-satan --bg     # or run it in the background</pre>
         <p class="doc-p">Enable it in <strong style="color:var(--text)">Setup → Governance</strong> — three providers are available: <code>NoopGovernance</code> (passthrough, dev default), <code>GuardianGovernance</code> (semantic, this section), and <code>ShieldGovernance</code> (a second deterministic wiring point — the same <code>VulnerabilityChain</code> contract, reused at the agent pre/post hook instead of Router/Orchestrator). The chain log shows Guardian's pre/post verdict on every agent run.</p>
         <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--green) 6%,transparent);border-left:3px solid var(--green);font-size:0.78rem;color:var(--muted);line-height:1.7">
           Router/Orchestrator Shield catches <strong style="color:var(--text)">known pattern attacks</strong> (injection markers, override codes, poisoned tool arguments) — zero LLM cost, deterministic.
-          Guardian catches <strong style="color:var(--text)">semantic attacks</strong> (PII exfiltration, compliance framing, policy bypass) that evaded the pattern layer — one LLM call per agent.
+          Guardian catches <strong style="color:var(--text)">semantic attacks</strong> that evaded the pattern layer — up to <strong style="color:var(--text)">two</strong> LLM calls per agent, one on each side of the agent's own LLM call:
+          <code style="color:var(--muted)">pre_process()</code> screens the incoming request for prompt injection, goal hijacking, <strong style="color:var(--text)">PII exfiltration attempts</strong>, jailbreaks, and social engineering framing — blocking before the agent ever calls its LLM;
+          <code style="color:var(--muted)">post_process()</code> screens the agent's own output for whether it <strong style="color:var(--text)">actually leaked PII</strong>, complied with a malicious instruction, or contains anything that should have been redacted — after the LLM has already responded.
           Shield holds with Guardian disabled entirely. Guardian only ever adds coverage on top — it is never the only thing standing between a payload and the agent.
         </div>
         <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--red-mid) 6%,transparent);border-left:3px solid var(--red-mid);font-size:0.78rem;color:var(--muted);line-height:1.7">
@@ -1955,12 +1957,12 @@ k9x-satan --bg     # or run it in the background</pre>
         <div class="doc-h4">Attack Corpus</div>
         <p class="doc-p">Satan includes a curated corpus of attack documents representing common agentic AI threat patterns. Each payload targets a specific vulnerability class implemented by K9X Shield.</p>
         <ul class="doc-list">
-          <li>Prompt Injection</li>
-          <li>Goal Hijacking</li>
-          <li>Memory Poisoning</li>
-          <li>Tool Argument Injection</li>
-          <li>PII Boundary Violation</li>
-          <li>Oversized Payloads</li>
+          <li>Prompt Injection — Claim Form with a "SYSTEM OVERRIDE" body</li>
+          <li>HTML Comment Injection — hidden instruction inside a policy document</li>
+          <li>Roleplay Jailbreak — "Pretend you are DAN" framing</li>
+          <li>Social Engineering — fake executive directive with an "override code"</li>
+          <li>PII Exfiltration — compliance-audit framing requesting SSN/account numbers</li>
+          <li>Oversized Payload — token flood attack</li>
           <li>Clean Control Document</li>
         </ul>
         <p class="doc-p" style="margin-top:12px">The Clean Control document serves as a baseline and should always traverse the complete pipeline without being blocked.</p>
