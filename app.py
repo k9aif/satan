@@ -5,6 +5,7 @@ import json
 import logging
 import multiprocessing
 import os
+import re
 import secrets
 import time
 import uuid
@@ -88,15 +89,15 @@ _attack_counter = 0   # monotonic — decoupled from len(_run_history), which
 # backend (e.g. Redis) if this ever moves to multiple containers behind a
 # load balancer.
 #
-# Usernames are ALWAYS auto-generated (adjective-noun codename), never
-# user-supplied free text. This history is shared across every visitor and
-# persisted to disk (SATAN_DATA_DIR/history.json, see below) — a free-text
-# field is an open invitation for someone to type a slur/profanity that then
-# sits there, visible to every other tester, until it eventually rotates out
-# of the 50-run cap. A blocklist only catches what you thought to list;
-# removing free text entirely closes the whole class of problem. The
-# word lists below are curated so names stay in the same "red team" spirit
-# as the tool itself (and its testers naming themselves Wick, Benelli M4...).
+# Username can be typed in (people naming themselves Wick, Benelli M4, etc.
+# is part of the fun) or left blank for an auto-generated codename. This
+# history is shared across every visitor and persisted to disk
+# (SATAN_DATA_DIR/history.json, see below), so a typed name that trips the
+# profanity blocklist is never rejected with an error (that just invites
+# retrying variants) — it's silently swapped for a fresh auto-generated
+# codename instead, same as leaving the field blank. The word lists below
+# are curated so generated names stay in the same "red team" spirit as the
+# tool itself.
 
 _SESSION_COOKIE = "satan_session"
 _SESSION_TTL_SECONDS = 24 * 60 * 60
@@ -118,6 +119,33 @@ def _generate_guest_username() -> str:
     adjective = secrets.choice(_CODENAME_ADJECTIVES)
     noun = secrets.choice(_CODENAME_NOUNS)
     return f"{adjective}-{noun}-{secrets.token_hex(2)}"
+
+
+# Not exhaustive — a blocklist never is. Deliberately conservative (common
+# English profanity/slurs) rather than an attempt at completeness; the point
+# is to catch the obvious case, with silent codename substitution (not a
+# rejection/retry loop) as the safety net for whatever it misses.
+_USERNAME_BLOCKLIST = {
+    "fuck", "shit", "bitch", "cunt", "asshole", "bastard", "dick", "pussy",
+    "nigger", "nigga", "faggot", "fag", "retard", "whore", "slut", "rape",
+    "nazi", "hitler", "cock", "twat", "dyke", "chink", "spic", "kike",
+}
+
+
+def _sanitize_username(raw: str) -> str:
+    """
+    Returns a display-safe username: the caller's own text if it's non-empty,
+    reasonably short, and clean — otherwise a freshly generated codename.
+    Never raises/rejects — a blocked or malformed name just silently becomes
+    a codename, exactly like leaving the field blank.
+    """
+    candidate = (raw or "").strip()
+    if not candidate or len(candidate) > 24:
+        return _generate_guest_username()
+    normalized = re.sub(r"[^a-z0-9]", "", candidate.lower())
+    if any(bad in normalized for bad in _USERNAME_BLOCKLIST):
+        return _generate_guest_username()
+    return candidate
 
 
 def _prune_expired_sessions() -> None:
@@ -147,13 +175,14 @@ def _get_username(request: Request) -> str:
     return session["username"]
 
 
+class LoginRequest(BaseModel):
+    username: str = ""
+
+
 @app.post("/api/login")
-def login(response: Response):
-    # No request body — username is always auto-generated (see
-    # _generate_guest_username's docstring above for why free text isn't
-    # accepted here).
+def login(req: LoginRequest, response: Response):
     _prune_expired_sessions()
-    username = _generate_guest_username()
+    username = _sanitize_username(req.username)
     session_id = str(uuid.uuid4())
     now = time.time()
     _sessions[session_id] = {"username": username, "created_at": now, "last_seen": now}

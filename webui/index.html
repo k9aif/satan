@@ -1097,15 +1097,23 @@
     text-align: center;
     backdrop-filter: blur(2px);
   }
+  #login-overlay input#login-username:focus {
+    outline: none;
+    border-color: #aa1515 !important;
+    box-shadow: 0 0 0 2px rgba(170,21,21,0.25);
+  }
 </style>
 <div id="login-overlay" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center">
   <div class="login-box">
     <div class="login-k9">K9X <span style="font-size:0.6rem;font-weight:700;color:var(--dim);vertical-align:super">(Beta)</span></div>
     <div class="login-title">SATAN</div>
     <div class="login-tagline">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
+    <input id="login-username" type="text" placeholder="codename (optional)" autocomplete="off" maxlength="24"
+           style="width:100%;padding:9px 11px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:0.9rem;margin-bottom:12px;box-sizing:border-box;transition:border-color 0.15s"
+           onkeydown="if(event.key==='Enter') doLogin()">
     <button id="login-btn" onclick="doLogin()" style="width:100%;padding:10px;background:linear-gradient(135deg,#8b0000,#cc2222);border:none;border-radius:4px;color:#fff;font-weight:700;letter-spacing:0.08em;cursor:pointer;text-transform:uppercase">Enter, if you dare</button>
     <div id="login-error" style="color:var(--red-glow);font-size:0.78rem;margin-top:10px;display:none"></div>
-    <div style="font-size:0.7rem;color:var(--dim);margin-top:18px">No password required — you'll be assigned a codename.</div>
+    <div style="font-size:0.7rem;color:var(--dim);margin-top:18px">No password required — leave blank for a random codename. Foul names get swapped automatically.</div>
   </div>
 </div>
 
@@ -3441,12 +3449,17 @@ async function doLogout() {
 }
 
 async function doLogin() {
+  const input  = document.getElementById('login-username');
   const btn    = document.getElementById('login-btn');
   const errEl  = document.getElementById('login-error');
   errEl.style.display = 'none';
   btn.disabled = true;
   try {
-    const resp = await fetch('/api/login', { method: 'POST' });
+    const resp = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: input.value.trim() }),
+    });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
     _currentUsername = data.username;
@@ -3469,7 +3482,7 @@ async function checkSessionAndStart() {
     }
   } catch {}
   // Not logged in (or check failed) — leave the login overlay showing.
-  document.getElementById('login-btn').focus();
+  document.getElementById('login-username').focus();
 }
 
 checkSessionAndStart();
