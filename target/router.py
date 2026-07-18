@@ -1,8 +1,14 @@
 """
-K9x Satan — DocumentRouter SBB
+K9x Satan — DocumentRouter
 
-Extends BaseRouter. Applies the ingress Shield (InputSizeCheck +
-PromptInjectionCheck) then delegates to the registered DocumentOrchestrator.
+Extends BaseRouter. Applies the 7-check ingress Shield (RequestFrequencyCheck,
+InputSizeCheck, PromptInjectionCheck, FieldAnomalyCheck, MemoryPoisoningCheck,
+ToolArgumentCheck, ToolAuthorizationCheck) then delegates to the registered
+DocumentOrchestrator. All seven are now framework OOB checks
+(k9_aif_abb.k9_security.vulnerability.checks) except FieldAnomalyCheck, which
+stays Satan-local — its pattern set is tuned to this project's own
+insurance-claim test corpus and was deliberately not promoted into the
+framework (see the K9-AIF security review's Gap Analysis, G8).
 """
 
 import logging
@@ -19,33 +25,35 @@ from k9_aif_abb.k9_security.vulnerability.vulnerability_chain import Vulnerabili
 from k9_aif_abb.k9_security.vulnerability.checks.input_size_check import InputSizeCheck
 from k9_aif_abb.k9_security.vulnerability.checks.prompt_injection_check import PromptInjectionCheck
 from k9_aif_abb.k9_security.vulnerability.checks.tool_argument_check import ToolArgumentCheck
+from k9_aif_abb.k9_security.vulnerability.checks.memory_poisoning_check import MemoryPoisoningCheck
+from k9_aif_abb.k9_security.vulnerability.checks.request_frequency_check import RequestFrequencyCheck
+from k9_aif_abb.k9_security.vulnerability.checks.tool_authorization_check import ToolAuthorizationCheck
 from k9x_satan.target.field_anomaly_check import FieldAnomalyCheck
-from k9x_satan.target.memory_poisoning_check import MemoryPoisoningCheck
-from k9x_satan.target.request_frequency_check import RequestFrequencyCheck
-from k9x_satan.target.tool_authorization_check import ToolAuthorizationCheck
+from k9x_satan.target._check_config import security_check_config
 
 log = logging.getLogger("k9x_satan.target")
 
 
 class DocumentRouter(BaseRouter):
     """
-    SBB: Single entry point for the Satan target pipeline.
+    Single entry point for the Satan target pipeline.
 
     Ingress gate runs InputSizeCheck then PromptInjectionCheck.
     Blocked payloads never reach the Orchestrator.
     Clean payloads are forwarded to the registered 'document_processing' orchestrator.
     """
 
-    layer = "Satan.Target DocumentRouter SBB"
+    layer = "Satan.Target DocumentRouter"
 
     def _build_ingress_chain(self) -> VulnerabilityChain:
+        sec_cfg = security_check_config(self.config)
         return (
             VulnerabilityChain()
-            .add(RequestFrequencyCheck(self.config))
+            .add(RequestFrequencyCheck(sec_cfg))
             .add(InputSizeCheck(self.config))
             .add(PromptInjectionCheck(self.config))
             .add(FieldAnomalyCheck(self.config))
-            .add(MemoryPoisoningCheck(self.config))
+            .add(MemoryPoisoningCheck(sec_cfg))
             # ToolArgumentCheck/ToolAuthorizationCheck inspect the tool_name /
             # tool_arguments / *_backend fields a caller supplies up front —
             # nothing about them depends on the Squad/Agent having run. Both
@@ -54,7 +62,7 @@ class DocumentRouter(BaseRouter):
             # ingress. Wiring them at Orchestrator egress (pre-move) let a
             # poisoned tool call reach Squad/Agent before ever being caught.
             .add(ToolArgumentCheck(self.config))
-            .add(ToolAuthorizationCheck(self.config))
+            .add(ToolAuthorizationCheck(sec_cfg))
         )
 
     def route(self, payload: Dict[str, Any]) -> Dict[str, Any]:

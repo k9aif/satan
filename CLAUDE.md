@@ -12,7 +12,7 @@ The framework under test lives at `/Users/ravinatarajan/ai/k9-aif-framework/k9_a
 |---|---|---|
 | `BaseVulnerabilityCheck` | `k9_security/vulnerability/base_vulnerability_check.py` | One class of threat, one handler — GoF Chain of Responsibility link |
 | `VulnerabilityChain` | `k9_security/vulnerability/vulnerability_chain.py` | Runs checks in order; stops on first BLOCK, continues past FLAG |
-| `BaseAttack` | `k9_security/attacks/base_attack.py` | Symmetric offense-side contract — one attack SBB per threat class |
+| `BaseAttack` | `k9_security/attacks/base_attack.py` | Symmetric offense-side contract — one attack class per threat class |
 | `BaseZeroTrustGuard` / `DefaultZeroTrustGuard` | `k9_security/zero_trust/guards.py` | Verify → Control → Enforce guard, opt-in on `BaseOrchestrator` |
 
 `BaseRouter` and `BaseOrchestrator` (`k9_aif_abb/k9_core/router/`, `k9_aif_abb/k9_core/orchestration/`) each expose an abstract chain-builder hook (`_build_ingress_chain()` / `_build_egress_chain()`) that any solution built on the framework must fill in. **Satan's job is to fire real attacks at a real pipeline built from these ABBs and prove that a poisoned payload cannot reach the Squad/Agent layer undetected.**
@@ -29,20 +29,22 @@ Attack → Router (ingress gate)       → BLOCKED  ✓
          Squad / Agent               → FINDING  ✗  (Shield failed)
 ```
 
-A block at any phase terminates execution — downstream phases never run. Both gates are `VulnerabilityChain` instances assembled from framework `BaseVulnerabilityCheck` subclasses plus Satan-local subclasses. 13 checks total (7 framework OOB, 6 Satan-local) — see the "Complete Check Inventory" table in README.md and the Architecture tab for the full component × threat-class mapping.
+A block at any phase terminates execution — downstream phases never run. Both gates are `VulnerabilityChain` instances assembled from framework `BaseVulnerabilityCheck` subclasses plus one Satan-local subclass. 13 checks total (12 framework OOB, 1 Satan-local) — see the "Complete Check Inventory" table in README.md and the Architecture tab for the full component × threat-class mapping. Five of the twelve framework OOB checks (`ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck`) were originally proven here as Satan-local checks and were later promoted into the framework itself once verified — see "Harvesting into the framework" below.
 
 ## Repo structure
 
 ```
 k9x_satan/
-├── target/            ← the pipeline under test (SBBs extending K9-AIF ABBs)
+├── target/            ← the pipeline under test (components extending K9-AIF ABBs)
 │   ├── router.py           DocumentRouter(BaseRouter)          — ingress Shield (7 checks)
 │   ├── orchestrator.py     DocumentOrchestrator(BaseOrchestrator) — egress Shield (8 checks; 2 duplicated from ingress)
 │   ├── squad.py            DocumentProcessingSquad(BaseSquad) + governance selection (noop|guardian|shield)
 │   ├── agents.py           DocumentExtractionAgent, AuditAgent (BaseAgent) — enforce _guardian_blocked
-│   ├── field_anomaly_check.py, memory_poisoning_check.py, tool_authorization_check.py,
-│   │   system_prompt_leakage_check.py, output_sanitization_check.py, request_frequency_check.py
-│   │                       Satan-local BaseVulnerabilityCheck SBBs (6 total)
+│   ├── field_anomaly_check.py  Satan-local BaseVulnerabilityCheck (1 total — the
+│   │                       other 5 that used to live here were promoted into the
+│   │                       framework; see "Harvesting into the framework" below)
+│   ├── _check_config.py    flattens config.yaml's security:/cache: blocks into the
+│   │                       scoped config shape framework OOB checks expect
 │   ├── extractor.py        DoclingExtractor — pre-Shield field extraction (naive regex | Docling OCR)
 │   ├── guardian_governance.py  GuardianGovernance(BaseGovernance) — IBM Granite Guardian, fail-closed by default
 │   └── pipeline.py         wiring: load config → extractor.enrich() → router.route()
@@ -85,7 +87,7 @@ OUTPUT — status "completed"; if the payload was malicious, this is a FINDING (
 
 `ToolArgumentCheck`/`ToolAuthorizationCheck` are deliberately wired at **both** gates, not one or the other. Ingress catches attacker-supplied `tool_name`/`tool_arguments`/`*_backend` fields present in the original payload — before Squad/Agent ever runs, closing the "detected too late" gap that existed when these checks lived at egress only (pre-2026-07 layout). But a real agent can generate a *fresh* tool call mid-execution from LLM output — data that doesn't exist yet at ingress, only visible to egress via `{**payload, **squad_output}`. Same defense-in-depth principle as Guardian (additive over pattern checks, never a replacement) — see `k9-aif-framework/CLAUDE.md`'s Provider Adapter Pattern section for the parallel. In Satan's own harness specifically neither agent (`DocumentExtractionAgent`/`AuditAgent`) generates tool calls, so today the egress copy never fires in practice — it exists for the case a real deployment's agent would hit.
 
-`InputSizeCheck`, `PromptInjectionCheck`, `ToolArgumentCheck`, `SemanticDriftCheck`, `PIIBoundaryCheck`, `ExecutionGuardCheck`, `HardcodedCredentialCheck` are all framework OOB checks (`k9_aif_abb/k9_security/vulnerability/checks/`). `FieldAnomalyCheck`, `MemoryPoisoningCheck`, `ToolAuthorizationCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck` are Satan-local — each extends the same `BaseVulnerabilityCheck` contract, proving a solution can add its own handlers without modifying the framework.
+`InputSizeCheck`, `PromptInjectionCheck`, `ToolArgumentCheck`, `SemanticDriftCheck`, `PIIBoundaryCheck`, `ExecutionGuardCheck`, `HardcodedCredentialCheck`, `ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck` are all framework OOB checks (`k9_aif_abb/k9_security/vulnerability/checks/`). Only `FieldAnomalyCheck` is Satan-local — it extends the same `BaseVulnerabilityCheck` contract, proving a solution can add its own handlers without modifying the framework, exactly the way the other five did before they were promoted (see "Harvesting into the framework" below).
 
 **Defense in depth, three governance options** (`squad.py._make_governance()`, selected via `governance.provider` in config.yaml or Setup → Governance in the webui):
 - `noop` (default) — passthrough, dev only
@@ -94,14 +96,20 @@ OUTPUT — status "completed"; if the payload was malicious, this is a FINDING (
 
 Compare what Guardian adds on top of the deterministic checks: `python -m k9x_satan.runner.satan_runner --target <url> --suite full --compare-governance` fires every attack twice (`governance_mode: noop` vs `guardian` via `_governance_override` in the payload, honored per-request by `POST /api/attack/fire` without mutating global server state) and reports which findings Guardian closed.
 
-## ABB vs SBB — who owns what
+## ABB vs Satan-local — who owns what
 
 **Framework ABBs/OOB (do not modify from this repo):**
-`BaseRouter`, `BaseOrchestrator`, `BaseSquad`, `BaseAgent`, `BaseGovernance`, `BaseVulnerabilityCheck`, `VulnerabilityChain`, `BaseAttack`, `BaseZeroTrustGuard` (abstract contracts); `InputSizeCheck`, `PromptInjectionCheck`, `SemanticDriftCheck`, `PIIBoundaryCheck`, `ToolArgumentCheck`, `ExecutionGuardCheck`, `HardcodedCredentialCheck`, `ShieldGovernance` (concrete OOB) — all in `k9-aif-framework/k9_aif_abb/`.
+`BaseRouter`, `BaseOrchestrator`, `BaseSquad`, `BaseAgent`, `BaseGovernance`, `BaseVulnerabilityCheck`, `VulnerabilityChain`, `BaseAttack`, `BaseZeroTrustGuard` (abstract contracts); `InputSizeCheck`, `PromptInjectionCheck`, `SemanticDriftCheck`, `PIIBoundaryCheck`, `ToolArgumentCheck`, `ExecutionGuardCheck`, `HardcodedCredentialCheck`, `ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck`, `ShieldGovernance` (concrete OOB) — all in `k9-aif-framework/k9_aif_abb/`.
 
-**Satan SBBs (this repo):** `DocumentRouter`, `DocumentOrchestrator`, `DocumentProcessingSquad`, `DocumentExtractionAgent`, `AuditAgent`, `GuardianGovernance`, `NoopGovernance`, `FieldAnomalyCheck`, `MemoryPoisoningCheck`, `ToolAuthorizationCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck`, `DoclingExtractor`, plus every class under `attacks/`.
+**Satan-local classes (this repo):** `DocumentRouter`, `DocumentOrchestrator`, `DocumentProcessingSquad`, `DocumentExtractionAgent`, `AuditAgent`, `GuardianGovernance`, `NoopGovernance`, `FieldAnomalyCheck`, `DoclingExtractor`, plus every class under `attacks/`.
 
-If a new threat vector needs coverage, the new handler is a framework `BaseVulnerabilityCheck` subclass (or a Satan-local one, per the 6 examples above) — never a rewrite of `VulnerabilityChain` or the Router/Orchestrator. Everything added to this project so far — 6 new checks, 11 new attacks, the `ShieldGovernance` wiring — required **zero new framework classes**; it's all SBB extension of existing ABBs.
+If a new threat vector needs coverage, the new handler is a framework `BaseVulnerabilityCheck` subclass (or a Satan-local one, like `FieldAnomalyCheck`) — never a rewrite of `VulnerabilityChain` or the Router/Orchestrator. The 6 checks originally added to this project required zero new framework classes at the time; 5 of them (`ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck`) were later harvested into the framework itself once proven here — see "Harvesting into the framework" below. `FieldAnomalyCheck` remains Satan-local; its pattern set is tuned to this project's own insurance-claim test corpus and would misrepresent a worked example as a general framework capability if promoted as-is.
+
+## Harvesting into the framework
+
+Satan is an adversarial test tool built using the framework's ABB classes to attack and validate the framework itself — never described as an SBB in a governed-application sense, and never a place framework-internal logic lives. But a check proven correct here, against a real pipeline under real attack, is exactly the kind of validated capability the framework's own Enterprise Continuum philosophy says should be promoted (a proven pattern generalized and elevated to an OOB ABB-level capability) rather than reinvented per solution. That's what happened to `ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, and `RequestFrequencyCheck`: each was built here first, proven via this project's attack suite, then ported into `k9-aif-framework/k9_aif_abb/k9_security/vulnerability/checks/` (generalizing away Satan-specific defaults and flattening config access to match the framework's own convention — see the framework's `k9_security/docs/04-gap-analysis.md`, Gap G8, for the exact changes made during promotion).
+
+The harvesting direction is strictly one-way: proven-here → generalized-into-framework, never framework-internals → Satan-specific behavior. `target/router.py` and `target/orchestrator.py` now import all five from `k9_aif_abb.k9_security.vulnerability.checks` instead of `k9x_satan.target`; `target/_check_config.py` adapts Satan's own `config.yaml` shape (`security:`/`cache:` blocks) into the flat, check-scoped config the framework versions expect.
 
 ## sys.path bootstrap pattern
 
@@ -113,7 +121,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 ```
 
-This assumes the fixed layout `ai/k9x-ecosystem/k9x_satan/` sitting alongside `ai/k9-aif-framework/`. Preserve this pattern in any new SBB file that imports from `k9_aif_abb`.
+This assumes the fixed layout `ai/k9x-ecosystem/k9x_satan/` sitting alongside `ai/k9-aif-framework/`. Preserve this pattern in any new Satan-local file that imports from `k9_aif_abb`.
 
 ## Adding a new attack
 
@@ -134,7 +142,7 @@ Shares the `k9-aif-framework/.venv` virtualenv — `run.sh` will error out if th
 
 ## Architecture tab & diagrams
 
-`webui/index.html` → Architecture tab is the primary documentation surface for *why* the framework holds — it walks the Zscaler ThreatLabz four-vector mapping, the Phase 0–3 check execution sequence, and the ABB/SBB class hierarchy image.
+`webui/index.html` → Architecture tab is the primary documentation surface for *why* the framework holds — it walks the Zscaler ThreatLabz four-vector mapping, the Phase 0–3 check execution sequence, and the ABB/Satan-local class hierarchy image.
 
 `diagrams/shield_class.puml` is the PlantUML source for that class diagram. Regenerate with:
 
@@ -142,7 +150,7 @@ Shares the `k9-aif-framework/.venv` virtualenv — `run.sh` will error out if th
 ./diagrams/generate.sh
 ```
 
-**Gotcha:** PlantUML uses the text after `@startuml` as the default output filename. Keep it as a single bare word (`@startuml shield_class`) — a title with spaces or `/` (e.g. `@startuml K9X Shield — ABB / SBB Class Hierarchy`) makes PlantUML create a nested directory instead of `shield_class.png`, and the `<img src="/static/shield_class.png">` in `index.html` will silently fall back to its placeholder.
+**Gotcha:** PlantUML uses the text after `@startuml` as the default output filename. Keep it as a single bare word (`@startuml shield_class`) — a title with spaces or `/` (e.g. `@startuml K9X Shield Class Hierarchy`) makes PlantUML create a nested directory instead of `shield_class.png`, and the `<img src="/static/shield_class.png">` in `index.html` will silently fall back to its placeholder.
 
 ## Working in this repo — conventions to preserve
 

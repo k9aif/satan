@@ -1442,7 +1442,7 @@
     <div class="card">
       <h3>Complete Check Inventory — Component × Threat Class</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
-        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">13 checks total</span> — 7 framework OOB, 6 Satan-local — plus Guardian as a cross-cutting semantic layer that wraps every agent regardless of chain position. Threat classes reference the
+        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">13 checks total</span> — 12 framework OOB, 1 Satan-local — plus Guardian as a cross-cutting semantic layer that wraps every agent regardless of chain position. Five of the framework OOB checks (RequestFrequencyCheck, MemoryPoisoningCheck, ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck) were originally built and proven here, then harvested into the framework itself once verified — see the callout below. Threat classes reference the
         <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener" style="color:var(--red-mid)">OWASP Top 10 for LLM Applications</a>.
       </p>
       <div style="overflow-x:auto">
@@ -1459,20 +1459,20 @@
           </tr>
         </thead>
         <tbody style="font-family:var(--font-mono);font-size:0.89rem">
-          <tr><td>1</td><td>RequestFrequencyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Unbounded Consumption — OWASP LLM10</td><td>request_flood</td></tr>
+          <tr><td>1</td><td>RequestFrequencyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Unbounded Consumption — OWASP LLM10</td><td>request_flood</td></tr>
           <tr><td>2</td><td>InputSizeCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Token-flood / oversized payload — OWASP LLM10</td><td>payload_flood</td></tr>
           <tr><td>3</td><td>PromptInjectionCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Indirect Prompt Injection — Zscaler #1 · OWASP LLM01</td><td>prompt_injection_document, search_poisoning</td></tr>
-          <tr><td>4</td><td>FieldAnomalyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Authority-override social engineering — Zscaler #1 extension</td><td>prompt_injection_document</td></tr>
-          <tr><td>5</td><td>MemoryPoisoningCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Memory Poisoning — Zscaler #3 · OWASP LLM04</td><td>memory_poisoning</td></tr>
+          <tr><td>4</td><td>FieldAnomalyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan-local</span></td><td>Authority-override social engineering — Zscaler #1 extension</td><td>prompt_injection_document</td></tr>
+          <tr><td>5</td><td>MemoryPoisoningCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Memory Poisoning — Zscaler #3 · OWASP LLM04</td><td>memory_poisoning</td></tr>
           <tr><td>6</td><td>ToolArgumentCheck</td><td>Ingress + Egress</td><td>Router + Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05</td><td>tool_argument_poison</td></tr>
-          <tr><td>7</td><td>ToolAuthorizationCheck</td><td>Ingress + Egress</td><td>Router + Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Shadow AI — unapproved tool/backend — Zscaler #4</td><td>shadow_tool</td></tr>
+          <tr><td>7</td><td>ToolAuthorizationCheck</td><td>Ingress + Egress</td><td>Router + Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Shadow AI — unapproved tool/backend — Zscaler #4</td><td>shadow_tool</td></tr>
           <tr><td>8</td><td>SemanticDriftCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Goal Hijacking &amp; Privilege Escalation — Zscaler #2 · OWASP LLM06</td><td>semantic_drift</td></tr>
           <tr><td>9</td><td>ExecutionGuardCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Destructive execution / privilege escalation — Zscaler #2 · OWASP LLM06</td><td>execution_bypass</td></tr>
           <tr><td>10</td><td>PIIBoundaryCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Sensitive Info Disclosure — OWASP LLM02</td><td>pii_exfiltration</td></tr>
           <tr><td>11</td><td>HardcodedCredentialCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Supply chain / secret leakage — OWASP LLM03</td><td>hardcoded_credential</td></tr>
-          <tr><td>12</td><td>SystemPromptLeakageCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>System Prompt Leakage — OWASP LLM07</td><td>system_prompt_leakage</td></tr>
-          <tr><td>13</td><td>OutputSanitizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Improper Output Handling — OWASP LLM05</td><td>output_sanitization</td></tr>
-          <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Pre/Post — every agent</td><td>Agent</td><td><span style="color:var(--green)">Satan SBB</span></td><td>Semantic evasion of all 13 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code></td><td>any attack, with Governance = GuardianGovernance</td></tr>
+          <tr><td>12</td><td>SystemPromptLeakageCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>System Prompt Leakage — OWASP LLM07</td><td>system_prompt_leakage</td></tr>
+          <tr><td>13</td><td>OutputSanitizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Improper Output Handling — OWASP LLM05</td><td>output_sanitization</td></tr>
+          <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Pre/Post — every agent</td><td>Agent</td><td><span style="color:var(--green)">Satan-local</span></td><td>Semantic evasion of all 13 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code></td><td>any attack, with Governance = GuardianGovernance</td></tr>
         </tbody>
       </table>
       </div>
@@ -1498,7 +1498,7 @@
       <div class="arch-pipeline">
         <div class="arch-node">
           <div class="arch-box attack">SATAN</div>
-          <div class="arch-note">Crafted payload<br>BaseAttack SBB</div>
+          <div class="arch-note">Crafted payload<br>BaseAttack class</div>
         </div>
         <div class="arch-arrow red">→</div>
         <div class="arch-node">
@@ -1574,7 +1574,7 @@
     </div>
 
     <div class="card">
-      <h3>Shared Responsibility — What the Framework Handles, What the SBB Owns</h3>
+      <h3>Shared Responsibility — What the Framework Handles, What the Solution Owns</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
         The diagram above is Satan's own target pipeline. A real solution built on
         <a href="https://k9x.ai" target="_blank" rel="noopener" style="color:var(--red-bright);text-decoration:underline">K9-AIF (k9x.ai)</a> — say, an insurance
@@ -1594,11 +1594,11 @@
           <div class="sym-row"><span>Orchestrator egress VulnerabilityChain</span><span>pattern checks on response</span></div>
           <div class="sym-row"><span>Agent pre_process() / post_process()</span><span>Guardian/Shield governance hooks</span></div>
           <div class="sym-row"><span>Zero Trust execution guard</span><span>opt-in, framework-enforced</span></div>
-          <div class="sym-row"><span>_policy.locked enforcement</span><span>SBB cannot override enterprise policy</span></div>
+          <div class="sym-row"><span>_policy.locked enforcement</span><span>solution cannot override enterprise policy</span></div>
           <div class="sym-row"><span>publish_event() audit trail</span><span>every check result, every verdict</span></div>
         </div>
         <div class="sym-col satan">
-          <h4>⚔ SBB (solution team) — written per solution</h4>
+          <h4>⚔ Solution team — written per solution</h4>
           <div class="sym-row"><span>Router/Orchestrator/Squad/Agent classes</span><span>domain-specific, extend the ABBs</span></div>
           <div class="sym-row"><span>Agent role, goal, instructions</span><span>agent YAML — what the LLM is asked to do</span></div>
           <div class="sym-row"><span>Domain-specific checks</span><span>optional — e.g. FieldAnomalyCheck-style</span></div>
@@ -1613,16 +1613,20 @@
         makes a contained attack here evidence for a real solution, not just proof about a demo.
       </p>
       <div style="margin-top:12px;padding:10px 12px;background:color-mix(in srgb,var(--yellow) 6%,transparent);border-left:3px solid var(--yellow);font-size:0.94rem;color:var(--muted);line-height:1.7">
-        <strong style="color:var(--text)">Does the ABB's OOB set cover everything? No — and this repo is the proof, not a hedge.</strong>
-        The framework ships 7 OOB checks, and they're deliberately generic: oversized payload, generic injection
-        phrases, generic PII patterns. They can't know that <code>FieldAnomalyCheck</code>'s red-flag terms
-        ("COO authorization code", "EXEC-OVERRIDE") only make sense for insurance-claims-shaped documents — a
-        healthcare or defense-procurement solution needs different domain terms entirely. And five of the six
-        Satan-local checks — <code>MemoryPoisoningCheck</code>, <code>ToolAuthorizationCheck</code>,
+        <strong style="color:var(--text)">Did the ABB's OOB set cover everything from day one? No — and this repo is the proof, not a hedge.</strong>
+        The framework originally shipped 7 OOB checks, deliberately generic: oversized payload, generic injection
+        phrases, generic PII patterns. Satan needed 6 more to close real gaps that surfaced from actually attacking
+        a pipeline. Five of those six — <code>MemoryPoisoningCheck</code>, <code>ToolAuthorizationCheck</code>,
         <code>SystemPromptLeakageCheck</code>, <code>OutputSanitizationCheck</code>, <code>RequestFrequencyCheck</code> —
-        didn't exist anywhere in the framework's OOB set until Satan needed them. The ABB gives every solution a
-        strong, reusable baseline. The SBB still has to review whether that baseline covers its actual domain and
-        threat surface, and add what's missing — the same way Satan did.
+        turned out to be framework-generic in their actual logic (nothing insurance-specific in any of them), so
+        once proven here they were harvested upstream into the framework's own OOB set — the ABB's 7 became 12.
+        Only <code>FieldAnomalyCheck</code> stays Satan-local: its red-flag terms ("COO authorization code",
+        "EXEC-OVERRIDE") only make sense for insurance-claims-shaped documents — a healthcare or
+        defense-procurement solution needs different domain terms entirely, so promoting it as-is would misrepresent
+        a worked example as a general capability. The ABB gives every solution a strong, reusable, and growing
+        baseline. The solution still has to review whether that baseline covers its actual domain and threat surface, and
+        add what's missing — the same way Satan did, and the same way the next solution's genuinely domain-specific
+        findings will stay local to it rather than forcing their way into the framework.
       </div>
     </div>
 
@@ -1644,10 +1648,10 @@
     </div>
 
     <div class="card">
-      <h3>ABB / SBB — Framework Owns the Contracts</h3>
+      <h3>ABB — Framework Owns the Contracts</h3>
       <div class="sym-grid">
         <div class="sym-col satan">
-          <h4>⚔ K9x Satan — SBBs (Attack)</h4>
+          <h4>⚔ K9x Satan — Attacks (local)</h4>
           <div class="sym-row"><span>PromptInjectionAttack</span><span>document body</span></div>
           <div class="sym-row"><span>SearchPoisoningAttack</span><span>tool response</span></div>
           <div class="sym-row"><span>PayloadFloodAttack</span><span>token exhaustion</span></div>
@@ -1666,7 +1670,7 @@
         </div>
       </div>
       <p style="font-size:1.05rem;color:var(--muted);line-height:1.7;margin-top:12px">
-        <strong style="color:var(--text)">ABBs live in the framework.</strong> SBBs live in Satan. Every attack SBB extends <code>BaseAttack</code>. Every defence check extends <code>BaseVulnerabilityCheck</code>. The contracts belong to the framework — not to any one solution.
+        <strong style="color:var(--text)">ABBs live in the framework.</strong> The attack and defence classes exercising them live in Satan. Every attack class extends <code>BaseAttack</code>. Every defence check extends <code>BaseVulnerabilityCheck</code>. The contracts belong to the framework — not to any one solution.
       </p>
     </div>
 
@@ -1714,7 +1718,7 @@
                 <div>
                   <span style="color:var(--text);font-weight:500">RequestFrequencyCheck</span>
                   <span style="color:var(--muted)"> · per-session request count vs. rolling window</span>
-                  <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: resource-exhaustion request floods (Satan SBB — CacheFactory-backed)</div>
+                  <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: resource-exhaustion request floods (framework OOB — CacheFactory-backed)</div>
                 </div>
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
@@ -1864,7 +1868,7 @@
     </div>
 
     <div class="card">
-      <h3>ABB / SBB Class Hierarchy</h3>
+      <h3>ABB / Satan-local Class Hierarchy</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.7;margin-bottom:12px">
         PlantUML source at <code style="font-size:1.05rem">diagrams/shield_class_small.puml</code>
         (checks grouped into two boxes to keep this readable — the un-grouped version with each
@@ -1872,7 +1876,7 @@
         Run <code style="font-size:1.05rem">./diagrams/generate.sh</code> to render PNG.
       </p>
       <div id="class-diagram-container">
-        <img id="class-diagram-img" src="/static/shield_class_small.png" alt="ABB/SBB Class Diagram"
+        <img id="class-diagram-img" src="/static/shield_class_small.png" alt="ABB/Satan-local Class Diagram"
              style="max-width:100%;border-radius:4px;display:none"
              onload="this.style.display='block'"
              onerror="document.getElementById('class-diagram-placeholder').style.display='block';this.style.display='none'">
@@ -1883,9 +1887,9 @@
     </div>
 
     <div class="card">
-      <h3>Target Pipeline — SBB Hierarchy</h3>
+      <h3>Target Pipeline — Class Hierarchy</h3>
       <pre class="sample">── PRE-AGENT ────────────────────────────────────────
-DoclingExtractor              SBB utility
+DoclingExtractor              local utility
   naive regex | Docling OCR (optional)
   → populates extracted_fields
 
@@ -1971,7 +1975,7 @@ k9x-satan --bg     # or run it in the background</pre>
         <p class="doc-p">K9X Satan follows the same philosophy for the era of agentic AI. Instead of scanning networks, it executes carefully crafted adversarial attacks against K9X Shield to validate that architectural security controls detect and intercept malicious inputs before they reach the intelligence layer.</p>
         <p class="doc-p">The goal is not to break applications — it is to continuously strengthen the framework that protects them.</p>
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-          <span style="font-size:0.85rem;color:var(--muted)">The original SATAN shipped with <code style="color:var(--text)">repent.pl</code> — run it and SATAN became SANTA. K9X Satan carries the tradition. Find the REPENT button in the sidebar.</span>
+          <span style="font-size:0.85rem;color:var(--muted)">The original SATAN shipped with <code style="color:var(--text)">repent.pl</code> — run it and SATAN became SATAN. K9X Satan carries the tradition. Find the REPENT button in the sidebar.</span>
         </div>
       </div>
 

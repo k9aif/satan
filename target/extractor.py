@@ -1,5 +1,5 @@
 """
-K9x Satan — DoclingExtractor SBB
+K9x Satan — DoclingExtractor
 
 Pre-Shield document field extractor. Runs before the VulnerabilityChain so that
 FieldAnomalyCheck can evaluate structured field data.
@@ -46,7 +46,7 @@ def _compose_docling_url() -> str:
 
 class DoclingExtractor:
     """
-    SBB: Pre-Shield document field extractor.
+    Pre-Shield document field extractor.
 
     Enriches the payload with extracted_fields, extraction_method, and
     docling_used before it enters the VulnerabilityChain.

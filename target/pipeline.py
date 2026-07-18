@@ -1,8 +1,8 @@
 """
 K9x Satan — Target Pipeline Entry Point
 
-Thin wiring layer: loads config, instantiates the SBB hierarchy and fires
-the payload through it.
+Thin wiring layer: loads config, instantiates the pipeline hierarchy and
+fires the payload through it.
 
 Hierarchy:
   DocumentRouter (BaseRouter)
@@ -52,7 +52,7 @@ def load_config() -> dict:
 
 def run_pipeline(payload: dict, config: dict = None) -> dict:
     """
-    Wire the K9-AIF SBB hierarchy and run the payload through it.
+    Wire the K9-AIF pipeline hierarchy and run the payload through it.
 
     Returns a result dict always containing:
       status            blocked | completed

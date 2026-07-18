@@ -1,5 +1,5 @@
 """
-K9x Satan — DocumentProcessingSquad SBB
+K9x Satan — DocumentProcessingSquad
 
 Extends BaseSquad. Owns DocumentExtractionAgent + AuditAgent
 and defines the execution flow between them.
@@ -38,7 +38,7 @@ def _make_governance(config: dict):
 
 
 class DocumentProcessingSquad(BaseSquad):
-    """SBB: Coordinates document extraction and audit agents."""
+    """Coordinates document extraction and audit agents."""
 
     def __init__(self, config=None):
         cfg = config or {}

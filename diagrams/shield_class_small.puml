@@ -51,7 +51,7 @@ package "K9-AIF Framework ABBs" {
 ' arrows don't spread the diagram wide. See shield_class.puml for the
 ' un-grouped version with each check as its own class.
 
-class "K9-AIF Framework OOB Checks (7)" as FrameworkChecks {
+class "K9-AIF Framework OOB Checks (12)" as FrameworkChecks {
   InputSizeCheck
   --
   Ingress · token-flood / oversized payload
@@ -79,37 +79,44 @@ class "K9-AIF Framework OOB Checks (7)" as FrameworkChecks {
   HardcodedCredentialCheck
   --
   Egress · API keys / secrets echoed into the response
-}
-
-class "K9X Satan — Shield SBB Checks (6)" as SatanChecks {
-  FieldAnomalyCheck
-  --
-  Ingress · EXEC-OVERRIDE, Priority: CRITICAL, COO auth codes
   ==
   MemoryPoisoningCheck
   --
   Ingress · fabricated/contradicted session memory
+  (proven in Satan first, harvested upstream)
   ==
   RequestFrequencyCheck
   --
   Ingress · per-session resource-exhaustion request floods
+  (proven in Satan first, harvested upstream)
   ==
   ToolAuthorizationCheck
   --
   Ingress + Egress · unapproved tool/backend (Shadow AI)
+  (proven in Satan first, harvested upstream)
   ==
   SystemPromptLeakageCheck
   --
   Egress · agent echoing its own system prompt verbatim
+  (proven in Satan first, harvested upstream)
   ==
   OutputSanitizationCheck
   --
   Egress · <script>/markup/template injection in output
+  (proven in Satan first, harvested upstream)
 }
 
-' ── K9X Satan SBBs (this repo — extends the ABBs above) ─────────────────────
+class "K9X Satan — Local Checks (1)" as SatanChecks {
+  FieldAnomalyCheck
+  --
+  Ingress · EXEC-OVERRIDE, Priority: CRITICAL, COO auth codes
+  (stays local — tuned to this project's own
+  insurance-claim test corpus)
+}
 
-package "K9X Satan — Shield SBBs" {
+' ── K9X Satan — local classes (this repo — extends the ABBs above) ──────────
+
+package "K9X Satan — Local Classes" {
 
   class DoclingExtractor {
     -_enabled: bool

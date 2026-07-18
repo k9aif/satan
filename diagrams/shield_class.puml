@@ -87,26 +87,13 @@ package "K9-AIF Framework OOB Checks" {
     ' Egress · catches: API keys / secrets echoed into the response
   }
 
-}
-
-' ── K9X Satan SBBs (this repo — extends the ABBs above) ─────────────────────
-
-package "K9X Satan — Shield SBBs" {
-
-  class FieldAnomalyCheck {
-    -_RED_FLAG_KEYS: Set[str]
-    -_RED_FLAG_VALUE_PATTERNS: List[Pattern]
-    -_RED_FLAG_RAW_PATTERNS: List[Pattern]
-    +check(payload): CheckResult
-    ' Ingress · catches: EXEC-OVERRIDE, Priority: CRITICAL, COO auth codes
-  }
-
   class MemoryPoisoningCheck {
     -_cache: BaseCache
-    -_TRACKED_FACT_KEYS: Set[str]
+    -_tracked_fact_keys: Set[str]
     +check(payload): CheckResult
     ' Ingress · catches: fabricated/contradicted session memory (Zscaler
-    ' Memory Poisoning) — uses CacheFactory to fingerprint session facts
+    ' Memory Poisoning) — uses CacheFactory to fingerprint session facts.
+    ' Proven here in Satan first, then harvested upstream.
   }
 
   class RequestFrequencyCheck {
@@ -114,26 +101,47 @@ package "K9X Satan — Shield SBBs" {
     -_max_requests: int
     -_window_seconds: int
     +check(payload): CheckResult
-    ' Ingress · catches: per-session resource-exhaustion request floods
+    ' Ingress · catches: per-session resource-exhaustion request floods.
+    ' Proven here in Satan first, then harvested upstream.
   }
 
   class ToolAuthorizationCheck {
     -_approved_tools: Set[str]
     -_approved_backends: List[str]
     +check(payload): CheckResult
-    ' Ingress + Egress · catches: unapproved tool/backend (Zscaler Shadow AI)
+    ' Ingress + Egress · catches: unapproved tool/backend (Zscaler Shadow AI).
+    ' Proven here in Satan first, then harvested upstream.
   }
 
   class SystemPromptLeakageCheck {
     -_fragments: List[str]
     +check(payload): CheckResult
-    ' Egress · catches: agent echoing its own system prompt verbatim
+    ' Egress · catches: agent echoing its own system prompt verbatim.
+    ' Proven here in Satan first, then harvested upstream.
   }
 
   class OutputSanitizationCheck {
     -_patterns: List[Pattern]
     +check(payload): CheckResult
-    ' Egress · catches: <script>/markup/template injection in output
+    ' Egress · catches: <script>/markup/template injection in output.
+    ' Proven here in Satan first, then harvested upstream.
+  }
+
+}
+
+' ── K9X Satan — local classes (this repo — extends the ABBs above) ──────────
+' Only FieldAnomalyCheck remains Satan-local: its pattern set is tuned to
+' this project's own insurance-claim test corpus and would misrepresent a
+' worked example as a general framework capability if promoted as-is.
+
+package "K9X Satan — Local Classes" {
+
+  class FieldAnomalyCheck {
+    -_RED_FLAG_KEYS: Set[str]
+    -_RED_FLAG_VALUE_PATTERNS: List[Pattern]
+    -_RED_FLAG_RAW_PATTERNS: List[Pattern]
+    +check(payload): CheckResult
+    ' Ingress · catches: EXEC-OVERRIDE, Priority: CRITICAL, COO auth codes
   }
 
   class DoclingExtractor {
@@ -194,13 +202,13 @@ BaseVulnerabilityCheck <|-- PIIBoundaryCheck
 BaseVulnerabilityCheck <|-- ToolArgumentCheck
 BaseVulnerabilityCheck <|-- ExecutionGuardCheck
 BaseVulnerabilityCheck <|-- HardcodedCredentialCheck
-
-BaseVulnerabilityCheck <|-- FieldAnomalyCheck
 BaseVulnerabilityCheck <|-- MemoryPoisoningCheck
 BaseVulnerabilityCheck <|-- RequestFrequencyCheck
 BaseVulnerabilityCheck <|-- ToolAuthorizationCheck
 BaseVulnerabilityCheck <|-- SystemPromptLeakageCheck
 BaseVulnerabilityCheck <|-- OutputSanitizationCheck
+
+BaseVulnerabilityCheck <|-- FieldAnomalyCheck
 
 BaseRouter       <|-- DocumentRouter
 BaseOrchestrator <|-- DocumentOrchestrator

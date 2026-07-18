@@ -1,9 +1,12 @@
 """
-K9x Satan — DocumentOrchestrator SBB
+K9x Satan — DocumentOrchestrator
 
-Extends BaseOrchestrator. Owns DocumentProcessingSquad and applies
-the egress Shield (SemanticDriftCheck + ExecutionGuardCheck) after
-squad execution.
+Extends BaseOrchestrator. Owns DocumentProcessingSquad and applies the
+8-check egress Shield (SemanticDriftCheck, ExecutionGuardCheck,
+PIIBoundaryCheck, ToolArgumentCheck, HardcodedCredentialCheck,
+ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck)
+after squad execution. All eight are framework OOB checks
+(k9_aif_abb.k9_security.vulnerability.checks) — none are Satan-local.
 """
 
 import logging
@@ -22,10 +25,11 @@ from k9_aif_abb.k9_security.vulnerability.checks.execution_guard_check import Ex
 from k9_aif_abb.k9_security.vulnerability.checks.pii_boundary_check import PIIBoundaryCheck
 from k9_aif_abb.k9_security.vulnerability.checks.tool_argument_check import ToolArgumentCheck
 from k9_aif_abb.k9_security.vulnerability.checks.hardcoded_credential_check import HardcodedCredentialCheck
+from k9_aif_abb.k9_security.vulnerability.checks.tool_authorization_check import ToolAuthorizationCheck
+from k9_aif_abb.k9_security.vulnerability.checks.system_prompt_leakage_check import SystemPromptLeakageCheck
+from k9_aif_abb.k9_security.vulnerability.checks.output_sanitization_check import OutputSanitizationCheck
 from k9x_satan.target.squad import DocumentProcessingSquad
-from k9x_satan.target.tool_authorization_check import ToolAuthorizationCheck
-from k9x_satan.target.system_prompt_leakage_check import SystemPromptLeakageCheck
-from k9x_satan.target.output_sanitization_check import OutputSanitizationCheck
+from k9x_satan.target._check_config import security_check_config
 
 
 def _find_governance_block(squad_output: Dict[str, Any]) -> str:
@@ -52,7 +56,7 @@ log = logging.getLogger("k9x_satan.target")
 
 class DocumentOrchestrator(BaseOrchestrator):
     """
-    SBB: Orchestrates document processing with egress Shield gate.
+    Orchestrates document processing with egress Shield gate.
 
     Flow:
       1. Execute DocumentProcessingSquad
@@ -60,7 +64,7 @@ class DocumentOrchestrator(BaseOrchestrator):
       3. Return result — blocked or completed
     """
 
-    layer = "Satan.Target DocumentOrchestrator SBB"
+    layer = "Satan.Target DocumentOrchestrator"
 
     def __init__(self, config: Dict[str, Any] = None, **kwargs):
         super().__init__(config=config or {}, **kwargs)
@@ -77,6 +81,7 @@ class DocumentOrchestrator(BaseOrchestrator):
         # can catch that case. Same defense-in-depth principle already used
         # for Guardian (additive over pattern checks, never a replacement).
         pii_config = {**self.config, "block_on_match": True}
+        sec_cfg = security_check_config(self.config)
         return (
             VulnerabilityChain()
             .add(SemanticDriftCheck(self.config))
@@ -84,9 +89,9 @@ class DocumentOrchestrator(BaseOrchestrator):
             .add(PIIBoundaryCheck(pii_config))
             .add(ToolArgumentCheck(self.config))
             .add(HardcodedCredentialCheck(self.config))
-            .add(ToolAuthorizationCheck(self.config))
-            .add(SystemPromptLeakageCheck(self.config))
-            .add(OutputSanitizationCheck(self.config))
+            .add(ToolAuthorizationCheck(sec_cfg))
+            .add(SystemPromptLeakageCheck(sec_cfg))
+            .add(OutputSanitizationCheck(sec_cfg))
         )
 
     def execute_flow(self, payload: Dict[str, Any]) -> Dict[str, Any]:

@@ -85,6 +85,16 @@ security:
   # OutputSanitizationCheck
   block_on_output_markup: true
 
+  # SystemPromptLeakageCheck — the framework check has no default fragment
+  # list (a solution's system prompt text is inherently solution-specific),
+  # so Satan configures its own agents' actual role/goal text here. These
+  # must match target/agents.py's DocumentExtractionAgent/AuditAgent defaults.
+  system_prompt_fragments:
+    - "You are a document extraction agent."
+    - "Extract key fields and flag anomalies."
+    - "You are a compliance audit agent."
+    - "Verify extraction completeness and flag compliance gaps."
+
   # ShieldGovernance (k9_aif_abb.k9_security.vulnerability) — only active when
   # governance.provider: shield. Demonstrates the same check classes Router/
   # Orchestrator already wire, reused at the agent pre/post hook level instead —

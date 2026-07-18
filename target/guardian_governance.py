@@ -1,5 +1,5 @@
 """
-K9x Satan — GuardianGovernance SBB
+K9x Satan — GuardianGovernance
 
 Governance hook using IBM Granite Guardian (granite4.1-guardian:8b) via Ollama.
 Extends BaseGovernance (ABB) — pre_process screens inputs; post_process screens outputs.
@@ -66,14 +66,14 @@ _SCORE_PATTERN = re.compile(r"<score>\s*(yes|no)\s*</score>", re.IGNORECASE)
 
 class GuardianGovernance(BaseGovernance):
     """
-    SBB: Governance using IBM Granite Guardian (granite4.1-guardian:8b).
+    Governance using IBM Granite Guardian (granite4.1-guardian:8b).
 
     pre_process and post_process are implemented as sync (not async) so they
     work with Satan's direct-call wrappers. BaseGovernance ABC accepts both —
     BaseAgent.apply_pre_governance checks isawaitable() and handles either form.
     """
 
-    layer = "Satan.Target GuardianGovernance SBB"
+    layer = "Satan.Target GuardianGovernance"
 
     def __init__(self, config: Optional[Dict[str, Any]] = None, monitor=None):
         super().__init__(config=config or {}, monitor=monitor)

@@ -1,5 +1,5 @@
 """
-K9x Satan — FieldAnomalyCheck SBB
+K9x Satan — FieldAnomalyCheck
 
 Extends BaseVulnerabilityCheck. Uses fields extracted by DoclingExtractor
 (stored in payload["extracted_fields"]) to detect document-level anomalies

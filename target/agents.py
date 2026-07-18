@@ -1,7 +1,7 @@
 """
-K9x Satan — Target Agent SBBs
+K9x Satan — Target Agents
 
-Real SBBs extending BaseAgent with:
+Concrete agent classes extending BaseAgent with:
   - enforce_governance()        pre-flight check
   - governance.pre_process()    sanitise/validate input before LLM
   - llm_invoke()                actual LLM call (falls back gracefully if unavailable)
@@ -60,14 +60,14 @@ def _post(agent: BaseAgent, result: dict) -> dict:
 
 class DocumentExtractionAgent(BaseAgent):
     """
-    SBB: Extracts structured content from document text.
+    Extracts structured content from document text.
 
     Pre-governance:  sanitise input payload
     LLM:             extract fields, detect anomalies in the text
     Post-governance: validate/redact output before returning to squad
     """
 
-    layer = "Satan.Target DocumentExtractionAgent SBB"
+    layer = "Satan.Target DocumentExtractionAgent"
 
     def execute(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         # ── 1. governance pre-flight ──────────────────────────────────────────
@@ -140,14 +140,14 @@ class DocumentExtractionAgent(BaseAgent):
 
 class AuditAgent(BaseAgent):
     """
-    SBB: Audits the extraction result for completeness and integrity.
+    Audits the extraction result for completeness and integrity.
 
     Pre-governance:  sanitise input payload
     LLM:             assess quality of extraction, flag compliance gaps
     Post-governance: validate/redact output before returning to squad
     """
 
-    layer = "Satan.Target AuditAgent SBB"
+    layer = "Satan.Target AuditAgent"
 
     def execute(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         # ── 1. governance pre-flight ──────────────────────────────────────────

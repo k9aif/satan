@@ -1,7 +1,7 @@
 """
-Shared HTTP helper for Satan attack SBBs.
+Shared HTTP helper for Satan's attack classes.
 
-Not part of the ABB/SBB contract — BaseAttack (k9_aif_abb) still owns craft_payload()
+Not part of the ABB contract — BaseAttack (k9_aif_abb) still owns craft_payload()
 and run(). This just avoids repeating the same connection-error handling in every
 attack: BaseAttack._classify_outcome()'s default falls back to BLOCKED for any
 unrecognized response status, which would misreport a connection failure as
