@@ -70,6 +70,16 @@ package "K9-AIF Framework OOB Checks" {
   class PIIBoundaryCheck {
     +check(payload): CheckResult
     ' Egress · catches: SSN / credit card / email crossing the boundary
+    ' (literal PII values)
+  }
+
+  class PIIRequestCheck {
+    -_solicitation_patterns: List[Pattern]
+    -_field_patterns: List[Tuple[Pattern, str]]
+    +check(payload): CheckResult
+    ' Ingress · catches: requests soliciting PII disclosure (no literal PII
+    ' present — targets the request itself, added directly to the
+    ' framework, not harvested from a Satan-local check)
   }
 
   class ToolArgumentCheck {
@@ -207,6 +217,7 @@ BaseVulnerabilityCheck <|-- RequestFrequencyCheck
 BaseVulnerabilityCheck <|-- ToolAuthorizationCheck
 BaseVulnerabilityCheck <|-- SystemPromptLeakageCheck
 BaseVulnerabilityCheck <|-- OutputSanitizationCheck
+BaseVulnerabilityCheck <|-- PIIRequestCheck
 
 BaseVulnerabilityCheck <|-- FieldAnomalyCheck
 
@@ -236,19 +247,23 @@ note right of DoclingExtractor
 end note
 
 note right of GuardianGovernance
-  Wraps every agent's pre/post hooks.
-  Calls granite4.1-guardian:8b via
+  Wraps every agent's pre/post hooks,
+  and — if governance.provider: guardian —
+  DocumentRouter.pre_process() at ingress,
+  only if the pattern chain didn't already
+  block. Calls granite4.1-guardian:8b via
   Ollama for semantic safety check —
   catches what regex-based checks can't
   (paraphrase, encoding, indirection).
 end note
 
-note bottom of MemoryPoisoningCheck
+note bottom of PIIRequestCheck
   Ingress chain order:
   RequestFrequencyCheck -> InputSizeCheck ->
   PromptInjectionCheck -> FieldAnomalyCheck ->
   MemoryPoisoningCheck -> ToolArgumentCheck ->
-  ToolAuthorizationCheck
+  ToolAuthorizationCheck -> PIIRequestCheck ->
+  [optional Guardian pre_process()]
 end note
 
 note bottom of OutputSanitizationCheck

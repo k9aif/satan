@@ -29,14 +29,16 @@ Attack → Router (ingress gate)       → BLOCKED  ✓
          Squad / Agent               → FINDING  ✗  (Shield failed)
 ```
 
-A block at any phase terminates execution — downstream phases never run. Both gates are `VulnerabilityChain` instances assembled from framework `BaseVulnerabilityCheck` subclasses plus one Satan-local subclass. 13 checks total (12 framework OOB, 1 Satan-local) — see the "Complete Check Inventory" table in README.md and the Architecture tab for the full component × threat-class mapping. Five of the twelve framework OOB checks (`ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck`) were originally proven here as Satan-local checks and were later promoted into the framework itself once verified — see "Harvesting into the framework" below.
+A block at any phase terminates execution — downstream phases never run. Both gates are `VulnerabilityChain` instances assembled from framework `BaseVulnerabilityCheck` subclasses plus one Satan-local subclass. 14 checks total (13 framework OOB, 1 Satan-local) — see the "Complete Check Inventory" table in README.md and the Architecture tab for the full component × threat-class mapping. Five of the thirteen framework OOB checks (`ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck`) were originally proven here as Satan-local checks and were later promoted into the framework itself once verified — see "Harvesting into the framework" below. A sixth, `PIIRequestCheck`, was added directly to the framework (not harvested from a Satan-local check) after a live attack — a "compliance audit" document soliciting full SSN/DOB/account-number disclosure with no literal PII in the payload itself — reached the agent layer uncaught; see `PIIRequestCheck`'s own docstring for the detail on why it belongs at ingress, not egress. Only `FieldAnomalyCheck` remains Satan-local.
+
+Router ingress also runs an optional semantic governance check (Guardian, if `governance.provider: guardian`) — only if the pattern chain above didn't already block, so no LLM call is spent on a payload a regex already caught. This mirrors the same cheap-layer-first, semantic-layer-second ordering Guardian already uses at the agent layer.
 
 ## Repo structure
 
 ```
 k9x_satan/
 ├── target/            ← the pipeline under test (components extending K9-AIF ABBs)
-│   ├── router.py           DocumentRouter(BaseRouter)          — ingress Shield (7 checks)
+│   ├── router.py           DocumentRouter(BaseRouter)          — ingress Shield (8 checks) + optional Guardian
 │   ├── orchestrator.py     DocumentOrchestrator(BaseOrchestrator) — egress Shield (8 checks; 2 duplicated from ingress)
 │   ├── squad.py            DocumentProcessingSquad(BaseSquad) + governance selection (noop|guardian|shield)
 │   ├── agents.py           DocumentExtractionAgent, AuditAgent (BaseAgent) — enforce _guardian_blocked
@@ -70,9 +72,12 @@ DoclingExtractor.enrich()              PRE-SHIELD — populates extracted_fields
 DocumentRouter.route()                  extends BaseRouter
   ingress chain: RequestFrequencyCheck → InputSizeCheck → PromptInjectionCheck →
                  FieldAnomalyCheck → MemoryPoisoningCheck →
-                 ToolArgumentCheck → ToolAuthorizationCheck
+                 ToolArgumentCheck → ToolAuthorizationCheck → PIIRequestCheck
   BLOCK → return immediately, Orchestrator never runs
   ↓ (clean or flagged)
+  optional: Guardian pre_process() — only if the pattern chain above passed
+  BLOCK → return immediately, Orchestrator never runs
+  ↓ (clean)
 DocumentOrchestrator.execute_flow()     extends BaseOrchestrator
   → DocumentProcessingSquad.execute()   extends BaseSquad
       → DocumentExtractionAgent.execute()  extends BaseAgent — Guardian/Shield pre/post hooks wrap this

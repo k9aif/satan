@@ -1442,7 +1442,7 @@
     <div class="card">
       <h3>Complete Check Inventory — Component × Threat Class</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
-        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">13 checks total</span> — 12 framework OOB, 1 Satan-local — plus Guardian as a cross-cutting semantic layer that wraps every agent regardless of chain position. Five of the framework OOB checks (RequestFrequencyCheck, MemoryPoisoningCheck, ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck) were originally built and proven here, then harvested into the framework itself once verified — see the callout below. Threat classes reference the
+        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">14 checks total</span> — 13 framework OOB, 1 Satan-local — plus Guardian as a cross-cutting semantic layer wired at Router ingress (only if the pattern chain didn't already block) and at every agent's pre/post hooks. Five of the framework OOB checks (RequestFrequencyCheck, MemoryPoisoningCheck, ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck) were originally built and proven here, then harvested into the framework itself once verified — see the callout below. A sixth, PIIRequestCheck, was added directly to the framework after a live attack (a "compliance audit" document soliciting full SSN/DOB/account-number disclosure) reached the agent layer uncaught — it targets the *request* for PII, not literal PII values, which is why it runs at ingress rather than alongside PIIBoundaryCheck at egress. Threat classes reference the
         <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener" style="color:var(--red-mid)">OWASP Top 10 for LLM Applications</a>.
       </p>
       <div style="overflow-x:auto">
@@ -1466,13 +1466,14 @@
           <tr><td>5</td><td>MemoryPoisoningCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Memory Poisoning — Zscaler #3 · OWASP LLM04</td><td>memory_poisoning</td></tr>
           <tr><td>6</td><td>ToolArgumentCheck</td><td>Ingress + Egress</td><td>Router + Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05</td><td>tool_argument_poison</td></tr>
           <tr><td>7</td><td>ToolAuthorizationCheck</td><td>Ingress + Egress</td><td>Router + Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Shadow AI — unapproved tool/backend — Zscaler #4</td><td>shadow_tool</td></tr>
-          <tr><td>8</td><td>SemanticDriftCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Goal Hijacking &amp; Privilege Escalation — Zscaler #2 · OWASP LLM06</td><td>semantic_drift</td></tr>
-          <tr><td>9</td><td>ExecutionGuardCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Destructive execution / privilege escalation — Zscaler #2 · OWASP LLM06</td><td>execution_bypass</td></tr>
-          <tr><td>10</td><td>PIIBoundaryCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Sensitive Info Disclosure — OWASP LLM02</td><td>pii_exfiltration</td></tr>
-          <tr><td>11</td><td>HardcodedCredentialCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Supply chain / secret leakage — OWASP LLM03</td><td>hardcoded_credential</td></tr>
-          <tr><td>12</td><td>SystemPromptLeakageCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>System Prompt Leakage — OWASP LLM07</td><td>system_prompt_leakage</td></tr>
-          <tr><td>13</td><td>OutputSanitizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Improper Output Handling — OWASP LLM05</td><td>output_sanitization</td></tr>
-          <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Pre/Post — every agent</td><td>Agent</td><td><span style="color:var(--green)">Satan-local</span></td><td>Semantic evasion of all 13 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code></td><td>any attack, with Governance = GuardianGovernance</td></tr>
+          <tr><td>8</td><td>PIIRequestCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Solicited PII disclosure (compliance/audit framing) — OWASP LLM02</td><td>manual — Compliance Framing corpus doc</td></tr>
+          <tr><td>9</td><td>SemanticDriftCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Goal Hijacking &amp; Privilege Escalation — Zscaler #2 · OWASP LLM06</td><td>semantic_drift</td></tr>
+          <tr><td>10</td><td>ExecutionGuardCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Destructive execution / privilege escalation — Zscaler #2 · OWASP LLM06</td><td>execution_bypass</td></tr>
+          <tr><td>11</td><td>PIIBoundaryCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Sensitive Info Disclosure (literal PII) — OWASP LLM02</td><td>pii_exfiltration</td></tr>
+          <tr><td>12</td><td>HardcodedCredentialCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Supply chain / secret leakage — OWASP LLM03</td><td>hardcoded_credential</td></tr>
+          <tr><td>13</td><td>SystemPromptLeakageCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>System Prompt Leakage — OWASP LLM07</td><td>system_prompt_leakage</td></tr>
+          <tr><td>14</td><td>OutputSanitizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Improper Output Handling — OWASP LLM05</td><td>output_sanitization</td></tr>
+          <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Router ingress + Pre/Post — every agent</td><td>Router + Agent</td><td><span style="color:var(--green)">Satan-local</span></td><td>Semantic evasion of all 14 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code></td><td>any attack, with Governance = GuardianGovernance</td></tr>
         </tbody>
       </table>
       </div>
@@ -1776,6 +1777,29 @@
                 </div>
                 <span style="margin-left:auto;color:var(--red-glow);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
               </div>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--red-mid);min-width:22px;text-align:right;flex-shrink:0">⑧</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">PIIRequestCheck</span>
+                  <span style="color:var(--muted)"> · solicitation phrase + sensitive-field term co-occurrence</span>
+                  <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: requests soliciting PII disclosure ("please include the full SSN... for audit purposes") — targets the request itself, not literal PII, which PIIBoundaryCheck (egress) already covers. Added directly to the framework after a live Compliance Framing attack reached the agent layer uncaught.</div>
+                </div>
+                <span style="margin-left:auto;color:var(--red-glow);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 1b: optional semantic governance at ingress -->
+          <div style="border-left:3px solid var(--green);padding:10px 14px;border-radius:0 5px 5px 0;background:color-mix(in srgb,var(--green) 4%,transparent)">
+            <div style="font-size:1.05rem;font-weight:700;letter-spacing:0.1em;color:var(--green);margin-bottom:8px">PHASE 1b — ROUTER INGRESS · Optional Guardian pre_process()</div>
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <span style="font-family:var(--font-mono);color:var(--green);min-width:22px;text-align:right;flex-shrink:0">⑨</span>
+              <div>
+                <span style="color:var(--text);font-weight:500">GuardianGovernance.pre_process()</span>
+                <span style="color:var(--muted)"> · only runs if the pattern chain above (①–⑧) didn't already block</span>
+                <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: paraphrased/encoded attacks that evade every pattern above — semantic understanding, not phrase-matching. Requires <code>governance.provider: guardian</code> and a served <code>granite4.1-guardian:8b</code>; NoopGovernance (default) skips this entirely.</div>
+              </div>
+              <span style="margin-left:auto;color:var(--red-glow);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
             </div>
           </div>
 
@@ -1992,7 +2016,7 @@ k9x-satan --bg     # or run it in the background</pre>
         <div class="doc-h4" style="color:var(--green)">Defense in Depth — Guardian Complements Shield, Never Replaces It</div>
         <p class="doc-p" style="margin-top:8px">
           <strong style="color:var(--text)">K9X Shield applies deterministic, policy-driven checks</strong> at Router
-          ingress and Orchestrator egress — 13 handlers, explainable, zero LLM cost, evaluated the same way every
+          ingress and Orchestrator egress — 14 handlers, explainable, zero LLM cost, evaluated the same way every
           time. <strong style="color:var(--text)">IBM Guardian provides an optional semantic assessment layer</strong>
           for attacks that survive literal pattern matching — paraphrase, encoding, or wording changes that no regex
           list can enumerate in advance.
@@ -2001,6 +2025,15 @@ k9x-satan --bg     # or run it in the background</pre>
         <p class="doc-p">Pull the model before enabling Guardian:</p>
         <pre class="sample" style="margin:8px 0">ollama pull granite4.1-guardian:8b</pre>
         <p class="doc-p">Enable it in <strong style="color:var(--text)">Setup → Governance</strong> — three providers are available: <code>NoopGovernance</code> (passthrough, dev default), <code>GuardianGovernance</code> (semantic, this section), and <code>ShieldGovernance</code> (a second deterministic wiring point — the same <code>VulnerabilityChain</code> contract, reused at the agent pre/post hook instead of Router/Orchestrator). The chain log shows Guardian's pre/post verdict on every agent run.</p>
+        <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--green) 6%,transparent);border-left:3px solid var(--green);font-size:0.78rem;color:var(--muted);line-height:1.7">
+          <strong style="color:var(--text)">For best results, run this yourself with a local Ollama server and IBM Guardian LLM served.</strong>
+          Install Ollama, run <code>ollama pull granite4.1-guardian:8b</code>, then point Satan at your Ollama endpoint
+          and select <code>GuardianGovernance</code> under <strong style="color:var(--text)">Setup → Governance</strong>
+          (and your LLM provider under <strong style="color:var(--text)">Setup → LLM</strong>). Without a served
+          Guardian model, semantic attacks — paraphrase, encoding, socially-engineered PII solicitation like the
+          Compliance Framing document below — are only caught by the pattern layer's known phrasings, not by genuine
+          semantic understanding.
+        </div>
         <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--green) 6%,transparent);border-left:3px solid var(--green);font-size:0.78rem;color:var(--muted);line-height:1.7">
           Router/Orchestrator Shield catches <strong style="color:var(--text)">known pattern attacks</strong> (injection markers, override codes, poisoned tool arguments) — zero LLM cost, deterministic.
           Guardian catches <strong style="color:var(--text)">semantic attacks</strong> that evaded the pattern layer — up to <strong style="color:var(--text)">two</strong> LLM calls per agent, one on each side of the agent's own LLM call:

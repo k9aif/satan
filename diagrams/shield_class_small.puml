@@ -47,11 +47,11 @@ package "K9-AIF Framework ABBs" {
 }
 
 ' ── Grouped check boxes — one box per origin, one arrow each ────────────────
-' Same detail as shield_class.puml, collapsed so 13 individual inheritance
+' Same detail as shield_class.puml, collapsed so 14 individual inheritance
 ' arrows don't spread the diagram wide. See shield_class.puml for the
 ' un-grouped version with each check as its own class.
 
-class "K9-AIF Framework OOB Checks (12)" as FrameworkChecks {
+class "K9-AIF Framework OOB Checks (13)" as FrameworkChecks {
   InputSizeCheck
   --
   Ingress · token-flood / oversized payload
@@ -66,7 +66,12 @@ class "K9-AIF Framework OOB Checks (12)" as FrameworkChecks {
   ==
   PIIBoundaryCheck
   --
-  Egress · SSN / credit card / email crossing the boundary
+  Egress · SSN / credit card / email crossing the boundary (literal PII)
+  ==
+  PIIRequestCheck
+  --
+  Ingress · requests soliciting PII disclosure, no literal PII present
+  (added directly to the framework, not harvested from Satan)
   ==
   ToolArgumentCheck
   --
@@ -161,7 +166,7 @@ package "K9X Satan — Local Classes" {
 
 }
 
-' ── Inheritance — one arrow per group instead of 13 individual ones ─────────
+' ── Inheritance — one arrow per group instead of 14 individual ones ─────────
 
 BaseVulnerabilityCheck <|-- FrameworkChecks
 BaseVulnerabilityCheck <|-- SatanChecks
@@ -192,8 +197,11 @@ note right of DoclingExtractor
 end note
 
 note right of GuardianGovernance
-  Wraps every agent's pre/post hooks.
-  Calls granite4.1-guardian:8b via
+  Wraps every agent's pre/post hooks,
+  and — if governance.provider: guardian —
+  DocumentRouter.pre_process() at ingress,
+  only if the pattern chain didn't already
+  block. Calls granite4.1-guardian:8b via
   Ollama for semantic safety check —
   catches what regex-based checks can't
   (paraphrase, encoding, indirection).
@@ -202,7 +210,8 @@ end note
 note bottom of SatanChecks
   Ingress order: RequestFrequencyCheck -> InputSizeCheck ->
   PromptInjectionCheck -> FieldAnomalyCheck -> MemoryPoisoningCheck ->
-  ToolArgumentCheck -> ToolAuthorizationCheck
+  ToolArgumentCheck -> ToolAuthorizationCheck -> PIIRequestCheck ->
+  [optional Guardian pre_process()]
 
   Egress order: SemanticDriftCheck -> ExecutionGuardCheck ->
   PIIBoundaryCheck -> ToolArgumentCheck -> HardcodedCredentialCheck ->
