@@ -1466,7 +1466,7 @@
       <table class="history-table" id="history-table" style="display:none">
         <thead>
           <tr>
-            <th>#</th><th>Source</th><th>Status</th><th>Depth</th><th>Blocked By</th><th>Shield</th><th>User</th>
+            <th>#</th><th>Time</th><th>Source</th><th>Status</th><th>Depth</th><th>Blocked By</th><th>Shield</th><th>User</th>
           </tr>
         </thead>
         <tbody id="history-body"></tbody>
@@ -1474,7 +1474,6 @@
       <div style="text-align:right;margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
         <button class="btn-ghost" onclick="downloadReport()">Download Report (.md)</button>
         <button class="btn-ghost" onclick="downloadRawJson()">Download Raw (.json)</button>
-        <button class="btn-ghost" onclick="clearHistory()">Clear History</button>
       </div>
     </div>
 
@@ -2917,13 +2916,6 @@ function loadHistory() {
   updateCharts();
 }
 
-function clearHistory() {
-  _history = [];
-  renderHistory();
-  updateStats();
-  updateCharts();
-}
-
 // ── DOWNLOAD REPORT — client-side only, nothing round-trips the server ──────
 function _triggerDownload(filename, content, mimeType) {
   const blob = new Blob([content], { type: mimeType });
@@ -3000,6 +2992,7 @@ function renderHistory() {
     return `
     <tr>
       <td>${i + 1}</td>
+      <td style="color:var(--muted);font-size:0.65rem;white-space:nowrap">${r.timestamp ? new Date(r.timestamp * 1000).toLocaleString() : '—'}</td>
       <td style="color:var(--muted);font-size:0.65rem">${r.source || '—'}</td>
       <td><span class="badge ${badgeCls}">${badgeLabel}</span></td>
       <td style="font-size:0.65rem">${r.penetration_depth || '—'}</td>

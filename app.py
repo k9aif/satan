@@ -1,7 +1,9 @@
 """K9x Satan — dashboard backend + target pipeline host."""
 
 import asyncio
+import json
 import logging
+import multiprocessing
 import os
 import secrets
 import time
@@ -35,13 +37,43 @@ if os.path.isdir(_DIAGRAMS_DIR):
     app.mount("/static", StaticFiles(directory=_DIAGRAMS_DIR), name="static")
 
 # Bounded to the most recent N runs — oldest is evicted automatically once
-# full. A long red-team session can fire hundreds of attacks; keeping all of
-# them in memory forever serves no purpose the UI's Results tab needs.
+# full (rotates, no manual clearing needed). A long red-team session can fire
+# hundreds of attacks; keeping all of them in memory forever serves no purpose
+# the UI's Results tab needs.
 # Shared across every visitor (see ── Login / session ── below) — each run
 # is tagged with whichever username fired it, but the list itself is one
-# shared table, not scoped per visitor.
-_MAX_HISTORY = 10
-_run_history: "deque[dict]" = deque(maxlen=_MAX_HISTORY)
+# shared table, not scoped per visitor. Deliberately never cleared by any
+# endpoint — with multiple people testing concurrently, seeing who else has
+# been firing (and when) is part of the fun, not overhead worth stripping out.
+_MAX_HISTORY = 50
+
+# Persisted to disk so a container restart doesn't wipe it — SATAN_DATA_DIR
+# defaults to a local "data" dir next to this file (fine for `run.sh`); the
+# RHEL deployment maps it to a host-backed volume (see build_satan.sh) so the
+# file survives `podman stop`/`rm`/rebuild, not just process restarts.
+_DATA_DIR = os.environ.get("SATAN_DATA_DIR", os.path.join(os.path.dirname(__file__), "data"))
+_HISTORY_FILE = os.path.join(_DATA_DIR, "history.json")
+
+
+def _load_history() -> "deque[dict]":
+    try:
+        with open(_HISTORY_FILE, "r") as f:
+            items = json.load(f)
+        return deque(items[-_MAX_HISTORY:], maxlen=_MAX_HISTORY)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return deque(maxlen=_MAX_HISTORY)
+
+
+def _save_history() -> None:
+    try:
+        os.makedirs(_DATA_DIR, exist_ok=True)
+        with open(_HISTORY_FILE, "w") as f:
+            json.dump(list(_run_history), f)
+    except OSError as exc:
+        log.warning("[Satan] could not persist history to %s: %s", _HISTORY_FILE, exc)
+
+
+_run_history: "deque[dict]" = _load_history()
 _attack_counter = 0   # monotonic — decoupled from len(_run_history), which
                       # caps at _MAX_HISTORY and would otherwise produce
                       # duplicate auto-generated correlation_ids once full
@@ -168,8 +200,30 @@ def logout(request: Request, response: Response):
 #    for local dev testing with the Setup UI's live LLM switching; the RHEL
 #    deployment runs with SATAN_LOCK_CONFIG=true, so LLM config is fixed at
 #    container start and never changed live.
+#
+# Explicit "spawn" context (not the platform default, which is "fork" on
+# Linux) is required here, not optional. Every k9_aif_abb Factory
+# (LLMFactory, CacheFactory, ModelRouterFactory, ...) holds a class-level
+# threading.Lock() for thread-safe singleton construction. fork() only
+# duplicates the calling thread — if a worker happens to be forked at the
+# exact instant some other thread holds one of those locks, the child
+# inherits it already locked, with no thread in the child that could ever
+# release it. The next call into that Factory (any fire that reaches
+# MemoryPoisoningCheck/RequestFrequencyCheck's cache or any agent's LLM
+# call) then blocks forever — no timeout involved, a true deadlock, not
+# slow inference. This was reproduced directly: a payload that reached the
+# agent layer hung indefinitely on exactly the pattern this predicts (first
+# fire fine, second fire — a fresh worker forked while some other thread
+# held a lock — stuck permanently). "spawn" starts each worker as a
+# genuinely fresh interpreter with no inherited memory/locks at all,
+# eliminating this deadlock class entirely. The one-time cost (a full
+# framework re-import per worker at pool startup) is negligible for
+# long-lived, pre-warmed workers reused across many fires.
 _POOL_SIZE = int(os.environ.get("SATAN_WORKER_POOL_SIZE", "2"))
-_process_pool = ProcessPoolExecutor(max_workers=_POOL_SIZE)
+_process_pool = ProcessPoolExecutor(
+    max_workers=_POOL_SIZE,
+    mp_context=multiprocessing.get_context("spawn"),
+)
 
 # When true, /api/governance/config, /api/docling/config, and /api/llm/config
 # reject writes — no visitor to a public instance can flip these away from
@@ -461,8 +515,10 @@ async def fire(
     result["governance_provider"] = _governance_config["provider"]
     result["docling_enabled"]     = _docling_config["enabled"]
     result["username"]            = username
+    result["timestamp"]           = time.time()
 
     _run_history.append(result)
+    _save_history()
     log.info("[Satan] fire result: status=%s depth=%s user=%s", result["status"], result["penetration_depth"], username)
     return result
 
@@ -507,8 +563,10 @@ async def attack_fire(payload: Dict[str, Any] = Body(...)):
     result["governance_provider"] = governance_provider
     result["docling_enabled"]     = _docling_config["enabled"]
     result["username"]            = "automation"  # CLI runner (satan_runner.py) — never logs in
+    result["timestamp"]           = time.time()
 
     _run_history.append(result)
+    _save_history()
     log.info("[Satan] attack-fire result: status=%s depth=%s", result["status"], result["penetration_depth"])
     return result
 
@@ -518,12 +576,6 @@ async def attack_fire(payload: Dict[str, Any] = Body(...)):
 @app.get("/api/history")
 def history():
     return {"runs": list(_run_history), "max_history": _MAX_HISTORY}
-
-
-@app.delete("/api/history")
-def clear_history():
-    _run_history.clear()
-    return {"cleared": True}
 
 
 @app.get("/api/health")

@@ -68,7 +68,16 @@ WORKDIR /app/k9x-ecosystem/k9x_satan
 ENV PYTHONPATH=/app/k9x-ecosystem \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    K9_ENV=development
+    K9_ENV=development \
+    SATAN_DATA_DIR=/app/data
+
+# Attack-history persistence (see app.py's SATAN_DATA_DIR) — created and
+# group-writable so it works both as an anonymous container dir AND as a
+# host bind-mount target (build_satan.sh maps this to a host-backed volume
+# so history survives podman stop/rm/rebuild, not just process restarts).
+# Owned by UID 1001 (the runtime USER below) with group-root write, matching
+# the arbitrary-UID convention RHEL/OpenShift base images expect.
+RUN mkdir -p /app/data && chown 1001:0 /app/data && chmod g+rwX /app/data
 
 EXPOSE 6660
 

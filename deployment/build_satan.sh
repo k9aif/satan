@@ -13,10 +13,21 @@ sudo podman build \
   -f k9x_satan/deployment/Dockerfile -t k9x-satan:latest .
 sudo podman stop k9x_satan 2>/dev/null || true
 sudo podman rm   k9x_satan 2>/dev/null || true
+
+# Host-backed volume for attack history (app.py persists history.json here) —
+# without this, history.json lives only inside the container's writable
+# layer and a `podman rm`/rebuild (this script does both, every run) wipes it.
+# world-writable because the container runs as UID 1001, which has no
+# reliable identity on the RHEL host side of a bind mount.
+SATAN_DATA_HOST_DIR=/home/container_storage/volumes/k9x-ecosystem/k9x-satan
+sudo mkdir -p "$SATAN_DATA_HOST_DIR"
+sudo chmod 777 "$SATAN_DATA_HOST_DIR"
+
 sudo podman run -d --name k9x_satan \
   --restart=always \
   --memory=16g --cpus=8 \
   -p 127.0.0.1:6660:6660 \
+  -v "$SATAN_DATA_HOST_DIR":/app/data:Z \
   -e K9_ENV=development \
   -e SATAN_GOVERNANCE=noop \
   -e SATAN_LOCK_CONFIG=true \
