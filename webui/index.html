@@ -1043,6 +1043,80 @@
 <body>
 <div class="app">
 
+<!-- ── LOGIN OVERLAY ── -->
+<!-- Not real authentication (no password) — just captures a display name so
+     the shared run history can show who fired what. Blank = auto-generated
+     guest handle. See app.py's "── Login / session ──" section. -->
+<style>
+  @keyframes loginGlowPulse {
+    0%, 100% { text-shadow: 0 0 18px rgba(204,34,34,0.55), 0 0 42px rgba(139,0,0,0.35); }
+    50%      { text-shadow: 0 0 30px rgba(255,68,68,0.85), 0 0 70px rgba(204,34,34,0.55); }
+  }
+  @keyframes loginFlicker {
+    0%, 19%, 21%, 23%, 100% { opacity: 1; }
+    20%, 22%                { opacity: 0.82; }
+  }
+  #login-overlay {
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(90,10,10,0.35) 0%, rgba(10,8,10,0) 55%),
+      radial-gradient(ellipse at 50% 100%, rgba(60,5,5,0.4) 0%, rgba(5,4,6,0) 60%),
+      #050506;
+  }
+  #login-overlay .login-title {
+    font-size: 2.6rem;
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #c41414;
+    font-family: var(--font);
+    line-height: 1;
+    animation: loginGlowPulse 3.2s ease-in-out infinite, loginFlicker 6s linear infinite;
+  }
+  #login-overlay .login-k9 {
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--dim);
+    margin-bottom: 18px;
+  }
+  #login-overlay .login-tagline {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 10px;
+    margin-bottom: 28px;
+  }
+  #login-overlay .login-box {
+    background: rgba(18,18,32,0.75);
+    border: 1px solid #3a1414;
+    box-shadow: 0 0 40px rgba(139,0,0,0.18), inset 0 0 60px rgba(0,0,0,0.4);
+    border-radius: 10px;
+    padding: 40px 44px;
+    min-width: 340px;
+    text-align: center;
+    backdrop-filter: blur(2px);
+  }
+  #login-overlay input#login-username:focus {
+    outline: none;
+    border-color: #aa1515 !important;
+    box-shadow: 0 0 0 2px rgba(170,21,21,0.25);
+  }
+</style>
+<div id="login-overlay" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div class="login-box">
+    <div class="login-k9">K9X <span style="font-size:0.6rem;font-weight:700;color:var(--dim);vertical-align:super">(Beta)</span></div>
+    <div class="login-title">SATAN</div>
+    <div class="login-tagline">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
+    <input id="login-username" type="text" placeholder="username (optional)" autocomplete="off"
+           style="width:100%;padding:9px 11px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:0.9rem;margin-bottom:12px;box-sizing:border-box;transition:border-color 0.15s"
+           onkeydown="if(event.key==='Enter') doLogin()">
+    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:10px;background:linear-gradient(135deg,#8b0000,#cc2222);border:none;border-radius:4px;color:#fff;font-weight:700;letter-spacing:0.08em;cursor:pointer;text-transform:uppercase">Enter, if you dare</button>
+    <div id="login-error" style="color:var(--red-glow);font-size:0.78rem;margin-top:10px;display:none"></div>
+    <div style="font-size:0.7rem;color:var(--dim);margin-top:18px">No password required — leave blank for a guest name.</div>
+  </div>
+</div>
+
 <!-- ── HEADER ── -->
 <header>
   <div class="header-left">
@@ -1052,6 +1126,10 @@
   <div class="header-center">
     <div class="satan-title">SATAN</div>
     <div class="satan-acronym">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
+  </div>
+  <div class="header-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+    <span id="header-username" style="color:var(--text)"></span>
+    <a href="#" onclick="doLogout(); return false" style="color:var(--red-mid);text-decoration:underline;cursor:pointer">Logout</a>
   </div>
 </header>
 
@@ -1388,7 +1466,7 @@
       <table class="history-table" id="history-table" style="display:none">
         <thead>
           <tr>
-            <th>#</th><th>Source</th><th>Status</th><th>Depth</th><th>Blocked By</th><th>Shield</th>
+            <th>#</th><th>Source</th><th>Status</th><th>Depth</th><th>Blocked By</th><th>Shield</th><th>User</th>
           </tr>
         </thead>
         <tbody id="history-body"></tbody>
@@ -2927,6 +3005,7 @@ function renderHistory() {
       <td style="font-size:0.65rem">${r.penetration_depth || '—'}</td>
       <td style="color:var(--muted);font-size:0.65rem">${r.blocked_by || '—'}</td>
       <td style="font-size:0.65rem;color:${(r.shield_held || isClean) ? 'var(--green)' : 'var(--red-glow)'}">${isClean ? '✓ N/A — clean pass' : r.shield_held ? '✓ Shield held' : '✗ FINDING'}</td>
+      <td style="color:var(--muted);font-size:0.65rem">${escapeHtml(r.username || '—')}</td>
     </tr>`;
   }).join('');
 }
@@ -3346,11 +3425,65 @@ async function callRepent() {
   }
 }
 
-init();
-loadLLMConfig();
-loadGovernanceConfig();
-loadDoclingConfig();
-loadRepentState();
+// ── LOGIN ──
+let _currentUsername = null;
+
+function startApp() {
+  document.getElementById('login-overlay').style.display = 'none';
+  const el = document.getElementById('header-username');
+  if (el) el.textContent = _currentUsername || '';
+  init();
+  loadLLMConfig();
+  loadGovernanceConfig();
+  loadDoclingConfig();
+  loadRepentState();
+}
+
+async function doLogout() {
+  try {
+    await fetch('/api/logout', { method: 'POST' });
+  } catch {}
+  window.location.reload();
+}
+
+async function doLogin() {
+  const input  = document.getElementById('login-username');
+  const btn    = document.getElementById('login-btn');
+  const errEl  = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  try {
+    const resp = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: input.value.trim() }),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    _currentUsername = data.username;
+    startApp();
+  } catch (e) {
+    errEl.textContent = `Login failed — ${e.message || e}`;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+  }
+}
+
+async function checkSessionAndStart() {
+  try {
+    const resp = await fetch('/api/session');
+    const data = await resp.json();
+    if (data.logged_in) {
+      _currentUsername = data.username;
+      startApp();
+      return;
+    }
+  } catch {}
+  // Not logged in (or check failed) — leave the login overlay showing.
+  document.getElementById('login-username').focus();
+}
+
+checkSessionAndStart();
 </script>
 </body>
 </html>

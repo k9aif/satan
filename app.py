@@ -1,9 +1,14 @@
 """K9x Satan — dashboard backend + target pipeline host."""
 
+import asyncio
 import logging
 import os
+import secrets
+import time
+import uuid
 import requests
 from collections import deque
+from concurrent.futures import ProcessPoolExecutor
 from typing import Any, Dict, List, Optional
 
 # Auto-load .env so running via `uvicorn` directly (e.g. from VS Code) picks up
@@ -15,7 +20,7 @@ try:
 except ImportError:
     pass
 
-from fastapi import Body, FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import Body, FastAPI, HTTPException, Request, Response, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -32,11 +37,139 @@ if os.path.isdir(_DIAGRAMS_DIR):
 # Bounded to the most recent N runs — oldest is evicted automatically once
 # full. A long red-team session can fire hundreds of attacks; keeping all of
 # them in memory forever serves no purpose the UI's Results tab needs.
+# Shared across every visitor (see ── Login / session ── below) — each run
+# is tagged with whichever username fired it, but the list itself is one
+# shared table, not scoped per visitor.
 _MAX_HISTORY = 10
 _run_history: "deque[dict]" = deque(maxlen=_MAX_HISTORY)
 _attack_counter = 0   # monotonic — decoupled from len(_run_history), which
                       # caps at _MAX_HISTORY and would otherwise produce
                       # duplicate auto-generated correlation_ids once full
+
+# ── Login / session ───────────────────────────────────────────────────────────
+#
+# Not real authentication — there is no password, and this is deliberate.
+# The login screen exists purely to capture a display name ("for session
+# mgmt purpose") so the shared run history can show who fired what; it is
+# not an access-control boundary. A blank username gets an auto-generated
+# guest handle rather than being rejected. Session state is in-memory and
+# per-process — fine for the current single-container deployment; would
+# need a shared backend (e.g. Redis) if this ever moves to multiple
+# containers behind a load balancer.
+
+_SESSION_COOKIE = "satan_session"
+_SESSION_TTL_SECONDS = 24 * 60 * 60
+_sessions: Dict[str, Dict[str, Any]] = {}  # session_id -> {"username", "created_at", "last_seen"}
+
+
+def _generate_guest_username() -> str:
+    return f"guest-{secrets.token_hex(3)}"
+
+
+def _prune_expired_sessions() -> None:
+    now = time.time()
+    expired = [sid for sid, s in _sessions.items() if now - s["last_seen"] > _SESSION_TTL_SECONDS]
+    for sid in expired:
+        del _sessions[sid]
+
+
+def _get_username(request: Request) -> str:
+    """
+    Resolve the current visitor's display name from their session cookie.
+
+    Auto-provisions a guest session if the cookie is missing/expired/unknown
+    rather than rejecting the request — the login screen is the normal path
+    to set a real username, but nothing (in particular /api/attack/fire,
+    used by the automated CLI runner, which never logs in at all) should
+    hard-fail just because no session exists yet.
+    """
+    session_id = request.cookies.get(_SESSION_COOKIE)
+    session = _sessions.get(session_id) if session_id else None
+    if session is None:
+        session_id = str(uuid.uuid4())
+        session = {"username": _generate_guest_username(), "created_at": time.time()}
+        _sessions[session_id] = session
+    session["last_seen"] = time.time()
+    return session["username"]
+
+
+class LoginRequest(BaseModel):
+    username: str = ""
+
+
+@app.post("/api/login")
+def login(req: LoginRequest, response: Response):
+    _prune_expired_sessions()
+    username = (req.username or "").strip()
+    if not username:
+        username = _generate_guest_username()
+    session_id = str(uuid.uuid4())
+    now = time.time()
+    _sessions[session_id] = {"username": username, "created_at": now, "last_seen": now}
+    response.set_cookie(
+        _SESSION_COOKIE, session_id,
+        httponly=True, samesite="lax", max_age=_SESSION_TTL_SECONDS,
+    )
+    log.info("[Satan] login: username=%s", username)
+    return {"username": username}
+
+
+@app.get("/api/session")
+def get_session(request: Request):
+    """Used by the webui on load to decide whether to show the login overlay."""
+    session_id = request.cookies.get(_SESSION_COOKIE)
+    session = _sessions.get(session_id) if session_id else None
+    if session is None:
+        return {"logged_in": False}
+    session["last_seen"] = time.time()
+    return {"logged_in": True, "username": session["username"]}
+
+
+@app.post("/api/logout")
+def logout(request: Request, response: Response):
+    session_id = request.cookies.get(_SESSION_COOKIE)
+    if session_id:
+        _sessions.pop(session_id, None)
+    response.delete_cookie(_SESSION_COOKIE)
+    return {"logged_out": True}
+
+
+# ── Process pool ─────────────────────────────────────────────────────────────
+#
+# run_pipeline() and everything under it (VulnerabilityChain checks, agent
+# LLM calls, GuardianGovernance's blocking requests.post()) is synchronous.
+# /api/fire and /api/attack/fire are async endpoints — calling run_pipeline()
+# directly would block this process's single asyncio event loop for the full
+# duration of every fire, serializing ALL concurrent requests (including
+# other visitors' page loads, not just their fires) behind whichever one is
+# currently running.
+#
+# A small, fixed-size pool of worker processes fixes this: each fire is
+# dispatched to a free worker via run_in_executor and genuinely runs in a
+# separate OS process, so the event loop stays free to serve everyone else
+# while it waits. Sized conservatively to match the container's resource
+# limits (see deployment/build_satan.sh's --cpus/--memory) — bump
+# SATAN_WORKER_POOL_SIZE if the container is given more than 1 CPU.
+#
+# Known limitations, both specific to N>1 long-lived workers:
+#
+# 1. MemoryPoisoningCheck/RequestFrequencyCheck's session cache
+#    (checks/_shared_cache.py) is a process-level singleton — a given
+#    session's rate-limit/memory-fact state can land on a different worker
+#    between requests. Not a correctness issue for the in_memory cache's
+#    intended use here (approximate rate limiting for a demo/test tool),
+#    but would need cache.provider: redis if that ever needs to be exact.
+#
+# 2. LLMFactory/ModelRouterFactory are also per-process singletons that
+#    only bootstrap once. _reset_llm_pipeline_caches() (see set_llm_config
+#    below) only resets the MAIN process's copy when Setup's LLM config
+#    changes — an already-warmed pool worker keeps using whatever config it
+#    first bootstrapped with until it happens to be recycled. Only matters
+#    for local dev testing with the Setup UI's live LLM switching; the RHEL
+#    deployment runs with SATAN_LOCK_CONFIG=true, so LLM config is fixed at
+#    container start and never changed live.
+_POOL_SIZE = int(os.environ.get("SATAN_WORKER_POOL_SIZE", "2"))
+_process_pool = ProcessPoolExecutor(max_workers=_POOL_SIZE)
 
 # When true, /api/governance/config, /api/docling/config, and /api/llm/config
 # reject writes — no visitor to a public instance can flip these away from
@@ -259,6 +392,7 @@ def list_corpus():
 
 @app.post("/api/fire")
 async def fire(
+    request: Request,
     corpus_key: Optional[str] = Form(default=None),
     file:        Optional[UploadFile] = File(default=None),
 ):
@@ -266,7 +400,10 @@ async def fire(
     Fire an attack at the target pipeline.
     Supply either corpus_key (pre-built) or upload a custom file.
     """
+    import functools
     from k9x_satan.target.pipeline import run_pipeline
+
+    username = _get_username(request)
 
     if file:
         content = await file.read()
@@ -315,16 +452,18 @@ async def fire(
     cfg.setdefault("docling", {}).update(_docling_config)
     cfg = _apply_llm_overrides(cfg)
 
-    result = run_pipeline(payload, config=cfg)
+    loop = asyncio.get_running_loop()
+    result = await loop.run_in_executor(_process_pool, functools.partial(run_pipeline, payload, config=cfg))
     result["source"]              = source
     result["document_size"]       = len(document_text)
     result["document_text"]       = document_text
     result["is_evil"]             = CORPUS[corpus_key]["evil"] if corpus_key and corpus_key in CORPUS else True
     result["governance_provider"] = _governance_config["provider"]
     result["docling_enabled"]     = _docling_config["enabled"]
+    result["username"]            = username
 
     _run_history.append(result)
-    log.info("[Satan] fire result: status=%s depth=%s", result["status"], result["penetration_depth"])
+    log.info("[Satan] fire result: status=%s depth=%s user=%s", result["status"], result["penetration_depth"], username)
     return result
 
 
@@ -346,6 +485,7 @@ async def attack_fire(payload: Dict[str, Any] = Body(...)):
     This is what lets satan_runner.py --compare-governance fire the same
     attack in "deterministic checks only" vs "deterministic + Guardian" mode.
     """
+    import functools
     from k9x_satan.target.pipeline import run_pipeline, load_config
 
     global _attack_counter
@@ -361,10 +501,12 @@ async def attack_fire(payload: Dict[str, Any] = Body(...)):
     cfg.setdefault("docling", {}).update(_docling_config)
     cfg = _apply_llm_overrides(cfg)
 
-    result = run_pipeline(payload, config=cfg)
+    loop = asyncio.get_running_loop()
+    result = await loop.run_in_executor(_process_pool, functools.partial(run_pipeline, payload, config=cfg))
     result["source"]              = "attack"
     result["governance_provider"] = governance_provider
     result["docling_enabled"]     = _docling_config["enabled"]
+    result["username"]            = "automation"  # CLI runner (satan_runner.py) — never logs in
 
     _run_history.append(result)
     log.info("[Satan] attack-fire result: status=%s depth=%s", result["status"], result["penetration_depth"])
