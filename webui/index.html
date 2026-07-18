@@ -2903,14 +2903,23 @@ function updateLastResult(result) {
 }
 
 // ── HISTORY & CHARTS
-// Session-local only — deliberately does NOT fetch /api/history. That endpoint
-// is a shared list on the server (every visitor's fires land in the same
-// deque), so pulling from it would leak one person's attacks — and any
-// documents they uploaded — into every other visitor's browser. _history is
-// built up purely from fires that happened in *this* tab (see fireAttack()).
-function loadHistory() {
+// Shared across every visitor — fetches the server's persisted run history
+// (SATAN_DATA_DIR/history.json) so the Results tab shows everyone's fires,
+// not just this tab's. Seeing who else is testing (and what they tried) is
+// the point — see the User/Time columns. fireAttack() still unshifts its own
+// result locally too, so the newest fire shows up immediately without
+// waiting on a re-fetch.
+async function loadHistory() {
   const note = document.getElementById('history-cap-note');
-  if (note) note.textContent = '(this session only)';
+  if (note) note.textContent = '(shared — all users)';
+  try {
+    const resp = await fetch('/api/history');
+    const data = await resp.json();
+    // Server stores oldest-first; UI renders newest-first (see fireAttack()'s unshift).
+    _history = [...(data.runs || [])].reverse();
+  } catch (e) {
+    console.error('Failed to load shared history:', e);
+  }
   renderHistory();
   updateStats();
   updateCharts();
