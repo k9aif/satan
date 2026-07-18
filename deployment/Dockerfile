@@ -1,11 +1,19 @@
 # K9X Satan — Adversarial red-team harness for K9-AIF
 # RHEL UBI 9 Python 3.11 container image
 #
-# Mirrors k9x_studio's actual pattern (see k9x-ecosystem/deployment/Dockerfile):
-# k9_aif_abb comes from `pip install k9-aif` (PyPI), not a bundled/copied local
-# framework checkout. Verified against PyPI k9-aif==1.8.1 (2026-07-11) — it
-# already contains ShieldGovernance and everything else Satan's code path
-# imports. No framework source travels in this image at all.
+# k9_aif_abb comes from `pip install k9-aif` (PyPI), pulled in transitively
+# by installing this package itself — pyproject.toml declares
+# `k9-aif>=1.9.0` as a dependency, and `pip install .` resolves it from
+# PyPI along with every other dependency. No framework source travels in
+# this image, and no separate git-clone step is needed.
+#
+# Requires k9-aif>=1.9.0 to be published on PyPI (added ToolAuthorizationCheck,
+# MemoryPoisoningCheck, SystemPromptLeakageCheck, OutputSanitizationCheck,
+# RequestFrequencyCheck, RoleBasedAuthorizationGuard — all imported by
+# target/router.py and target/orchestrator.py). An older k9-aif on PyPI
+# will fail at import time with a clear ModuleNotFoundError, not a silent
+# stub — if this build fails on import, check `pip index versions k9-aif`
+# against the version pinned here before assuming anything else is wrong.
 #
 # Build (from inside satan/, after extracting the packed tarball there):
 #   podman build -f deployment/Dockerfile -t k9x-satan:latest .
@@ -14,15 +22,16 @@ FROM registry.access.redhat.com/ubi9/python-311:latest
 
 USER root
 
-WORKDIR /app
+WORKDIR /app/k9x-ecosystem/k9x_satan
 
-COPY k9x_satan/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir --upgrade pip \
- && pip install --no-cache-dir -r /tmp/requirements.txt
-
+# Copy the full package (pyproject.toml + source + package-data) and
+# install it — this is what resolves k9-aif from PyPI, not a separate step.
+# pip installs k9x_satan properly into site-packages, so no PYTHONPATH
+# trick is needed for `uvicorn k9x_satan.app:app` to find it.
 COPY k9x_satan/ /app/k9x-ecosystem/k9x_satan/
 
-WORKDIR /app/k9x-ecosystem/k9x_satan
+RUN pip install --no-cache-dir --upgrade pip \
+ && pip install --no-cache-dir .
 
 # K9_ENV must stay "development" — Satan is a test harness, not a production
 # business app. k9_aif_abb's governance rule makes enforce_governance() RAISE
@@ -30,8 +39,7 @@ WORKDIR /app/k9x-ecosystem/k9x_satan
 # target/agents.py calls enforce_governance(). Setting this to "production"
 # would make every attack show a generic squad_error instead of a real
 # BLOCKED/COMPLETED verdict — see config/config.yaml's own comment.
-ENV PYTHONPATH=/app/k9x-ecosystem \
-    PYTHONDONTWRITEBYTECODE=1 \
+ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     K9_ENV=development
 

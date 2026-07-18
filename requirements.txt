@@ -1,4 +1,3 @@
-k9-aif>=1.8.1
 fastapi>=0.111.0
 uvicorn>=0.29.0
 requests>=2.31.0
