@@ -79,6 +79,12 @@ ENV PYTHONPATH=/app/k9x-ecosystem \
 # the arbitrary-UID convention RHEL/OpenShift base images expect.
 RUN mkdir -p /app/data && chown 1001:0 /app/data && chmod g+rwX /app/data
 
+# webui/index.html is rewritten in place by the REPENT easter egg
+# (repent.py). COPY above ran as root, so without this the file is
+# read-only to the runtime user below and REPENT fails with a
+# PermissionError, surfaced to the browser as a non-JSON 500 response.
+RUN chown 1001:0 webui/index.html && chmod g+rw webui/index.html
+
 EXPOSE 6660
 
 HEALTHCHECK --interval=30s --timeout=8s --start-period=15s --retries=3 \

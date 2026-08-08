@@ -21,9 +21,14 @@ _DIR = os.path.dirname(os.path.abspath(__file__))
 
 TARGETS = [
     os.path.join(_DIR, "webui", "index.html"),
-    os.path.join(_DIR, "app.py"),
-    os.path.join(_DIR, "run.sh"),
 ]
+# app.py and run.sh used to be rewritten too, purely decorative (the visible
+# effect only ever came from index.html). Rewriting a running app's own
+# source caused two real bugs: locally, uvicorn --reload saw app.py change
+# mid-request and killed the connection before the response finished;
+# in production, the container runs as non-root and can't write to those
+# root-owned files at all. Neither app.py nor run.sh needs to change for
+# the SATAN -> SANTA effect to work.
 
 REPENT = [
     ("K9X Satan",  "K9X Santa"),

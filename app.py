@@ -890,7 +890,11 @@ def repent_state():
 def repent(undo: bool = False):
     """Run repent.py — rename SATAN → SATAN (or back). Reloading the page applies the change."""
     from k9x_satan.repent import run as repent_run
-    result = repent_run(undo=undo)
+    try:
+        result = repent_run(undo=undo)
+    except OSError as exc:
+        log.error("[Satan] repent failed: undo=%s error=%s", undo, exc)
+        raise HTTPException(status_code=500, detail=f"repent failed: {exc}")
     log.info("[Satan] repent called: undo=%s changes=%d", undo, result["changes"])
     return result
 
