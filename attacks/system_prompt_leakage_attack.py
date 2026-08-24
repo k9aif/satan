@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """SystemPromptLeakageAttack — coaxes the agent into echoing its own system prompt."""
 
 import os

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """ToolArgumentAttack — poisoned tool call arguments (SQL/command injection)."""
 
 import os

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """SemanticDriftAttack — subtle reframing to shift agent goal/behavior."""
 
 import os

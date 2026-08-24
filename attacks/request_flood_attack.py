@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """RequestFloodAttack — resource-exhaustion via high request volume within one session."""
 
 import os

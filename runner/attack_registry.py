@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """Registry of all Satan attack classes."""
 
 from k9x_satan.attacks.prompt_injection_attack import PromptInjectionAttack

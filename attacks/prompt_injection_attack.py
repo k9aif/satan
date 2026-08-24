@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """PromptInjectionAttack — embeds malicious instructions in document content."""
 
 import os

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """ExecutionBypassAttack — destructive execution payload (filesystem, reverse shell)."""
 
 import os

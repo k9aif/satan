@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """HardcodedCredentialAttack — a secret embedded in a document that the agent echoes back."""
 
 import os

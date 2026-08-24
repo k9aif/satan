@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """K9x Satan — report formatter (text + JSON)."""
 
 import os

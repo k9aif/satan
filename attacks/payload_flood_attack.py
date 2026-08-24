@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """PayloadFloodAttack — oversized payload to exhaust the LLM token budget."""
 
 import os

@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """Command-line interface for K9X Satan — installed as the `k9x-satan` console script."""
 
 import argparse

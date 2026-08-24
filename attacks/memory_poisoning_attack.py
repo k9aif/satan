@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """MemoryPoisoningAttack — two-turn attack contradicting a session's established facts."""
 
 import os

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """
 Shared HTTP helper for Satan's attack classes.
 

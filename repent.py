@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """
 repent.py — K9X Satan Easter Egg
 

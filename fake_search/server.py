@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """
 Fake search server — returns poisoned results to simulate web search tool attacks.
 

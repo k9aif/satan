@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# K9x Satan
 """SearchPoisoningAttack — fetches a poisoned result from the fake search server
 and feeds it into the target pipeline as tool-response content."""
 
