@@ -6,6 +6,14 @@ k9_env: development   # Satan is a test harness — NoopGovernance is permitted
 
 inference:
   llm_factory:
+    backend: ollama
+    provider: ollama
+    # OllamaProviderAdapter.create_llm() reads base_url from this
+    # inference.llm_factory-level dict specifically (factory_cfg) -- the
+    # separate top-level `ollama:` block below is never consulted by that
+    # adapter. Kept here so OLLAMA_BASE_URL actually reaches OllamaLLM
+    # instead of silently falling back to the localhost default below.
+    base_url: "${OLLAMA_BASE_URL:-http://localhost:11434}"
     models:
       general:
         model: "${SATAN_LLM_MODEL:-llama3.2:1b}"
