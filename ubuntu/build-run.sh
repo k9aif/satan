@@ -18,8 +18,8 @@ sudo podman rm   k9x_satan 2>/dev/null || true
 # without this, history.json lives only inside the container's writable
 # layer and a `podman rm`/rebuild (this script does both, every run) wipes it.
 # world-writable because the container runs as UID 1001, which has no
-# reliable identity on the RHEL host side of a bind mount.
-SATAN_DATA_HOST_DIR=/home/container_storage/volumes/k9x-ecosystem/k9x-satan
+# reliable identity on the host side of a bind mount.
+SATAN_DATA_HOST_DIR="${HOME}/containers/volumes/k9x-satan"
 sudo mkdir -p "$SATAN_DATA_HOST_DIR"
 sudo chmod 777 "$SATAN_DATA_HOST_DIR"
 
