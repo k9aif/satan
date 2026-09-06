@@ -12,7 +12,7 @@
 # not yet released.
 #
 # Build (from inside satan/, after extracting the packed tarball there):
-#   podman build -f deployment/Dockerfile -t k9x-satan:latest .
+#   podman build -f ubuntu/Containerfile -t k9x-satan:latest .
 
 FROM registry.access.redhat.com/ubi9/python-311:latest
 

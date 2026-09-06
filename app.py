@@ -230,7 +230,7 @@ def logout(request: Request, response: Response):
 # dispatched to a free worker via run_in_executor and genuinely runs in a
 # separate OS process, so the event loop stays free to serve everyone else
 # while it waits. Sized conservatively to match the container's resource
-# limits (see deployment/build_satan.sh's --cpus/--memory) — bump
+# limits (see ubuntu/build-run.sh's --cpus/--memory) — bump
 # SATAN_WORKER_POOL_SIZE if the container is given more than 1 CPU.
 #
 # Known limitations, both specific to N>1 long-lived workers:

@@ -10,7 +10,7 @@ tar -xzf k9x_satan.tar.gz
 # re-runs fresh, at the cost of that one layer never being cache-accelerated.
 sudo podman build \
   --build-arg K9AIF_CACHE_VERSION="$(date +%s)" \
-  -f k9x_satan/deployment/Dockerfile -t k9x-satan:latest .
+  -f k9x_satan/ubuntu/Containerfile -t k9x-satan:latest .
 sudo podman stop k9x_satan 2>/dev/null || true
 sudo podman rm   k9x_satan 2>/dev/null || true
 

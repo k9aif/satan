@@ -1,8 +1,8 @@
 #!/bin/bash
-# Package k9x_satan for deployment — includes Dockerfile.
+# Package k9x_satan for deployment — includes the ubuntu/ Containerfile.
 #
 # Mirrors k9x_studio/pack.sh's mechanics, but simpler: k9_aif_abb comes from
-# `pip install k9-aif` inside the container (see deployment/Dockerfile and
+# `pip install k9-aif` inside the container (see ubuntu/Containerfile and
 # requirements.txt), not a bundled framework checkout — verified against the
 # published PyPI package before switching to this approach. Nothing from
 # k9-aif-framework needs to travel in this tarball at all.
@@ -22,6 +22,6 @@ tar -czf "$SCRIPT_DIR/k9x_satan.tar.gz" \
   --exclude="k9x_satan/k9x_satan.tar.gz" \
   -s '/^k9x_satan/k9x_satan/' \
   k9x_satan \
-  k9x_satan/deployment/Dockerfile
+  k9x_satan/ubuntu/Containerfile
 
 echo "Done → $SCRIPT_DIR/k9x_satan.tar.gz ($(du -sh "$SCRIPT_DIR/k9x_satan.tar.gz" | cut -f1))"
