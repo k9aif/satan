@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>K9x Satan — Security Analysis Tool for Agentic Networks</title>
+<title>K9x Santa — Security Analysis Tool for Agentic Networks</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
 <style>
@@ -108,7 +108,7 @@
     line-height: 1;
   }
 
-  /* ── SATAN MODE — applied by repent.py via body class ── */
+  /* ── SANTA MODE — applied by repent.py via body class ── */
   body.santa-mode .satan-title      { color: #1a5c2e; }
   body.santa-mode .logo-k9          { background: linear-gradient(135deg, #145228, #22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   body.santa-mode header            { border-bottom-color: #1a3d24; }
@@ -1040,7 +1040,7 @@
   }
 </style>
 </head>
-<body>
+<body class="santa-mode">
 <div class="app">
 
 <!-- ── LOGIN OVERLAY ── -->
@@ -1106,8 +1106,8 @@
 <div id="login-overlay" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center">
   <div class="login-box">
     <div class="login-k9">K9X <span style="font-size:0.6rem;font-weight:700;color:var(--dim);vertical-align:super">(Beta)</span></div>
-    <div class="login-title">SATAN</div>
-    <div class="login-tagline">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
+    <div class="login-title">SANTA</div>
+    <div class="login-tagline">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Networks &nbsp;·&nbsp; Testing &nbsp;·&nbsp; Agentic</div>
     <input id="login-username" type="text" placeholder="codename (optional)" autocomplete="off" maxlength="24"
            style="width:100%;padding:9px 11px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:0.9rem;margin-bottom:12px;box-sizing:border-box;transition:border-color 0.15s"
            onkeydown="if(event.key==='Enter') doLogin()">
@@ -1124,8 +1124,8 @@
     <div class="header-k9-sub">k9x.ai</div>
   </div>
   <div class="header-center">
-    <div class="satan-title">SATAN</div>
-    <div class="satan-acronym">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
+    <div class="satan-title">SANTA</div>
+    <div class="satan-acronym">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Networks &nbsp;·&nbsp; Testing &nbsp;·&nbsp; Agentic</div>
   </div>
   <div class="header-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
     <span id="header-username" style="color:var(--text)"></span>
@@ -1184,7 +1184,7 @@
     </div>
     <div class="depth-pipeline">
       <div class="depth-node">
-        <div class="depth-box" id="node-satan">SATAN</div>
+        <div class="depth-box" id="node-satan">SANTA</div>
         <div class="depth-label">Attacker</div>
       </div>
       <div class="depth-arrow" id="arrow-1">→</div>
@@ -1230,7 +1230,7 @@
 
       <div style="margin-bottom:22px">
         <div style="font-size:1.1rem;font-weight:300;color:var(--text);margin-bottom:6px">LLM Setup</div>
-        <div style="font-size:0.85rem;color:var(--muted);line-height:1.7">Configure the LLM provider that Satan's target agents will use. Connect to Ollama, LM Studio, or any OpenAI-compatible endpoint.</div>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.7">Configure the LLM provider that Santa's target agents will use. Connect to Ollama, LM Studio, or any OpenAI-compatible endpoint.</div>
       </div>
 
       <div class="card">
@@ -1258,7 +1258,7 @@
 
         <div class="setup-group" id="api-key-group" style="display:none">
           <label class="setup-label">API Key</label>
-          <input class="setup-input" id="setup-api-key" type="password" placeholder="from SATAN_LLM_API_KEY env var">
+          <input class="setup-input" id="setup-api-key" type="password" placeholder="from SANTA_LLM_API_KEY env var">
         </div>
 
         <div class="setup-group" id="project-id-group" style="display:none">
@@ -1268,7 +1268,7 @@
 
         <div class="setup-group">
           <label class="setup-label">Model</label>
-          <input class="setup-input" id="setup-model" type="text" placeholder="e.g. llama3.2:1b  (from SATAN_LLM_MODEL env var)">
+          <input class="setup-input" id="setup-model" type="text" placeholder="e.g. llama3.2:1b  (from SANTA_LLM_MODEL env var)">
         </div>
 
         <div style="display:flex;gap:10px;margin-top:4px">
@@ -1295,7 +1295,7 @@
         </div>
         <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;margin-top:10px">
           ShieldGovernance (<code>k9_aif_abb.k9_security.vulnerability</code>) is a <strong>framework</strong> class,
-          not Satan-local — it wires the same <code>VulnerabilityChain</code>/<code>BaseVulnerabilityCheck</code>
+          not Santa-local — it wires the same <code>VulnerabilityChain</code>/<code>BaseVulnerabilityCheck</code>
           contracts Router/Orchestrator already use, but at the agent pre/post hook level instead. Deterministic,
           zero LLM cost, config-driven via <code>security.shield</code> in config.yaml — a second valid
           architectural point for the same ABB, proving the pattern isn't tied to one wiring location.
@@ -1344,7 +1344,7 @@
           naive regex only reads plain key:value lines, so anomalies hidden inside a corrupted,
           malformed, or unusually structured file (a real risk on a public instance anyone can
           upload to) can slip past extraction entirely. If you'd rather not upload documents to
-          this shared instance at all, run Satan yourself: <code>pip install k9x-satan</code>.
+          this shared instance at all, run Santa yourself: <code>pip install k9x-satan</code>.
         </div>
       </div>
 
@@ -1487,7 +1487,7 @@
       <p><a href="https://k9x.ai" target="_blank" rel="noopener" style="color:var(--red-bright);text-decoration:underline">K9-AIF Framework (k9x.ai)</a> treats security as a framework capability, not an application concern. Every solution built on the framework automatically inherits a runtime security chain that validates inputs before they reach the intelligence layer.</p>
       <p>Out of the box, Shield provides architectural handlers including <span style="font-family:var(--font-mono);font-size:0.96rem;color:var(--text)">InputSizeCheck, PromptInjectionCheck, SemanticDriftCheck, PIIBoundaryCheck, ToolArgumentCheck, ExecutionGuardCheck,</span> and <span style="font-family:var(--font-mono);font-size:0.96rem;color:var(--text)">HardcodedCredentialCheck</span>.</p>
       <p>These handlers address the primary attack vectors identified by Zscaler ThreatLabz and can be extended as new threats emerge.</p>
-      <p>K9X Satan exists for one reason: <strong style="color:var(--red-bright)">prove whether that architecture actually holds.</strong></p>
+      <p>K9X Santa exists for one reason: <strong style="color:var(--red-bright)">prove whether that architecture actually holds.</strong></p>
     </div>
 
     <div class="card">
@@ -1513,14 +1513,14 @@
         </div>
       </div>
       <p style="font-size:1.05rem;color:var(--muted);line-height:1.7;margin-top:10px">
-        Unlike a human reviewer, an LLM has no inherent notion of trusted versus attacker-controlled content. It follows instructions regardless of their origin — <strong style="color:var(--text)">unless architectural safeguards intervene.</strong> The payload walked through the front door as a document. That is what Satan tests.
+        Unlike a human reviewer, an LLM has no inherent notion of trusted versus attacker-controlled content. It follows instructions regardless of their origin — <strong style="color:var(--text)">unless architectural safeguards intervene.</strong> The payload walked through the front door as a document. That is what Santa tests.
       </p>
     </div>
 
     <div class="card">
       <h3>Complete Check Inventory — Component × Threat Class</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
-        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">14 checks total</span> — 13 framework OOB, 1 Satan-local — plus Guardian as a cross-cutting semantic layer wired at Router ingress (only if the pattern chain didn't already block) and at every agent's pre/post hooks. Five of the framework OOB checks (RequestFrequencyCheck, MemoryPoisoningCheck, ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck) were originally built and proven here, then harvested into the framework itself once verified — see the callout below. A sixth, PIIRequestCheck, was added directly to the framework after a live attack (a "compliance audit" document soliciting full SSN/DOB/account-number disclosure) reached the agent layer uncaught — it targets the *request* for PII, not literal PII values, which is why it runs at ingress rather than alongside PIIBoundaryCheck at egress. Threat classes reference the
+        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">14 checks total</span> — 13 framework OOB, 1 Santa-local — plus Guardian as a cross-cutting semantic layer wired at Router ingress (only if the pattern chain didn't already block) and at every agent's pre/post hooks. Five of the framework OOB checks (RequestFrequencyCheck, MemoryPoisoningCheck, ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck) were originally built and proven here, then harvested into the framework itself once verified — see the callout below. A sixth, PIIRequestCheck, was added directly to the framework after a live attack (a "compliance audit" document soliciting full SSN/DOB/account-number disclosure) reached the agent layer uncaught — it targets the *request* for PII, not literal PII values, which is why it runs at ingress rather than alongside PIIBoundaryCheck at egress. Threat classes reference the
         <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener" style="color:var(--red-mid)">OWASP Top 10 for LLM Applications</a>.
       </p>
       <div style="overflow-x:auto">
@@ -1540,7 +1540,7 @@
           <tr><td>1</td><td>RequestFrequencyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Unbounded Consumption — OWASP LLM10</td><td>request_flood</td></tr>
           <tr><td>2</td><td>InputSizeCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Token-flood / oversized payload — OWASP LLM10</td><td>payload_flood</td></tr>
           <tr><td>3</td><td>PromptInjectionCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Indirect Prompt Injection — Zscaler #1 · OWASP LLM01</td><td>prompt_injection_document, search_poisoning</td></tr>
-          <tr><td>4</td><td>FieldAnomalyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Satan-local</span></td><td>Authority-override social engineering — Zscaler #1 extension</td><td>prompt_injection_document</td></tr>
+          <tr><td>4</td><td>FieldAnomalyCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--green)">Santa-local</span></td><td>Authority-override social engineering — Zscaler #1 extension</td><td>prompt_injection_document</td></tr>
           <tr><td>5</td><td>MemoryPoisoningCheck</td><td>Ingress</td><td>Router</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Memory Poisoning — Zscaler #3 · OWASP LLM04</td><td>memory_poisoning</td></tr>
           <tr><td>6</td><td>ToolArgumentCheck</td><td>Ingress + Egress</td><td>Router + Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05</td><td>tool_argument_poison</td></tr>
           <tr><td>7</td><td>ToolAuthorizationCheck</td><td>Ingress + Egress</td><td>Router + Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Shadow AI — unapproved tool/backend — Zscaler #4</td><td>shadow_tool</td></tr>
@@ -1551,7 +1551,7 @@
           <tr><td>12</td><td>HardcodedCredentialCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Supply chain / secret leakage — OWASP LLM03</td><td>hardcoded_credential</td></tr>
           <tr><td>13</td><td>SystemPromptLeakageCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>System Prompt Leakage — OWASP LLM07</td><td>system_prompt_leakage</td></tr>
           <tr><td>14</td><td>OutputSanitizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Improper Output Handling — OWASP LLM05</td><td>output_sanitization</td></tr>
-          <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Router ingress + Pre/Post — every agent</td><td>Router + Agent</td><td><span style="color:var(--green)">Satan-local</span></td><td>Semantic evasion of all 14 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code></td><td>any attack, with Governance = GuardianGovernance</td></tr>
+          <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Router ingress + Pre/Post — every agent</td><td>Router + Agent</td><td><span style="color:var(--green)">Santa-local</span></td><td>Semantic evasion of all 14 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code></td><td>any attack, with Governance = GuardianGovernance</td></tr>
         </tbody>
       </table>
       </div>
@@ -1576,7 +1576,7 @@
       <div style="font-size:0.94rem;font-weight:700;letter-spacing:0.08em;color:var(--red-mid);margin-bottom:4px">IN</div>
       <div class="arch-pipeline">
         <div class="arch-node">
-          <div class="arch-box attack">SATAN</div>
+          <div class="arch-box attack">SANTA</div>
           <div class="arch-note">Crafted payload<br>BaseAttack class</div>
         </div>
         <div class="arch-arrow red">→</div>
@@ -1655,7 +1655,7 @@
     <div class="card">
       <h3>Shared Responsibility — What the Framework Handles, What the Solution Owns</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
-        The diagram above is Satan's own target pipeline. A real solution built on
+        The diagram above is Santa's own target pipeline. A real solution built on
         <a href="https://k9x.ai" target="_blank" rel="noopener" style="color:var(--red-bright);text-decoration:underline">K9-AIF (k9x.ai)</a> — say, an insurance
         claims processor — looks the same from the outside:
       </p>
@@ -1688,23 +1688,23 @@
       <p style="font-size:1.03rem;color:var(--muted);line-height:1.7;margin-top:12px">
         Nothing in the left column is something the claims team opted into — it's inherited the moment their
         classes extend <code>BaseRouter</code>/<code>BaseOrchestrator</code>/<code>BaseAgent</code>, the same way
-        logging or the event bus is. Satan attacks the exact same pattern a real solution would use — that's what
+        logging or the event bus is. Santa attacks the exact same pattern a real solution would use — that's what
         makes a contained attack here evidence for a real solution, not just proof about a demo.
       </p>
       <div style="margin-top:12px;padding:10px 12px;background:color-mix(in srgb,var(--yellow) 6%,transparent);border-left:3px solid var(--yellow);font-size:0.94rem;color:var(--muted);line-height:1.7">
         <strong style="color:var(--text)">Did the ABB's OOB set cover everything from day one? No — and this repo is the proof, not a hedge.</strong>
         The framework originally shipped 7 OOB checks, deliberately generic: oversized payload, generic injection
-        phrases, generic PII patterns. Satan needed 6 more to close real gaps that surfaced from actually attacking
+        phrases, generic PII patterns. Santa needed 6 more to close real gaps that surfaced from actually attacking
         a pipeline. Five of those six — <code>MemoryPoisoningCheck</code>, <code>ToolAuthorizationCheck</code>,
         <code>SystemPromptLeakageCheck</code>, <code>OutputSanitizationCheck</code>, <code>RequestFrequencyCheck</code> —
         turned out to be framework-generic in their actual logic (nothing insurance-specific in any of them), so
         once proven here they were harvested upstream into the framework's own OOB set — the ABB's 7 became 12.
-        Only <code>FieldAnomalyCheck</code> stays Satan-local: its red-flag terms ("COO authorization code",
+        Only <code>FieldAnomalyCheck</code> stays Santa-local: its red-flag terms ("COO authorization code",
         "EXEC-OVERRIDE") only make sense for insurance-claims-shaped documents — a healthcare or
         defense-procurement solution needs different domain terms entirely, so promoting it as-is would misrepresent
         a worked example as a general capability. The ABB gives every solution a strong, reusable, and growing
         baseline. The solution still has to review whether that baseline covers its actual domain and threat surface, and
-        add what's missing — the same way Satan did, and the same way the next solution's genuinely domain-specific
+        add what's missing — the same way Santa did, and the same way the next solution's genuinely domain-specific
         findings will stay local to it rather than forcing their way into the framework.
       </div>
     </div>
@@ -1712,12 +1712,12 @@
     <div class="card">
       <h3>The Hardening Loop</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.8;margin-bottom:12px">
-        Satan and Shield grow together. Every EVASION finding closes a gap in the framework — making it stronger for every solution built on K9-AIF.
+        Santa and Shield grow together. Every EVASION finding closes a gap in the framework — making it stronger for every solution built on K9-AIF.
       </p>
-      <pre class="sample" style="font-size:0.94rem;line-height:1.8">Satan fires attack
+      <pre class="sample" style="font-size:0.94rem;line-height:1.8">Santa fires attack
   → Shield misses it        EVASION — gap found
   → new Check added to framework ABB
-  → Satan fires again
+  → Santa fires again
   → Shield blocks it        BLOCKED — framework hardened
   → next attack class probes the next gap
   → repeat</pre>
@@ -1730,7 +1730,7 @@
       <h3>ABB — Framework Owns the Contracts</h3>
       <div class="sym-grid">
         <div class="sym-col satan">
-          <h4>⚔ K9x Satan — Attacks (local)</h4>
+          <h4>⚔ K9x Santa — Attacks (local)</h4>
           <div class="sym-row"><span>PromptInjectionAttack</span><span>document body</span></div>
           <div class="sym-row"><span>SearchPoisoningAttack</span><span>tool response</span></div>
           <div class="sym-row"><span>PayloadFloodAttack</span><span>token exhaustion</span></div>
@@ -1749,7 +1749,7 @@
         </div>
       </div>
       <p style="font-size:1.05rem;color:var(--muted);line-height:1.7;margin-top:12px">
-        <strong style="color:var(--text)">ABBs live in the framework.</strong> The attack and defence classes exercising them live in Satan. Every attack class extends <code>BaseAttack</code>. Every defence check extends <code>BaseVulnerabilityCheck</code>. The contracts belong to the framework — not to any one solution.
+        <strong style="color:var(--text)">ABBs live in the framework.</strong> The attack and defence classes exercising them live in Santa. Every attack class extends <code>BaseAttack</code>. Every defence check extends <code>BaseVulnerabilityCheck</code>. The contracts belong to the framework — not to any one solution.
       </p>
     </div>
 
@@ -1970,7 +1970,7 @@
     </div>
 
     <div class="card">
-      <h3>ABB / Satan-local Class Hierarchy</h3>
+      <h3>ABB / Santa-local Class Hierarchy</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.7;margin-bottom:12px">
         PlantUML source at <code style="font-size:1.05rem">diagrams/shield_class_small.puml</code>
         (checks grouped into two boxes to keep this readable — the un-grouped version with each
@@ -1978,7 +1978,7 @@
         Run <code style="font-size:1.05rem">./diagrams/generate.sh</code> to render PNG.
       </p>
       <div id="class-diagram-container">
-        <img id="class-diagram-img" src="/static/shield_class_small.png" alt="ABB/Satan-local Class Diagram"
+        <img id="class-diagram-img" src="/static/shield_class_small.png" alt="ABB/Santa-local Class Diagram"
              style="max-width:100%;border-radius:4px;display:none"
              onload="this.style.display='block'"
              onerror="document.getElementById('class-diagram-placeholder').style.display='block';this.style.display='none'">
@@ -2045,7 +2045,7 @@ DocumentOrchestrator          extends BaseOrchestrator    (K9-AIF ABB)
           <strong style="color:var(--text)">Continuum</strong> (the catalog of reusable architectural assets — TOGAF's
           Enterprise Continuum applied to K9-AIF),
           <strong style="color:var(--text)">HIL</strong> (human-in-the-loop case management), and
-          <strong style="color:var(--text)">SATAN</strong> — this tool.
+          <strong style="color:var(--text)">SANTA</strong> — this tool.
         </p>
         <p class="doc-p">
           <strong style="color:var(--text)">K9X Shield</strong> isn't a separate product — it's the security and
@@ -2054,7 +2054,7 @@ DocumentOrchestrator          extends BaseOrchestrator    (K9-AIF ABB)
           it knows it or not.
         </p>
         <p class="doc-p">
-          <strong style="color:var(--text)">K9X Satan</strong> is the tool that tests the framework — specifically,
+          <strong style="color:var(--text)">K9X Santa</strong> is the tool that tests the framework — specifically,
           it fires structured adversarial attacks at a live K9-AIF pipeline to prove K9X Shield actually contains
           them, rather than just asserting that it does.
         </p>
@@ -2071,22 +2071,22 @@ k9x-satan --bg     # or run it in the background</pre>
       </div>
 
       <div class="card">
-        <div class="doc-h2">Why the Name "SATAN"?</div>
-        <p class="doc-p" style="margin-top:10px">The name K9X Satan is inspired by the pioneering <strong style="color:var(--text)">SATAN (Security Administrator Tool for Analyzing Networks)</strong>, released in 1995 by security researchers Dan Farmer and Wietse Venema.</p>
-        <p class="doc-p">The original SATAN was one of the first widely recognized network vulnerability assessment tools. Rather than exploiting systems, its purpose was to help administrators identify weaknesses before attackers did.</p>
-        <p class="doc-p">K9X Satan follows the same philosophy for the era of agentic AI. Instead of scanning networks, it executes carefully crafted adversarial attacks against K9X Shield to validate that architectural security controls detect and intercept malicious inputs before they reach the intelligence layer.</p>
+        <div class="doc-h2">Why the Name "SANTA"?</div>
+        <p class="doc-p" style="margin-top:10px">The name K9X Santa is inspired by the pioneering <strong style="color:var(--text)">SANTA (Security Administrator Tool for Analyzing Networks)</strong>, released in 1995 by security researchers Dan Farmer and Wietse Venema.</p>
+        <p class="doc-p">The original SANTA was one of the first widely recognized network vulnerability assessment tools. Rather than exploiting systems, its purpose was to help administrators identify weaknesses before attackers did.</p>
+        <p class="doc-p">K9X Santa follows the same philosophy for the era of agentic AI. Instead of scanning networks, it executes carefully crafted adversarial attacks against K9X Shield to validate that architectural security controls detect and intercept malicious inputs before they reach the intelligence layer.</p>
         <p class="doc-p">The goal is not to break applications — it is to continuously strengthen the framework that protects them.</p>
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-          <span style="font-size:0.85rem;color:var(--muted)">The original SATAN shipped with <code style="color:var(--text)">repent.pl</code> — run it and SATAN became SATAN. K9X Satan carries the tradition. Find the REPENT button in the sidebar.</span>
+          <span style="font-size:0.85rem;color:var(--muted)">The original SANTA shipped with <code style="color:var(--text)">repent.pl</code> — run it and SANTA became SANTA. K9X Santa carries the tradition. Find the REPENT button in the sidebar.</span>
         </div>
       </div>
 
       <div class="card">
-        <div class="doc-h2">How Satan Works</div>
+        <div class="doc-h2">How Santa Works</div>
 
         <div class="doc-h4" style="margin-top:18px">The Philosophy</div>
-        <p class="doc-p">K9X Satan is an adversarial testing platform for K9X Shield.</p>
-        <p class="doc-p">Rather than generating random inputs, Satan executes carefully crafted attacks that target known classes of agentic AI vulnerabilities. Each attack is designed to validate that the framework's architectural security controls detect and intercept malicious payloads before they reach the intelligence layer.</p>
+        <p class="doc-p">K9X Santa is an adversarial testing platform for K9X Shield.</p>
+        <p class="doc-p">Rather than generating random inputs, Santa executes carefully crafted attacks that target known classes of agentic AI vulnerabilities. Each attack is designed to validate that the framework's architectural security controls detect and intercept malicious payloads before they reach the intelligence layer.</p>
         <p class="doc-p">The objective is not to demonstrate successful attacks — it's to prove that the framework's defensive architecture holds under real-world adversarial conditions.</p>
       </div>
 
@@ -2105,7 +2105,7 @@ k9x-satan --bg     # or run it in the background</pre>
         <p class="doc-p">Enable it in <strong style="color:var(--text)">Setup → Governance</strong> — three providers are available: <code>NoopGovernance</code> (passthrough, dev default), <code>GuardianGovernance</code> (semantic, this section), and <code>ShieldGovernance</code> (a second deterministic wiring point — the same <code>VulnerabilityChain</code> contract, reused at the agent pre/post hook instead of Router/Orchestrator). The chain log shows Guardian's pre/post verdict on every agent run.</p>
         <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--green) 6%,transparent);border-left:3px solid var(--green);font-size:0.78rem;color:var(--muted);line-height:1.7">
           <strong style="color:var(--text)">For best results, run this yourself with a local Ollama server and IBM Guardian LLM served.</strong>
-          Install Ollama, run <code>ollama pull granite4.1-guardian:8b</code>, then point Satan at your Ollama endpoint
+          Install Ollama, run <code>ollama pull granite4.1-guardian:8b</code>, then point Santa at your Ollama endpoint
           and select <code>GuardianGovernance</code> under <strong style="color:var(--text)">Setup → Governance</strong>
           (and your LLM provider under <strong style="color:var(--text)">Setup → LLM</strong>). Without a served
           Guardian model, semantic attacks — paraphrase, encoding, socially-engineered PII solicitation like the
@@ -2136,7 +2136,7 @@ k9x-satan --bg     # or run it in the background</pre>
 
       <div class="card">
         <div class="doc-h4">Attack Corpus</div>
-        <p class="doc-p">Satan includes a curated corpus of attack documents representing common agentic AI threat patterns. Each payload targets a specific vulnerability class implemented by K9X Shield.</p>
+        <p class="doc-p">Santa includes a curated corpus of attack documents representing common agentic AI threat patterns. Each payload targets a specific vulnerability class implemented by K9X Shield.</p>
         <ul class="doc-list">
           <li>Prompt Injection — Claim Form with a "SYSTEM OVERRIDE" body</li>
           <li>HTML Comment Injection — hidden instruction inside a policy document</li>
@@ -2253,6 +2253,11 @@ k9x-satan --bg     # or run it in the background</pre>
         <p class="doc-p">New handlers can be added to the vulnerability chain and automatically participate in request validation.</p>
       </div>
 
+      <div class="card">
+        <div class="doc-h4">Author</div>
+        <p class="doc-p" style="margin:0">Ravi Natarajan<br><a href="https://k9x.ai" target="_blank" rel="noopener" style="color:var(--red-mid)">k9x.ai</a></p>
+      </div>
+
     </div>
   </div>
 
@@ -2313,13 +2318,25 @@ async function init() {
 
 function populateDropdown() {
   const sel = document.getElementById('corpus-select');
+  // Grouped so the category itself explains intent, instead of a per-item
+  // caveat like "(should pass)" that reads as a guarantee — this group is
+  // the false-positive test (benign input; a block here is a system
+  // finding), this group is the actual attack corpus (a block here is
+  // containment working as intended).
+  const benignGroup    = document.createElement('optgroup');
+  benignGroup.label    = 'Benign — false-positive test';
+  const maliciousGroup = document.createElement('optgroup');
+  maliciousGroup.label = 'Malicious — attack payloads';
+
   for (const [key, item] of Object.entries(_corpus)) {
     const opt = document.createElement('option');
     opt.value = key;
     opt.textContent = `${item.emoji}  ${item.label}`;
     opt.dataset.evil = item.evil;
-    sel.appendChild(opt);
+    (item.evil ? maliciousGroup : benignGroup).appendChild(opt);
   }
+  if (benignGroup.children.length)    sel.appendChild(benignGroup);
+  if (maliciousGroup.children.length) sel.appendChild(maliciousGroup);
 }
 
 function onCorpusSelect(sel) {
@@ -2466,7 +2483,7 @@ function resetDepthDisplay() {
     const box = document.getElementById('node-' + n);
     box.className = 'depth-box';
     // restore original label text (clear any stop sign)
-    const labels = { satan: 'SATAN', router: 'ROUTER', orch: 'ORCHESTRATOR', squad: 'SQUAD', agent: 'AGENTS' };
+    const labels = { satan: 'SANTA', router: 'ROUTER', orch: 'ORCHESTRATOR', squad: 'SQUAD', agent: 'AGENTS' };
     box.textContent = labels[n];
   });
   [1, 2, 3, 4].forEach(i => {
@@ -2484,7 +2501,7 @@ function resetDepthDisplay() {
 
 function markThreat(nodeId) {
   const box = document.getElementById(nodeId);
-  const labels = { 'node-satan': 'SATAN', 'node-router': 'ROUTER', 'node-orch': 'ORCHESTRATOR', 'node-squad': 'SQUAD', 'node-agent': 'AGENTS' };
+  const labels = { 'node-satan': 'SANTA', 'node-router': 'ROUTER', 'node-orch': 'ORCHESTRATOR', 'node-squad': 'SQUAD', 'node-agent': 'AGENTS' };
   box.className = 'depth-box threat';
   box.innerHTML = `<span class="stop-glyph">🛑</span><span>${labels[nodeId]}</span>`;
 }
@@ -2904,7 +2921,7 @@ function updateLastResult(result) {
 
 // ── HISTORY & CHARTS
 // Shared across every visitor — fetches the server's persisted run history
-// (SATAN_DATA_DIR/history.json) so the Results tab shows everyone's fires,
+// (SANTA_DATA_DIR/history.json) so the Results tab shows everyone's fires,
 // not just this tab's. Seeing who else is testing (and what they tried) is
 // the point — see the User/Time columns. fireAttack() still unshifts its own
 // result locally too, so the newest fire shows up immediately without
@@ -2952,7 +2969,7 @@ function downloadReport() {
   const flagged  = _history.filter(r => r.status === 'flagged').length;
   const findings = _history.filter(r => !r.shield_held && r.status === 'completed' && r.is_evil !== false).length;
 
-  let md = `# K9x Satan — Attack Report\n\n`;
+  let md = `# K9x Santa — Attack Report\n\n`;
   md += `Generated: ${new Date().toISOString()}\n`;
   md += `Runs this session: ${_history.length}\n\n`;
   md += `## Summary\n\n`;
