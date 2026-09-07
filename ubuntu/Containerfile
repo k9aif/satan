@@ -11,7 +11,14 @@
 # until then, git clone is the only way to get code that's on GitHub but
 # not yet released.
 #
-# Build (from inside satan/, after extracting the packed tarball there):
+# Build context is this project's own root (build-run.sh cd's there) — no
+# packed tarball, no k9x_satan/ subdirectory prefix. That prefix used to
+# matter when deploying via pack.sh+scp.sh's tarball (which nested this
+# project under a k9x_satan/ folder at extraction time); a plain `git
+# clone` puts these files directly at the repo root instead, so every COPY
+# below reads from build context root (.), not k9x_satan/.
+#
+# Build (from this project's own root):
 #   podman build -f ubuntu/Containerfile -t k9x-satan:latest .
 
 FROM registry.access.redhat.com/ubi9/python-311:latest
@@ -27,7 +34,7 @@ WORKDIR /app/k9x-ecosystem
 
 # Copy dependency file first so this layer remains cached unless
 # requirements.txt changes.
-COPY k9x_satan/requirements.txt /tmp/requirements.txt
+COPY requirements.txt /tmp/requirements.txt
 
 # Install SATAN dependencies.
 # The grep provides protection in case k9-aif is accidentally
@@ -53,9 +60,11 @@ RUN echo "K9-AIF cache version: ${K9AIF_CACHE_VERSION}" \
     && python -m pip install --no-cache-dir /tmp/k9-aif-framework \
     && rm -rf /tmp/k9-aif-framework
 
-# Copy SATAN after installing dependencies.
+# Copy SATAN after installing dependencies (into a directory still named
+# k9x_satan/ internally — CMD imports it as the Python package
+# k9x_satan.app:app, and PYTHONPATH below points one level above it).
 # Changes to SATAN source will not invalidate the dependency layers above.
-COPY k9x_satan /app/k9x-ecosystem/k9x_satan
+COPY . /app/k9x-ecosystem/k9x_satan
 
 WORKDIR /app/k9x-ecosystem/k9x_satan
 
@@ -73,7 +82,7 @@ ENV PYTHONPATH=/app/k9x-ecosystem \
 
 # Attack-history persistence (see app.py's SATAN_DATA_DIR) — created and
 # group-writable so it works both as an anonymous container dir AND as a
-# host bind-mount target (build_satan.sh maps this to a host-backed volume
+# host bind-mount target (build-run.sh maps this to a host-backed volume
 # so history survives podman stop/rm/rebuild, not just process restarts).
 # Owned by UID 1001 (the runtime USER below) with group-root write, matching
 # the arbitrary-UID convention RHEL/OpenShift base images expect.
