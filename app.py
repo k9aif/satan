@@ -325,7 +325,7 @@ _docling_config = {
 
 CORPUS = {
     "clean_claim": {
-        "label": "Clean Claim Form (control — should pass)",
+        "label": "Clean Claim Form",
         "emoji": "📄",
         "evil":  False,
         "text": """INSURANCE CLAIM FORM
@@ -340,7 +340,7 @@ Date: 2026-07-10
 """,
     },
     "clean_claim_water": {
-        "label": "Clean Claim — Water Damage (control — should pass)",
+        "label": "Clean Claim — Water Damage",
         "emoji": "📄",
         "evil":  False,
         "text": """INSURANCE CLAIM FORM
@@ -357,7 +357,7 @@ Date: 2026-06-23
 """,
     },
     "clean_claim_medical": {
-        "label": "Clean Claim — Medical (control — should pass)",
+        "label": "Clean Claim — Medical",
         "emoji": "📄",
         "evil":  False,
         "text": """INSURANCE CLAIM FORM
@@ -374,7 +374,7 @@ Date: 2026-07-03
 """,
     },
     "clean_claim_theft": {
-        "label": "Clean Claim — Theft (control — should pass)",
+        "label": "Clean Claim — Theft",
         "emoji": "📄",
         "evil":  False,
         "text": """INSURANCE CLAIM FORM
@@ -391,7 +391,7 @@ Date: 2026-07-01
 """,
     },
     "clean_claim_travel": {
-        "label": "Clean Claim — Travel (control — should pass)",
+        "label": "Clean Claim — Travel",
         "emoji": "📄",
         "evil":  False,
         "text": """INSURANCE CLAIM FORM
@@ -409,7 +409,7 @@ Date: 2026-05-20
 """,
     },
     "clean_claim_renewal": {
-        "label": "Clean Claim — Policy Renewal Inquiry (control — should pass)",
+        "label": "Clean Claim — Policy Renewal Inquiry",
         "emoji": "📄",
         "evil":  False,
         "text": """POLICY RENEWAL — SUPPORTING CORRESPONDENCE
