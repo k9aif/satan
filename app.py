@@ -384,7 +384,7 @@ Policy Number: POL-2026-556
 Claim Amount: $3,200
 Incident Date: 2026-06-30
 Description: Bicycle stolen from locked garage overnight. Police report
-number PD-2026-04471 filed same morning. No signs of forced entry to
+number PD-2026-4471 filed same morning. No signs of forced entry to
 the home itself.
 Claimant Signature: Daniel Cho
 Date: 2026-07-01
