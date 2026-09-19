@@ -56,14 +56,15 @@ ollama:
   base_url: "${OLLAMA_BASE_URL:-http://localhost:11434}"
 
 governance:
-  provider: noop            # noop | guardian | shield — override via /api/governance/config at runtime
-  guardian_model: "granite4.1-guardian:8b"
-  timeout: 30               # seconds per Guardian call
-  # Policy applied when Guardian times out, errors, or is unreachable — this is
-  # never silently treated as "SAFE". fail_closed (default) blocks/redacts,
-  # matching the "should not be penetrable" goal; fail_open lets the payload
-  # through unscreened (documented risk); inconclusive flags without blocking.
-  on_guardian_unavailable: fail_closed   # fail_closed | fail_open | inconclusive
+  provider: guardian            # noop | guardian | shield — override via /api/governance/config at runtime
+  guardian:
+    model: "granite4.1-guardian:8b"
+    timeout: 30               # seconds per Guardian call
+    # Policy applied when Guardian times out, errors, or is unreachable — this is
+    # never silently treated as "SAFE". fail_closed (default) blocks/redacts,
+    # matching the "should not be penetrable" goal; fail_open lets the payload
+    # through unscreened (documented risk); inconclusive flags without blocking.
+    on_unavailable: fail_closed   # fail_closed | fail_open | inconclusive
 
 docling:
   enabled: false            # true requires: pip install docling (or running Docling server)

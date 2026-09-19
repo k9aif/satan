@@ -2122,7 +2122,7 @@ k9x-satan --bg     # or run it in the background</pre>
         <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--red-mid) 6%,transparent);border-left:3px solid var(--red-mid);font-size:0.78rem;color:var(--muted);line-height:1.7">
           <strong style="color:var(--text)">Guardian unavailability is a policy decision, never a silent pass.</strong> A timeout, HTTP error, or unreachable
           Ollama endpoint produces an explicit <code>UNAVAILABLE</code> verdict — it is never mapped to "SAFE" by default.
-          <code>governance.on_guardian_unavailable</code> in config.yaml decides what happens next: <code>fail_closed</code>
+          <code>governance.guardian.on_unavailable</code> in config.yaml decides what happens next: <code>fail_closed</code>
           (default — blocks/redacts, matching "should not be penetrable"), <code>fail_open</code> (documented risk —
           lets the payload through unscreened), or <code>inconclusive</code> (flags for review without blocking).
         </div>
