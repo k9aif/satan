@@ -1520,7 +1520,7 @@
     <div class="card">
       <h3>Complete Check Inventory — Component × Threat Class</h3>
       <p style="font-size:1.08rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
-        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">14 checks total</span> — 13 framework OOB, 1 Santa-local — plus Guardian as a cross-cutting semantic layer wired at Router ingress (only if the pattern chain didn't already block) and at every agent's pre/post hooks. Five of the framework OOB checks (RequestFrequencyCheck, MemoryPoisoningCheck, ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck) were originally built and proven here, then harvested into the framework itself once verified — see the callout below. A sixth, PIIRequestCheck, was added directly to the framework after a live attack (a "compliance audit" document soliciting full SSN/DOB/account-number disclosure) reached the agent layer uncaught — it targets the *request* for PII, not literal PII values, which is why it runs at ingress rather than alongside PIIBoundaryCheck at egress. Threat classes reference the
+        Every handler currently wired into the target pipeline's two <code style="font-size:1.05rem">VulnerabilityChain</code> gates, which component owns it, and which named attack in this harness proves it holds. <span style="color:var(--text)">15 checks total</span> — 14 framework OOB, 1 Santa-local — plus Guardian as a cross-cutting semantic layer wired at Router ingress (only if the pattern chain didn't already block) and at every agent's pre/post hooks. Five of the framework OOB checks (RequestFrequencyCheck, MemoryPoisoningCheck, ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck) were originally built and proven here, then harvested into the framework itself once verified — see the callout below. A sixth, PIIRequestCheck, was added directly to the framework after a live attack (a "compliance audit" document soliciting full SSN/DOB/account-number disclosure) reached the agent layer uncaught — it targets the *request* for PII, not literal PII values, which is why it runs at ingress rather than alongside PIIBoundaryCheck at egress. A seventh, <code>OutboundLinkCheck</code> (k9-aif 1.14), came from Zscaler ThreatLabz&rsquo;s 2026 Phishing &amp; Initial Access Report: it blocks lookalike, brand-in-subdomain, <code>user@host</code>, IP-address and punycode links in what the pipeline hands back, and Guardian gained <code>ingress_risks</code> (<code>process_manipulation</code>, <code>impersonation</code>) for attacks that carry no trigger words at all. Threat classes reference the
         <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener" style="color:var(--red-mid)">OWASP Top 10 for LLM Applications</a>.
       </p>
       <div style="overflow-x:auto">
@@ -1551,7 +1551,8 @@
           <tr><td>12</td><td>HardcodedCredentialCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Supply chain / secret leakage — OWASP LLM03</td><td>hardcoded_credential</td></tr>
           <tr><td>13</td><td>SystemPromptLeakageCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>System Prompt Leakage — OWASP LLM07</td><td>system_prompt_leakage</td></tr>
           <tr><td>14</td><td>OutputSanitizationCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Improper Output Handling — OWASP LLM05</td><td>output_sanitization</td></tr>
-          <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Router ingress + Pre/Post — every agent</td><td>Router + Agent</td><td><span style="color:var(--green)">Santa-local</span></td><td>Semantic evasion of all 14 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code></td><td>any attack, with Governance = GuardianGovernance</td></tr>
+          <tr><td>15</td><td>OutboundLinkCheck</td><td>Egress</td><td>Orchestrator</td><td><span style="color:var(--muted)">Framework OOB</span></td><td>Phishing links in output (lookalike / brand-in-subdomain / IP / punycode) — ThreatLabz 2026 · OWASP LLM05</td><td>phishing_link</td></tr>
+          <tr style="opacity:0.85"><td>—</td><td>GuardianGovernance</td><td>Router ingress + Pre/Post — every agent</td><td>Router + Agent</td><td><span style="color:var(--green)">Santa-local</span></td><td>Semantic evasion of all 15 checks above (paraphrase, encoding, indirection) — cross-cutting, requires <code>granite4.1-guardian:8b</code>. Plus <code>ingress_risks</code> (k9-aif 1.14): <code>process_manipulation</code> and <code>impersonation</code> — ThreatLabz 2026 &ldquo;AI agents will phish other AI agents&rdquo;</td><td>any attack, with Governance = GuardianGovernance; paraphrased_override, agent_impersonation</td></tr>
         </tbody>
       </table>
       </div>
@@ -1624,7 +1625,7 @@
         <div class="arch-arrow">→</div>
         <div class="arch-node">
           <div class="arch-box gate" style="border-color:var(--green)">ORCHESTRATOR<br><span style="font-size:0.75rem;font-weight:400">② evaluates returned result</span></div>
-          <div class="arch-note" style="color:var(--green)">egress VulnerabilityChain:<br>SemanticDriftCheck · ExecutionGuardCheck<br>PIIBoundaryCheck · ToolArgumentCheck<br>HardcodedCredentialCheck · ToolAuthorizationCheck<br>SystemPromptLeakageCheck · OutputSanitizationCheck</div>
+          <div class="arch-note" style="color:var(--green)">egress VulnerabilityChain:<br>SemanticDriftCheck · ExecutionGuardCheck<br>PIIBoundaryCheck · ToolArgumentCheck<br>HardcodedCredentialCheck · ToolAuthorizationCheck<br>SystemPromptLeakageCheck · OutputSanitizationCheck<br>OutboundLinkCheck</div>
           <div class="arch-stop" style="color:var(--green)">🛑 BLOCKED ✓</div>
         </div>
         <div class="arch-arrow red">→</div>
@@ -1736,6 +1737,9 @@
           <div class="sym-row"><span>PayloadFloodAttack</span><span>token exhaustion</span></div>
           <div class="sym-row"><span>PIIExfiltrationAttack</span><span>data extraction</span></div>
           <div class="sym-row"><span>SemanticDriftAttack</span><span>role reframing</span></div>
+          <div class="sym-row"><span>PhishingLinkAttack</span><span>lookalike link</span></div>
+          <div class="sym-row"><span>AgentImpersonationAttack</span><span>agent-to-agent</span></div>
+          <div class="sym-row"><span>ParaphrasedOverrideAttack</span><span>no trigger words</span></div>
           <div class="sym-row" style="opacity:0.45"><span>HtmlCommentAttack</span><span>steganographic</span></div>
         </div>
         <div class="sym-col shield">
@@ -1745,6 +1749,9 @@
           <div class="sym-row"><span>InputSizeCheck</span><span>ingress</span></div>
           <div class="sym-row"><span>PIIBoundaryCheck</span><span>egress</span></div>
           <div class="sym-row"><span>SemanticDriftCheck</span><span>egress</span></div>
+          <div class="sym-row"><span>OutboundLinkCheck</span><span>egress</span></div>
+          <div class="sym-row"><span>Guardian ingress_risks</span><span>ingress</span></div>
+          <div class="sym-row"><span>Guardian ingress_risks</span><span>ingress</span></div>
           <div class="sym-row" style="opacity:0.45"><span>HtmlCommentInjectionCheck</span><span>ingress — pending</span></div>
         </div>
       </div>
@@ -1875,7 +1882,7 @@
               <div>
                 <span style="color:var(--text);font-weight:500">GuardianGovernance.pre_process()</span>
                 <span style="color:var(--muted)"> · only runs if the pattern chain above (①–⑧) didn't already block</span>
-                <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: paraphrased/encoded attacks that evade every pattern above — semantic understanding, not phrase-matching. Requires <code>governance.provider: guardian</code> and a served <code>granite4.1-guardian:8b</code>; NoopGovernance (default) skips this entirely.</div>
+                <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: paraphrased/encoded attacks that evade every pattern above — semantic understanding, not phrase-matching. Requires <code>governance.provider: guardian</code> (Santa&rsquo;s default) and a served <code>granite4.1-guardian:8b</code>; NoopGovernance skips this entirely. With <code>ingress_risks</code> (k9-aif 1.14) Guardian also asks two targeted questions — does the text try to direct the system itself (approve, skip verification), and does it claim to be an internal agent or assert its own roles — catching the Paraphrased Override and Agent Impersonation documents, which every pattern check passes.</div>
               </div>
               <span style="margin-left:auto;color:var(--red-glow);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
             </div>
@@ -1953,6 +1960,15 @@
                   <span style="color:var(--text);font-weight:500">ExecutionGuardCheck</span>
                   <span style="color:var(--muted)"> · validates response schema &amp; scope</span>
                   <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: destructive actions · privilege escalation · schema violations</div>
+                </div>
+                <span style="margin-left:auto;color:var(--green);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <span style="font-family:var(--font-mono);color:var(--green);min-width:22px;text-align:right;flex-shrink:0">③</span>
+                <div>
+                  <span style="color:var(--text);font-weight:500">OutboundLinkCheck</span>
+                  <span style="color:var(--muted)"> · inspects every link the pipeline would hand back (k9-aif 1.14)</span>
+                  <div style="margin-top:2px;font-size:0.94rem;color:var(--muted)">catches: lookalike domains (acme1nsurance.com) · brand-in-subdomain · user@host · IP-address and punycode links · ThreatLabz 2026 payment-link lures</div>
                 </div>
                 <span style="margin-left:auto;color:var(--green);font-size:0.94rem;flex-shrink:0">🛑 BLOCK</span>
               </div>

@@ -29,7 +29,7 @@ Attack → Router (ingress gate)       → BLOCKED  ✓
          Squad / Agent               → FINDING  ✗  (Shield failed)
 ```
 
-A block at any phase terminates execution — downstream phases never run. Both gates are `VulnerabilityChain` instances assembled from framework `BaseVulnerabilityCheck` subclasses plus one Satan-local subclass. 14 checks total (13 framework OOB, 1 Satan-local) — see the "Complete Check Inventory" table in README.md and the Architecture tab for the full component × threat-class mapping. Five of the thirteen framework OOB checks (`ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck`) were originally proven here as Satan-local checks and were later promoted into the framework itself once verified — see "Harvesting into the framework" below. A sixth, `PIIRequestCheck`, was added directly to the framework (not harvested from a Satan-local check) after a live attack — a "compliance audit" document soliciting full SSN/DOB/account-number disclosure with no literal PII in the payload itself — reached the agent layer uncaught; see `PIIRequestCheck`'s own docstring for the detail on why it belongs at ingress, not egress. Only `FieldAnomalyCheck` remains Satan-local.
+A block at any phase terminates execution — downstream phases never run. Both gates are `VulnerabilityChain` instances assembled from framework `BaseVulnerabilityCheck` subclasses plus one Satan-local subclass. 15 checks total (14 framework OOB, 1 Satan-local) — see the "Complete Check Inventory" table in README.md and the Architecture tab for the full component × threat-class mapping. Five of the thirteen framework OOB checks (`ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, `RequestFrequencyCheck`) were originally proven here as Satan-local checks and were later promoted into the framework itself once verified — see "Harvesting into the framework" below. A sixth, `PIIRequestCheck`, was added directly to the framework (not harvested from a Satan-local check) after a live attack — a "compliance audit" document soliciting full SSN/DOB/account-number disclosure with no literal PII in the payload itself — reached the agent layer uncaught; see `PIIRequestCheck`'s own docstring for the detail on why it belongs at ingress, not egress. Only `FieldAnomalyCheck` remains Satan-local. A seventh framework check, `OutboundLinkCheck` (k9-aif 1.14, egress), came from Zscaler ThreatLabz's 2026 Phishing & Initial Access Report: lookalike / brand-in-subdomain / `user@host` / IP-literal / punycode links BLOCK (`security.allowed_domains: [acmeinsurance.com]`). Guardian also runs k9-aif 1.14's `ingress_risks: [process_manipulation, impersonation]`, which catch the Paraphrased Override and Agent Impersonation documents that pass every pattern check (verified live: Guardian mode stops all 10 attack documents; Shield-only 8/10, the two semantic ones by design).
 
 Router ingress also runs an optional semantic governance check (Guardian, if `governance.provider: guardian`) — only if the pattern chain above didn't already block, so no LLM call is spent on a payload a regex already caught. This mirrors the same cheap-layer-first, semantic-layer-second ordering Guardian already uses at the agent layer.
 
@@ -39,7 +39,7 @@ Router ingress also runs an optional semantic governance check (Guardian, if `go
 k9x_satan/
 ├── target/            ← the pipeline under test (components extending K9-AIF ABBs)
 │   ├── router.py           DocumentRouter(BaseRouter)          — ingress Shield (8 checks) + optional Guardian
-│   ├── orchestrator.py     DocumentOrchestrator(BaseOrchestrator) — egress Shield (8 checks; 2 duplicated from ingress)
+│   ├── orchestrator.py     DocumentOrchestrator(BaseOrchestrator) — egress Shield (9 checks; 2 duplicated from ingress)
 │   ├── squad.py            DocumentProcessingSquad(BaseSquad) + governance selection (noop|guardian|shield)
 │   ├── agents.py           DocumentExtractionAgent, AuditAgent (BaseAgent) — enforce _guardian_blocked
 │   ├── field_anomaly_check.py  Satan-local BaseVulnerabilityCheck (1 total — the
@@ -50,7 +50,7 @@ k9x_satan/
 │   ├── extractor.py        DoclingExtractor — pre-Shield field extraction (naive regex | Docling OCR)
 │   ├── guardian_governance.py  GuardianGovernance(BaseGovernance) — IBM Granite Guardian, fail-closed by default
 │   └── pipeline.py         wiring: load config → extractor.enrich() → router.route()
-├── attacks/            ← BaseAttack subclasses (the red team) — 13 implemented, one per check
+├── attacks/            ← BaseAttack subclasses (the red team) — 16 implemented (threatlabz_2026_attacks.py: phishing_link, agent_impersonation, paraphrased_override)
 │   └── _fire.py             shared POST-to-/api/attack/fire helper (FLAGGED on connection error, never fake BLOCKED)
 ├── corpus/             ← malicious document / payload samples
 ├── fake_search/        ← lightweight server returning poisoned search results (port 9999)
@@ -84,7 +84,7 @@ DocumentOrchestrator.execute_flow()     extends BaseOrchestrator
       → AuditAgent.execute()               extends BaseAgent — Guardian/Shield pre/post hooks wrap this
   → egress chain: SemanticDriftCheck → ExecutionGuardCheck → PIIBoundaryCheck →
                   ToolArgumentCheck → HardcodedCredentialCheck → ToolAuthorizationCheck →
-                  SystemPromptLeakageCheck → OutputSanitizationCheck
+                  SystemPromptLeakageCheck → OutputSanitizationCheck → OutboundLinkCheck
   BLOCK → return, response never exits
   ↓ (clean)
 OUTPUT — status "completed"; if the payload was malicious, this is a FINDING (both gates missed it)

@@ -51,7 +51,7 @@ package "K9-AIF Framework ABBs" {
 ' arrows don't spread the diagram wide. See shield_class.puml for the
 ' un-grouped version with each check as its own class.
 
-class "K9-AIF Framework OOB Checks (13)" as FrameworkChecks {
+class "K9-AIF Framework OOB Checks (14)" as FrameworkChecks {
   InputSizeCheck
   --
   Ingress · token-flood / oversized payload
@@ -109,6 +109,11 @@ class "K9-AIF Framework OOB Checks (13)" as FrameworkChecks {
   --
   Egress · <script>/markup/template injection in output
   (proven in Satan first, harvested upstream)
+  ==
+  OutboundLinkCheck
+  --
+  Egress · lookalike / brand-in-subdomain / IP / punycode links
+  (k9-aif 1.14, ThreatLabz 2026)
 }
 
 class "K9X Satan — Local Checks (1)" as SatanChecks {
@@ -156,6 +161,7 @@ package "K9X Satan — Local Classes" {
     +pre_process(payload, ctx): dict
     +post_process(payload, ctx): dict
     ' model: granite4.1-guardian:8b
+    ' ingress_risks: process_manipulation, impersonation (1.14)
   }
 
   class NoopGovernance {
@@ -215,7 +221,8 @@ note bottom of SatanChecks
 
   Egress order: SemanticDriftCheck -> ExecutionGuardCheck ->
   PIIBoundaryCheck -> ToolArgumentCheck -> HardcodedCredentialCheck ->
-  ToolAuthorizationCheck -> SystemPromptLeakageCheck -> OutputSanitizationCheck
+  ToolAuthorizationCheck -> SystemPromptLeakageCheck -> OutputSanitizationCheck ->
+OutboundLinkCheck
 
   ToolArgumentCheck/ToolAuthorizationCheck run at BOTH gates deliberately —
   ingress catches caller-supplied fields before Squad/Agent runs; egress

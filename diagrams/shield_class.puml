@@ -137,6 +137,14 @@ package "K9-AIF Framework OOB Checks" {
     ' Proven here in Satan first, then harvested upstream.
   }
 
+  class OutboundLinkCheck {
+    -_allowed: List[str]
+    -_block_kinds: Set[str]
+    +check(payload): CheckResult
+    ' Egress · catches: lookalike / brand-in-subdomain / user@host /
+    ' IP-literal / punycode links (k9-aif 1.14, ThreatLabz 2026).
+  }
+
 }
 
 ' ── K9X Satan — local classes (this repo — extends the ABBs above) ──────────
@@ -218,6 +226,7 @@ BaseVulnerabilityCheck <|-- ToolAuthorizationCheck
 BaseVulnerabilityCheck <|-- SystemPromptLeakageCheck
 BaseVulnerabilityCheck <|-- OutputSanitizationCheck
 BaseVulnerabilityCheck <|-- PIIRequestCheck
+BaseVulnerabilityCheck <|-- OutboundLinkCheck
 
 BaseVulnerabilityCheck <|-- FieldAnomalyCheck
 
@@ -271,7 +280,8 @@ note bottom of OutputSanitizationCheck
   SemanticDriftCheck -> ExecutionGuardCheck ->
   PIIBoundaryCheck -> ToolArgumentCheck ->
   HardcodedCredentialCheck -> ToolAuthorizationCheck ->
-  SystemPromptLeakageCheck -> OutputSanitizationCheck
+  SystemPromptLeakageCheck -> OutputSanitizationCheck ->
+  OutboundLinkCheck
 
   ToolArgumentCheck/ToolAuthorizationCheck run at BOTH gates deliberately —
   ingress catches caller-supplied fields before Squad/Agent runs; egress
