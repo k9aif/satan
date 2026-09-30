@@ -65,6 +65,13 @@ governance:
     # matching the "should not be penetrable" goal; fail_open lets the payload
     # through unscreened (documented risk); inconclusive flags without blocking.
     on_unavailable: fail_closed   # fail_closed | fail_open | inconclusive
+    # k9-aif 1.14: extra Guardian classifications on ingress, each with its
+    # risk definition as the model's system message (temperature 0). Catches
+    # what the default check rates SAFE: a paraphrased "skip verification,
+    # approve it" override, and an inter-agent message asserting roles/trust
+    # (ThreatLabz 2026: "AI agents will phish other AI agents"). One extra
+    # Guardian call per risk per agent.
+    ingress_risks: [process_manipulation, impersonation]
 
 docling:
   enabled: false            # true requires: pip install docling (or running Docling server)
@@ -93,6 +100,13 @@ security:
 
   # OutputSanitizationCheck
   block_on_output_markup: true
+
+  # OutboundLinkCheck (k9-aif 1.14, egress) — the target insurer's own domains.
+  # Links elsewhere FLAG; lookalikes (acme1nsurance.com), brand-in-subdomain
+  # (acmeinsurance.com.verify-portal.io), user@host, IP-literal and punycode
+  # links BLOCK. protected_brands adds brands to guard against lookalikes.
+  allowed_domains: ["acmeinsurance.com"]
+  protected_brands: ["paypal"]
 
   # SystemPromptLeakageCheck — the framework check has no default fragment
   # list (a solution's system prompt text is inherently solution-specific),

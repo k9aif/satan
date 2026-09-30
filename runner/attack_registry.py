@@ -15,6 +15,9 @@ from k9x_satan.attacks.shadow_tool_attack import ShadowToolAttack
 from k9x_satan.attacks.system_prompt_leakage_attack import SystemPromptLeakageAttack
 from k9x_satan.attacks.output_sanitization_attack import OutputSanitizationAttack
 from k9x_satan.attacks.request_flood_attack import RequestFloodAttack
+from k9x_satan.attacks.threatlabz_2026_attacks import (
+    AgentImpersonationAttack, ParaphrasedOverrideAttack, PhishingLinkAttack,
+)
 
 ATTACK_REGISTRY = {
     "prompt_injection_document": PromptInjectionAttack,
@@ -30,4 +33,8 @@ ATTACK_REGISTRY = {
     "system_prompt_leakage":     SystemPromptLeakageAttack,
     "output_sanitization":       OutputSanitizationAttack,
     "request_flood":             RequestFloodAttack,
+    # ThreatLabz 2026 / k9-aif 1.14
+    "phishing_link":             PhishingLinkAttack,
+    "agent_impersonation":       AgentImpersonationAttack,
+    "paraphrased_override":      ParaphrasedOverrideAttack,
 }

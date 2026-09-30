@@ -208,3 +208,21 @@ Satan and Shield are symmetric. Every `BaseAttack` targets a specific
 | `ShadowToolAttack` | `ToolAuthorizationCheck` |
 | `SystemPromptLeakageAttack` | `SystemPromptLeakageCheck` |
 | `OutputSanitizationAttack` | `OutputSanitizationCheck` |
+| `PhishingLinkAttack` | `OutboundLinkCheck` (egress, k9-aif 1.14) |
+| `AgentImpersonationAttack` | Granite Guardian `ingress_risks: impersonation` (1.14) |
+| `ParaphrasedOverrideAttack` | Granite Guardian `ingress_risks: process_manipulation` (1.14) |
+
+The last three come from Zscaler ThreatLabz's 2026 Phishing & Initial Access
+Report ("AI agents will phish other AI agents") and are also in the web UI's
+document drop-down, alongside `Claim — Brand-in-Subdomain Settlement Link`,
+`Chatbot Debt Lure` and a benign `Clean Claim — Official Portal Link` control.
+The two Guardian attacks contain no Shield trigger words by design: they pass
+with governance `noop` and are stopped with `guardian`
+(`--compare-governance` shows both).
+
+---
+
+## Author
+
+Ravi Natarajan
+[k9x.ai](https://k9x.ai)

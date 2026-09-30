@@ -90,14 +90,16 @@ def main():
         # ToolArgumentCheck, ToolAuthorizationCheck
         attack_names = ["prompt_injection_document", "search_poisoning", "payload_flood",
                          "memory_poisoning", "request_flood",
-                         "tool_argument_poison", "shadow_tool"]
+                         "tool_argument_poison", "shadow_tool",
+                         "agent_impersonation", "paraphrased_override"]
     elif args.suite == "egress":
         # Orchestrator egress chain: SemanticDriftCheck, ExecutionGuardCheck,
         # PIIBoundaryCheck, HardcodedCredentialCheck, SystemPromptLeakageCheck,
         # OutputSanitizationCheck
         attack_names = ["semantic_drift", "execution_bypass", "pii_exfiltration",
                          "hardcoded_credential",
-                         "system_prompt_leakage", "output_sanitization"]
+                         "system_prompt_leakage", "output_sanitization",
+                         "phishing_link"]
     else:
         attack_names = list(ATTACK_REGISTRY.keys())
 

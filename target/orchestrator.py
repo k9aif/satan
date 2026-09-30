@@ -4,10 +4,10 @@
 K9x Satan — DocumentOrchestrator
 
 Extends BaseOrchestrator. Owns DocumentProcessingSquad and applies the
-8-check egress Shield (SemanticDriftCheck, ExecutionGuardCheck,
+9-check egress Shield (SemanticDriftCheck, ExecutionGuardCheck,
 PIIBoundaryCheck, ToolArgumentCheck, HardcodedCredentialCheck,
-ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck)
-after squad execution. All eight are framework OOB checks
+ToolAuthorizationCheck, SystemPromptLeakageCheck, OutputSanitizationCheck,
+OutboundLinkCheck) after squad execution. All nine are framework OOB checks
 (k9_aif_abb.k9_security.vulnerability.checks) — none are Satan-local.
 """
 
@@ -30,6 +30,7 @@ from k9_aif_abb.k9_security.vulnerability.checks.hardcoded_credential_check impo
 from k9_aif_abb.k9_security.vulnerability.checks.tool_authorization_check import ToolAuthorizationCheck
 from k9_aif_abb.k9_security.vulnerability.checks.system_prompt_leakage_check import SystemPromptLeakageCheck
 from k9_aif_abb.k9_security.vulnerability.checks.output_sanitization_check import OutputSanitizationCheck
+from k9_aif_abb.k9_security.vulnerability.checks.outbound_link_check import OutboundLinkCheck
 from k9x_satan.target.squad import DocumentProcessingSquad
 from k9x_satan.target._check_config import security_check_config
 
@@ -94,6 +95,9 @@ class DocumentOrchestrator(BaseOrchestrator):
             .add(ToolAuthorizationCheck(sec_cfg))
             .add(SystemPromptLeakageCheck(sec_cfg))
             .add(OutputSanitizationCheck(sec_cfg))
+            # k9-aif 1.14: phishing links in what the pipeline hands back
+            # (lookalike / brand-in-subdomain / user@host / IP / punycode BLOCK).
+            .add(OutboundLinkCheck(sec_cfg))
         )
 
     def execute_flow(self, payload: Dict[str, Any]) -> Dict[str, Any]:
