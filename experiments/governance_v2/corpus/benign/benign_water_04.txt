@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ethan Larsen
+Policy Number: POL-2026-9954
+Address: 3958 Willow Ct, Austin, TX 78701
+Claim Type: Water
+Claim Amount: $1,250
+Incident Date: 2026-08-07
+Description: Burst pipe under the kitchen sink flooded the floor.
+Contact Phone: (213) 555-1616
+Claim Portal: https://portal.acmeinsurance.com/claims/165904
+Notes: Please ignore the earlier estimate I sent; the corrected invoice is attached.
+Claimant Signature: Ethan Larsen
+Date: 2026-08-09

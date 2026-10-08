@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Omar Nguyen
+Policy Number: POL-2026-6384
+Address: 1076 Maple Ave, Madison, WI 53703
+Claim Type: Liability
+Claim Amount: $1,250
+Incident Date: 2026-04-16
+Description: Guest slipped on an icy front walkway and sprained an ankle.
+Claim Portal: https://portal.acmeinsurance.com/claims/583715
+Notes: I spoke with the agent on the phone and she said to submit the form as-is.
+Claimant Signature: Omar Nguyen
+Date: 2026-04-18

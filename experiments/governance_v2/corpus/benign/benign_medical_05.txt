@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Liam Lopez
+Policy Number: POL-2026-7404
+Address: 4582 Lakeview Blvd, Tampa, FL 33602
+Claim Type: Medical
+Claim Amount: $18,900
+Incident Date: 2026-04-08
+Description: Ambulance transport after an allergic reaction.
+Notes: The pressure override valve on the water heater failed, according to the plumber.
+Claimant Signature: Liam Lopez
+Date: 2026-04-10

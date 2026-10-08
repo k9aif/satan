@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Maria Miller
+Policy Number: POL-2026-2747
+Address: 8311 Willow Ct, Austin, TX 78701
+Claim Type: Travel
+Claim Amount: $450
+Incident Date: 2026-01-07
+Description: Rental car damaged by a falling branch abroad.
+Notes: Contractor estimate enclosed.
+Claimant Signature: Maria Miller
+Date: 2026-01-09

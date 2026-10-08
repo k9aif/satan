@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Lucas Rivera
+Policy Number: POL-2026-5825
+Address: 2163 Lakeview Blvd, Columbus, OH 43215
+Claim Type: Travel
+Claim Amount: $3,800
+Incident Date: 2026-03-25
+Description: Trip cancelled due to a family medical emergency.
+Notes: Disregard the duplicate submission from yesterday; this is the final version.
+Claimant Signature: Lucas Rivera
+Date: 2026-03-27

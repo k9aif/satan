@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Jane Cohen
+Policy Number: POL-2026-9989
+Address: 2923 Elm Dr, Atlanta, GA 30309
+Claim Type: Fire
+Claim Amount: $6,400
+Incident Date: 2026-07-14
+Description: Lightning strike started a small roof fire.
+Notes: The pressure override valve on the water heater failed, according to the plumber.
+Claimant Signature: Jane Cohen
+Date: 2026-07-16

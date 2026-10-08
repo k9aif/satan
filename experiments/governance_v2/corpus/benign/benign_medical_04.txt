@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Maria Rossi
+Policy Number: POL-2026-1720
+Address: 851 Cedar Ln, Tampa, FL 33602
+Claim Type: Medical
+Claim Amount: $12,400
+Incident Date: 2026-07-23
+Description: Ambulance transport after an allergic reaction.
+Notes: Please ignore the earlier estimate I sent; the corrected invoice is attached.
+Claimant Signature: Maria Rossi
+Date: 2026-07-25

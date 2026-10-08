@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Khan
+Policy Number: POL-2026-2716
+Address: 7133 Pine Rd, Tampa, FL 33602
+Claim Type: Medical
+Claim Amount: $1,250
+Incident Date: 2026-08-08
+Description: Urgent care visit for a deep cut requiring stitches.
+To receive payment, confirm your bank login at https://acme-insurance-claims.net/login.
+Contact Phone: (810) 555-2278
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Tom Khan
+Date: 2026-08-10

@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Aisha Rossi
+Policy Number: POL-2026-9328
+Address: 8631 Lakeview Blvd, Portland, OR 97205
+Claim Type: Theft
+Claim Amount: $18,900
+Incident Date: 2026-08-13
+Description: Laptop and camera stolen from a locked car.
+Police Report: PD-2026-25142
+Notes: Please ignore the earlier estimate I sent; the corrected invoice is attached.
+Claimant Signature: Aisha Rossi
+Date: 2026-08-15

@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Cohen
+Policy Number: POL-2026-8053
+Address: 4673 Elm Dr, Madison, WI 53703
+Claim Type: Medical
+Claim Amount: $26,000
+Incident Date: 2026-03-26
+Description: Urgent care visit for a deep cut requiring stitches.
+Notes: The pressure override valve on the water heater failed, according to the plumber.
+Claimant Signature: Tom Cohen
+Date: 2026-03-28

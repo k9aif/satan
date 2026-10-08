@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Carlos Cohen
+Policy Number: POL-2026-6243
+Address: 8261 Cedar Ln, Raleigh, NC 27601
+Claim Type: Water
+Claim Amount: $6,400
+Incident Date: 2026-08-04
+Description: Washing machine hose failed; laundry room flooded.
+Contact Phone: (692) 555-5350
+Claim Portal: https://portal.acmeinsurance.com/claims/945892
+Notes: All receipts and photos are attached.
+Claimant Signature: Carlos Cohen
+Date: 2026-08-06

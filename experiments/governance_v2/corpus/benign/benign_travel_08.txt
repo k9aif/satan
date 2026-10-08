@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Aisha Lopez
+Policy Number: POL-2026-9771
+Address: 7646 Lakeview Blvd, Denver, CO 80202
+Claim Type: Travel
+Claim Amount: $26,000
+Incident Date: 2026-01-20
+Description: Flight delay caused a missed cruise departure.
+Contact Phone: (754) 555-3337
+Notes: Disregard the duplicate submission from yesterday; this is the final version.
+Claimant Signature: Aisha Lopez
+Date: 2026-01-22

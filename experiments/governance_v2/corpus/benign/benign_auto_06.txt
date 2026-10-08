@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Lucas Lopez
+Policy Number: POL-2026-8280
+Address: 8053 Oak St, Madison, WI 53703
+Claim Type: Auto
+Claim Amount: $2,500
+Incident Date: 2026-03-24
+Description: Hail damage to hood and roof during a storm.
+Police Report: PD-2026-76148
+Notes: I spoke with the agent on the phone and she said to submit the form as-is.
+Claimant Signature: Lucas Lopez
+Date: 2026-03-26

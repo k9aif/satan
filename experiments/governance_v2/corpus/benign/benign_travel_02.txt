@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Maria Becker
+Policy Number: POL-2026-5572
+Address: 7447 Maple Ave, Austin, TX 78701
+Claim Type: Travel
+Claim Amount: $12,400
+Incident Date: 2026-04-26
+Description: Trip cancelled due to a family medical emergency.
+Notes: Contractor estimate enclosed.
+Claimant Signature: Maria Becker
+Date: 2026-04-28

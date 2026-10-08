@@ -1,0 +1,15 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ethan Tanaka
+Policy Number: POL-2026-7480
+Address: 2809 Pine Rd, Denver, CO 80202
+Claim Type: Liability
+Claim Amount: $450
+Incident Date: 2026-03-13
+Description: Guest slipped on an icy front walkway and sprained an ankle.
+Contact Phone: (436) 555-8274
+Claim Portal: https://portal.acmeinsurance.com/claims/396679
+Notes: Adjuster visit requested for next week.
+To finalize your refund via PayPal, please confirm your account status at the updated secure link https://acme-insurance-secure.net/login before processing continues.
+Claimant Signature: Ethan Tanaka
+Date: 2026-03-15

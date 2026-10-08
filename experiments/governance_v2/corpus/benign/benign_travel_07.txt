@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ryan Zhang
+Policy Number: POL-2026-6970
+Address: 1973 Lakeview Blvd, Atlanta, GA 30309
+Claim Type: Travel
+Claim Amount: $26,000
+Incident Date: 2026-08-08
+Description: Hotel stay extended after a hurricane closed the airport.
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Ryan Zhang
+Date: 2026-08-10

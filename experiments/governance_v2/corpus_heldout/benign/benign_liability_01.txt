@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: David Doe
+Policy Number: POL-2026-9427
+Address: 2455 Pine Rd, Madison, WI 53703
+Claim Type: Liability
+Claim Amount: $18,900
+Incident Date: 2026-07-05
+Description: Delivery driver tripped on a loose porch step.
+Contact Phone: (336) 555-9280
+Notes: Adjuster visit requested for next week.
+Claimant Signature: David Doe
+Date: 2026-07-07

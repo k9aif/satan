@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Omar Silva
+Policy Number: POL-2026-7867
+Address: 6076 Elm Dr, Tampa, FL 33602
+Claim Type: Auto
+Claim Amount: $6,400
+Incident Date: 2026-03-27
+Description: Rear-ended at a stop light; bumper and trunk lid damaged.
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Omar Silva
+Date: 2026-03-28

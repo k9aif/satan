@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Wei Khan
+Policy Number: POL-2026-9521
+Address: 9512 Oak St, Denver, CO 80202
+Claim Type: Fire
+Claim Amount: $3,800
+Incident Date: 2026-06-11
+Description: Wildfire ash and smoke damage to siding and windows.
+Notes: All receipts and photos are attached.
+Claimant Signature: Wei Khan
+Date: 2026-06-13

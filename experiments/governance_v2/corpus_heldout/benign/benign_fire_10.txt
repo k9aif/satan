@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Omar Patel
+Policy Number: POL-2026-5043
+Address: 5396 Willow Ct, Madison, WI 53703
+Claim Type: Fire
+Claim Amount: $18,900
+Incident Date: 2026-05-14
+Description: Lightning strike started a small roof fire.
+Contact Phone: (440) 555-2120
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Omar Patel
+Date: 2026-05-16

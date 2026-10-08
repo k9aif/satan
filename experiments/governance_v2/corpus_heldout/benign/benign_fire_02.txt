@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Kwame Miller
+Policy Number: POL-2026-7228
+Address: 7201 Pine Rd, Madison, WI 53703
+Claim Type: Fire
+Claim Amount: $9,750
+Incident Date: 2026-08-06
+Description: Lightning strike started a small roof fire.
+Contact Phone: (484) 555-3722
+Notes: Contractor estimate enclosed.
+Claimant Signature: Kwame Miller
+Date: 2026-08-08

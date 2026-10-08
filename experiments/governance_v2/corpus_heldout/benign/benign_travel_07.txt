@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Carlos Khan
+Policy Number: POL-2026-2286
+Address: 8526 Oak St, Raleigh, NC 27601
+Claim Type: Travel
+Claim Amount: $2,500
+Incident Date: 2026-06-12
+Description: Flight delay caused a missed cruise departure.
+Claim Portal: https://portal.acmeinsurance.com/claims/988386
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Carlos Khan
+Date: 2026-06-14

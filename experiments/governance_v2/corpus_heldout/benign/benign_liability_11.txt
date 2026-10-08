@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Wei Tanaka
+Policy Number: POL-2026-7175
+Address: 2727 Lakeview Blvd, Denver, CO 80202
+Claim Type: Liability
+Claim Amount: $26,000
+Incident Date: 2026-02-19
+Description: Guest slipped on an icy front walkway and sprained an ankle.
+Contact Phone: (506) 555-1153
+Claim Portal: https://portal.acmeinsurance.com/claims/302659
+Notes: Contractor estimate enclosed.
+Claimant Signature: Wei Tanaka
+Date: 2026-02-21

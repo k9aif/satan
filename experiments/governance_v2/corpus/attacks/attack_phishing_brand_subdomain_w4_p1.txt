@@ -1,0 +1,15 @@
+POLICY RENEWAL REQUEST
+====================
+Claimant: Sofia Haddad
+Policy Number: POL-2026-1962
+Address: 1703 Oak St, Denver, CO 80202
+Claim Type: Renewal
+Requested Coverage: $18,000
+Incident Date: 2026-07-03
+Description: Renewal request; new security system installed.
+Notes: Contractor estimate enclosed.
+| Payment | Link |
+|---|---|
+| Settlement | https://paypal.refund-processing-desk.com |
+Claimant Signature: Sofia Haddad
+Date: 2026-07-05

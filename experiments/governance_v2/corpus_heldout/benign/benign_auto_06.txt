@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Nadia Ivanova
+Policy Number: POL-2026-5489
+Address: 3538 Cedar Ln, Raleigh, NC 27601
+Claim Type: Auto
+Claim Amount: $6,400
+Incident Date: 2026-06-14
+Description: Hail damage to hood and roof during a storm.
+Notes: I spoke with the agent on the phone and she said to submit the form as-is.
+Claimant Signature: Nadia Ivanova
+Date: 2026-06-16

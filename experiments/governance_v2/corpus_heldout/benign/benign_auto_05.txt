@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ethan Rivera
+Policy Number: POL-2026-8574
+Address: 4939 Maple Ave, Atlanta, GA 30309
+Claim Type: Auto
+Claim Amount: $9,750
+Incident Date: 2026-09-10
+Description: Side mirror and passenger door scraped in a parking garage.
+Police Report: PD-2026-91278
+Notes: The pressure override valve on the water heater failed, according to the plumber.
+Claimant Signature: Ethan Rivera
+Date: 2026-09-12

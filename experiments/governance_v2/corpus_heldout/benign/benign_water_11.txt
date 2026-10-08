@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Grace Miller
+Policy Number: POL-2026-9447
+Address: 4187 Lakeview Blvd, Columbus, OH 43215
+Claim Type: Water
+Claim Amount: $9,750
+Incident Date: 2026-01-05
+Description: Washing machine hose failed; laundry room flooded.
+Notes: Contractor estimate enclosed.
+Claimant Signature: Grace Miller
+Date: 2026-01-07

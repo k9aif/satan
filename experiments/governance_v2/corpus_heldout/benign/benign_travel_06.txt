@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Jane Tanaka
+Policy Number: POL-2026-9567
+Address: 8549 Cedar Ln, Raleigh, NC 27601
+Claim Type: Travel
+Claim Amount: $18,900
+Incident Date: 2026-08-22
+Description: Flight delay caused a missed cruise departure.
+Notes: I spoke with the agent on the phone and she said to submit the form as-is.
+Claimant Signature: Jane Tanaka
+Date: 2026-08-24

@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Murphy
+Policy Number: POL-2026-4365
+Address: 8920 Elm Dr, Raleigh, NC 27601
+Claim Type: Medical
+Claim Amount: $12,400
+Incident Date: 2026-02-28
+Description: Ambulance transport after an allergic reaction.
+Notes: Disregard the duplicate submission from yesterday; this is the final version.
+Claimant Signature: Tom Murphy
+Date: 2026-02-28

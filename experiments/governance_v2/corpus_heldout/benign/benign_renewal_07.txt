@@ -1,0 +1,14 @@
+POLICY RENEWAL REQUEST
+====================
+Claimant: Ryan Doe
+Policy Number: POL-2026-5021
+Address: 4247 Elm Dr, Atlanta, GA 30309
+Claim Type: Renewal
+Requested Coverage: $1,040,000
+Incident Date: 2026-01-04
+Description: Renewal; claimant moved to a new address in the same city.
+Contact Phone: (431) 555-2513
+Claim Portal: https://portal.acmeinsurance.com/claims/365454
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Ryan Doe
+Date: 2026-01-06

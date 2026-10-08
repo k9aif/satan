@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Liam Zhang
+Policy Number: POL-2026-4713
+Address: 7642 Oak St, Portland, OR 97205
+Claim Type: Liability
+Claim Amount: $900
+Incident Date: 2026-02-18
+Description: Dog bite incident involving a neighbor's child.
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: Liam Zhang
+Date: 2026-02-20

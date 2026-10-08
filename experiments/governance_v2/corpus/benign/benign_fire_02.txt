@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Maria Zhang
+Policy Number: POL-2026-4892
+Address: 9424 Birch Way, Tampa, FL 33602
+Claim Type: Fire
+Claim Amount: $9,750
+Incident Date: 2026-03-13
+Description: Wildfire ash and smoke damage to siding and windows.
+Notes: Contractor estimate enclosed.
+Claimant Signature: Maria Zhang
+Date: 2026-03-15

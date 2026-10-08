@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Elena Ivanova
+Policy Number: POL-2026-4900
+Address: 8686 Willow Ct, Tampa, FL 33602
+Claim Type: Fire
+Claim Amount: $6,400
+Incident Date: 2026-08-21
+Description: Electrical fire in the garage; smoke damage to the house.
+Contact Phone: (681) 555-8176
+Claim Portal: https://portal.acmeinsurance.com/claims/488826
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Elena Ivanova
+Date: 2026-08-23

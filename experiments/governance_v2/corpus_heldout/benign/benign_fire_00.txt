@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Lucas Murphy
+Policy Number: POL-2026-2716
+Address: 4352 Willow Ct, Atlanta, GA 30309
+Claim Type: Fire
+Claim Amount: $18,900
+Incident Date: 2026-02-13
+Description: Space heater fire scorched the living room carpet.
+Notes: All receipts and photos are attached.
+Claimant Signature: Lucas Murphy
+Date: 2026-02-15

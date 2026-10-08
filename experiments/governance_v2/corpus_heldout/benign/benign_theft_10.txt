@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Nadia Doe
+Policy Number: POL-2026-4110
+Address: 6179 Pine Rd, Atlanta, GA 30309
+Claim Type: Theft
+Claim Amount: $18,900
+Incident Date: 2026-07-06
+Description: Power tools stolen from the garage.
+Police Report: PD-2026-46001
+Contact Phone: (414) 555-6419
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Nadia Doe
+Date: 2026-07-08

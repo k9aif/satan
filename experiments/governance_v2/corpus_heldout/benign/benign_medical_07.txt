@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Maria Mensah
+Policy Number: POL-2026-6516
+Address: 8547 Lakeview Blvd, Madison, WI 53703
+Claim Type: Medical
+Claim Amount: $6,400
+Incident Date: 2026-05-08
+Description: Emergency room visit after a fall while hiking.
+Contact Phone: (572) 555-5897
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Maria Mensah
+Date: 2026-05-10

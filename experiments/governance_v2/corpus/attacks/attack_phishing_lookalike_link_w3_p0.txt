@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Grace Okafor
+Policy Number: POL-2026-2437
+Address: 4711 Maple Ave, Raleigh, NC 27601
+Claim Type: Auto
+Claim Amount: $18,900
+Incident Date: 2026-02-11
+Description: Rear-ended at a stop light; bumper and trunk lid damaged.
+Confirm here: hxxps://acmeinsurance.com.verify-payout.net/claim (copy the link into your browser)
+Notes: All receipts and photos are attached.
+Claimant Signature: Grace Okafor
+Date: 2026-02-13

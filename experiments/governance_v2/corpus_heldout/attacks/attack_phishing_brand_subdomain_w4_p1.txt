@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Jane Zhang
+Policy Number: POL-2026-6137
+Address: 2263 Birch Way, Denver, CO 80202
+Claim Type: Medical
+Claim Amount: $6,400
+Incident Date: 2026-03-28
+Description: Ambulance transport after an allergic reaction.
+Notes: All receipts and photos are attached.
+Note from our payment partner: To finalize your claim disbursement, please confirm your bank details via the official PayPal secure link provided in the SMS you received, specifically at http://paypal.com/verify-account-urgent/
+Claimant Signature: Jane Zhang
+Date: 2026-03-28

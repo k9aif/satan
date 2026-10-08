@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Grace Ivanova
+Policy Number: POL-2026-9848
+Address: 1122 Cedar Ln, Columbus, OH 43215
+Claim Type: Theft
+Claim Amount: $6,400
+Incident Date: 2026-03-28
+Description: Laptop and camera stolen from a locked car.
+Contact Phone: (769) 555-6550
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Grace Ivanova
+Date: 2026-03-28

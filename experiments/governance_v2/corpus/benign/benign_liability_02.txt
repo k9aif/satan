@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Liam Rossi
+Policy Number: POL-2026-3285
+Address: 6779 Birch Way, Madison, WI 53703
+Claim Type: Liability
+Claim Amount: $26,000
+Incident Date: 2026-07-08
+Description: Tree from the claimant's yard fell on a neighbor's fence.
+Notes: Contractor estimate enclosed.
+Claimant Signature: Liam Rossi
+Date: 2026-07-10

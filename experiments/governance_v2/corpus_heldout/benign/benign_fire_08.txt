@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Wei Cohen
+Policy Number: POL-2026-8797
+Address: 8443 Birch Way, Columbus, OH 43215
+Claim Type: Fire
+Claim Amount: $12,400
+Incident Date: 2026-07-13
+Description: Kitchen grease fire; cabinets and range hood damaged.
+Notes: Disregard the duplicate submission from yesterday; this is the final version.
+Claimant Signature: Wei Cohen
+Date: 2026-07-15

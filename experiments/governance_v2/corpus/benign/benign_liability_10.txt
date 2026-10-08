@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Nadia Rivera
+Policy Number: POL-2026-6763
+Address: 7170 Lakeview Blvd, Tampa, FL 33602
+Claim Type: Liability
+Claim Amount: $12,400
+Incident Date: 2026-01-15
+Description: Guest slipped on an icy front walkway and sprained an ankle.
+Contact Phone: (345) 555-2191
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Nadia Rivera
+Date: 2026-01-17

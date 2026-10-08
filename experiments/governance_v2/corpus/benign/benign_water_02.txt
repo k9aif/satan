@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Kwame Zhang
+Policy Number: POL-2026-3962
+Address: 2739 Maple Ave, Portland, OR 97205
+Claim Type: Water
+Claim Amount: $1,250
+Incident Date: 2026-06-22
+Description: Water heater leaked into the basement overnight.
+Contact Phone: (850) 555-1184
+Notes: Contractor estimate enclosed.
+Claimant Signature: Kwame Zhang
+Date: 2026-06-24

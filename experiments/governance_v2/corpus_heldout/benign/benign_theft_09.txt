@@ -1,0 +1,15 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Aisha Silva
+Policy Number: POL-2026-2716
+Address: 7133 Pine Rd, Denver, CO 80202
+Claim Type: Theft
+Claim Amount: $26,000
+Incident Date: 2026-08-08
+Description: Home break-in; jewelry and a television taken.
+Police Report: PD-2026-88100
+Contact Phone: (778) 555-6066
+Claim Portal: https://portal.acmeinsurance.com/claims/469226
+Notes: All receipts and photos are attached.
+Claimant Signature: Aisha Silva
+Date: 2026-08-10

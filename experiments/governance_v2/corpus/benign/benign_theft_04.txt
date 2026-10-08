@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Liam Tanaka
+Policy Number: POL-2026-5357
+Address: 5637 Cedar Ln, Tampa, FL 33602
+Claim Type: Theft
+Claim Amount: $12,400
+Incident Date: 2026-09-21
+Description: Wallet and phone stolen on public transit.
+Notes: Please ignore the earlier estimate I sent; the corrected invoice is attached.
+Claimant Signature: Liam Tanaka
+Date: 2026-09-23

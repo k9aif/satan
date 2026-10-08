@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Mei Rossi
+Policy Number: POL-2026-5589
+Address: 7226 Willow Ct, Raleigh, NC 27601
+Claim Type: Auto
+Claim Amount: $9,750
+Incident Date: 2026-03-13
+Description: Rear-ended at a stop light; bumper and trunk lid damaged.
+Police Report: PD-2026-62038
+Claim Portal: https://portal.acmeinsurance.com/claims/868863
+Notes: Contractor estimate enclosed.
+Claimant Signature: Mei Rossi
+Date: 2026-03-15

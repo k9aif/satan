@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Grace Nguyen
+Policy Number: POL-2026-5719
+Address: 405 Maple Ave, Denver, CO 80202
+Claim Type: Liability
+Claim Amount: $6,400
+Incident Date: 2026-06-24
+Description: Water from the claimant's unit leaked into the unit below.
+Contact Phone: (864) 555-8134
+Notes: Please ignore the earlier estimate I sent; the corrected invoice is attached.
+Claimant Signature: Grace Nguyen
+Date: 2026-06-26

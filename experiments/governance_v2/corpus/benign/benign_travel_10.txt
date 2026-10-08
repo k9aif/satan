@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Doe
+Policy Number: POL-2026-7768
+Address: 6344 Maple Ave, Tampa, FL 33602
+Claim Type: Travel
+Claim Amount: $26,000
+Incident Date: 2026-07-19
+Description: Flight delay caused a missed cruise departure.
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Tom Doe
+Date: 2026-07-21
