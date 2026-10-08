@@ -52,11 +52,15 @@ case "$cmd" in
     # identity on the host side of a bind mount.
     sudo mkdir -p "$SATAN_DATA_HOST_DIR"
     sudo chmod 777 "$SATAN_DATA_HOST_DIR"
+    # .env (OLLAMA_BASE_URL etc.) as written; the explicit -e flags below take precedence over it.
+    ENV_ARGS=()
+    [ -f "$PROJECT_DIR/.env" ] && ENV_ARGS=(--env-file "$PROJECT_DIR/.env") || echo "Note: no .env -- Ollama defaults to localhost, which inside the container is the container itself."
     sudo podman run -d --name "$CONTAINER" \
       --restart=always \
       --memory=16g --cpus=8 \
       -p 127.0.0.1:6660:6660 \
       -v "$SATAN_DATA_HOST_DIR":/app/data:Z \
+      "${ENV_ARGS[@]}" \
       -e K9_ENV=development \
       -e SATAN_GOVERNANCE=noop \
       -e SATAN_LOCK_CONFIG=true \
