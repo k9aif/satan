@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Priya Khan
+Policy Number: POL-2026-8015
+Address: 6315 Willow Ct, Austin, TX 78701
+Claim Type: Medical
+Claim Amount: $18,900
+Incident Date: 2026-02-05
+Description: Urgent care visit for a deep cut requiring stitches.
+Notes: Contractor estimate enclosed.
+Claimant Signature: Priya Khan
+Date: 2026-02-07

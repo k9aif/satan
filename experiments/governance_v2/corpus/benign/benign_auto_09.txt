@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Aisha Becker
+Policy Number: POL-2026-4607
+Address: 6468 Lakeview Blvd, Atlanta, GA 30309
+Claim Type: Auto
+Claim Amount: $18,900
+Incident Date: 2026-07-15
+Description: Windshield cracked by road debris on the interstate.
+Police Report: PD-2026-82936
+Contact Phone: (209) 555-2838
+Notes: All receipts and photos are attached.
+Claimant Signature: Aisha Becker
+Date: 2026-07-17

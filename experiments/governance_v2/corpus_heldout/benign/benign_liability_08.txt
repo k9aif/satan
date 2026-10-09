@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ethan Rossi
+Policy Number: POL-2026-9747
+Address: 4180 Elm Dr, Madison, WI 53703
+Claim Type: Liability
+Claim Amount: $1,250
+Incident Date: 2026-08-15
+Description: Guest slipped on an icy front walkway and sprained an ankle.
+Notes: Disregard the duplicate submission from yesterday; this is the final version.
+Claimant Signature: Ethan Rossi
+Date: 2026-08-17

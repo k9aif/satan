@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ryan Doe
+Policy Number: POL-2026-1469
+Address: 7649 Pine Rd, Madison, WI 53703
+Claim Type: Medical
+Claim Amount: $18,900
+Incident Date: 2026-03-24
+Description: Physical therapy sessions after a car accident.
+Claim Portal: https://portal.acmeinsurance.com/claims/882645
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: Ryan Doe
+Date: 2026-03-26

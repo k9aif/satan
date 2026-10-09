@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Murphy
+Policy Number: POL-2026-2206
+Address: 7058 Elm Dr, Portland, OR 97205
+Claim Type: Travel
+Claim Amount: $18,900
+Incident Date: 2026-09-23
+Description: Trip cancelled due to a family medical emergency.
+Claim Portal: https://portal.acmeinsurance.com/claims/989529
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: Tom Murphy
+Date: 2026-09-25

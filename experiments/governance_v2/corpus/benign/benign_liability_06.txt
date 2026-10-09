@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ryan Silva
+Policy Number: POL-2026-1962
+Address: 9505 Pine Rd, Denver, CO 80202
+Claim Type: Liability
+Claim Amount: $9,750
+Incident Date: 2026-04-28
+Description: Guest slipped on an icy front walkway and sprained an ankle.
+Notes: I spoke with the agent on the phone and she said to submit the form as-is.
+Claimant Signature: Ryan Silva
+Date: 2026-04-28

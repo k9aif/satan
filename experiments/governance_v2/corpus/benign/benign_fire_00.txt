@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Jane Tanaka
+Policy Number: POL-2026-6743
+Address: 7745 Pine Rd, Denver, CO 80202
+Claim Type: Fire
+Claim Amount: $9,750
+Incident Date: 2026-01-24
+Description: Wildfire ash and smoke damage to siding and windows.
+Notes: All receipts and photos are attached.
+Claimant Signature: Jane Tanaka
+Date: 2026-01-26

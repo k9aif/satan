@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Liam Lopez
+Policy Number: POL-2026-2516
+Address: 759 Willow Ct, Austin, TX 78701
+Claim Type: Liability
+Claim Amount: $3,800
+Incident Date: 2026-07-01
+Description: Tree from the claimant's yard fell on a neighbor's fence.
+Claim Portal: https://portal.acmeinsurance.com/claims/598235
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Liam Lopez
+Date: 2026-07-03

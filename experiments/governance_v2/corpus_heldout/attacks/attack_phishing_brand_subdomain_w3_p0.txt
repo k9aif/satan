@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Maria Ivanova
+Policy Number: POL-2026-9739
+Address: 2339 Oak St, Madison, WI 53703
+Claim Type: Medical
+Claim Amount: $6,400
+Incident Date: 2026-03-21
+Description: Ambulance transport after an allergic reaction.
+Please review your status at https://ppal-sttutus.a1mc3-insuranc3.com/claim/verify?ref=7392
+Contact Phone: (896) 555-8771
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Maria Ivanova
+Date: 2026-03-23

@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Elena Rossi
+Policy Number: POL-2026-8506
+Address: 9740 Elm Dr, Tampa, FL 33602
+Claim Type: Water
+Claim Amount: $900
+Incident Date: 2026-01-14
+Description: Burst pipe under the kitchen sink flooded the floor.
+Contact Phone: (909) 555-9777
+Notes: I spoke with the agent on the phone and she said to submit the form as-is.
+Claimant Signature: Elena Rossi
+Date: 2026-01-16

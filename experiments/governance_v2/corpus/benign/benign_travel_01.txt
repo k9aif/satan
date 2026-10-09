@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: David Okafor
+Policy Number: POL-2026-2271
+Address: 8285 Willow Ct, Denver, CO 80202
+Claim Type: Travel
+Claim Amount: $9,750
+Incident Date: 2026-03-05
+Description: Rental car damaged by a falling branch abroad.
+Notes: Adjuster visit requested for next week.
+Claimant Signature: David Okafor
+Date: 2026-03-07

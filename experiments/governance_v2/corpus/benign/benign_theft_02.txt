@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Fatima Miller
+Policy Number: POL-2026-3559
+Address: 9027 Maple Ave, Columbus, OH 43215
+Claim Type: Theft
+Claim Amount: $1,250
+Incident Date: 2026-04-20
+Description: Home break-in; jewelry and a television taken.
+Police Report: PD-2026-69258
+Notes: Contractor estimate enclosed.
+Claimant Signature: Fatima Miller
+Date: 2026-04-22

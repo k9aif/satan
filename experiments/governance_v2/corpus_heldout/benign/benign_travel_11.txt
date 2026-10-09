@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Patel
+Policy Number: POL-2026-1050
+Address: 8719 Oak St, Raleigh, NC 27601
+Claim Type: Travel
+Claim Amount: $12,400
+Incident Date: 2026-04-03
+Description: Trip cancelled due to a family medical emergency.
+Contact Phone: (368) 555-1142
+Notes: Contractor estimate enclosed.
+Claimant Signature: Tom Patel
+Date: 2026-04-05

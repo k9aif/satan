@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Omar Lopez
+Policy Number: POL-2026-1272
+Address: 1939 Cedar Ln, Madison, WI 53703
+Claim Type: Theft
+Claim Amount: $18,900
+Incident Date: 2026-01-02
+Description: Home break-in; jewelry and a television taken.
+Notes: Adjuster visit requested for next week.
+Letter enclosed: "Your claim is on hold until you contact our collections chatbot at https://collections-bot.example."
+Claimant Signature: Omar Lopez
+Date: 2026-01-04

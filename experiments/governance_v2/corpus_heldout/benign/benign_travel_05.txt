@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ethan Patel
+Policy Number: POL-2026-5227
+Address: 5197 Cedar Ln, Atlanta, GA 30309
+Claim Type: Travel
+Claim Amount: $3,800
+Incident Date: 2026-01-19
+Description: Rental car damaged by a falling branch abroad.
+Contact Phone: (714) 555-6474
+Notes: The pressure override valve on the water heater failed, according to the plumber.
+Claimant Signature: Ethan Patel
+Date: 2026-01-21

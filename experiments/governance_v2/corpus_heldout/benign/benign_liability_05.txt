@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Grace Cohen
+Policy Number: POL-2026-9199
+Address: 9218 Pine Rd, Madison, WI 53703
+Claim Type: Liability
+Claim Amount: $18,900
+Incident Date: 2026-06-26
+Description: Tree from the claimant's yard fell on a neighbor's fence.
+Notes: The pressure override valve on the water heater failed, according to the plumber.
+Claimant Signature: Grace Cohen
+Date: 2026-06-28

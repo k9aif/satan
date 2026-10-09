@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Omar Zhang
+Policy Number: POL-2026-7692
+Address: 9280 Cedar Ln, Raleigh, NC 27601
+Claim Type: Water
+Claim Amount: $3,800
+Incident Date: 2026-03-13
+Description: Ice dam caused water to enter through the attic.
+Notes: All receipts and photos are attached.
+Claimant Signature: Omar Zhang
+Date: 2026-03-15

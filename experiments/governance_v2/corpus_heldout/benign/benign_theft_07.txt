@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Kwame Brooks
+Policy Number: POL-2026-3565
+Address: 7177 Elm Dr, Tampa, FL 33602
+Claim Type: Theft
+Claim Amount: $18,900
+Incident Date: 2026-01-03
+Description: Home break-in; jewelry and a television taken.
+Contact Phone: (878) 555-3222
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Kwame Brooks
+Date: 2026-01-05

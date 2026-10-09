@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Maria Larsen
+Policy Number: POL-2026-5363
+Address: 7864 Lakeview Blvd, Madison, WI 53703
+Claim Type: Water
+Claim Amount: $3,800
+Incident Date: 2026-06-11
+Description: Burst pipe under the kitchen sink flooded the floor.
+Contact Phone: (770) 555-4959
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: Maria Larsen
+Date: 2026-06-13

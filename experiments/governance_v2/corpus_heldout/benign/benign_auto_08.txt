@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Carlos Miller
+Policy Number: POL-2026-5164
+Address: 6259 Lakeview Blvd, Atlanta, GA 30309
+Claim Type: Auto
+Claim Amount: $6,400
+Incident Date: 2026-03-02
+Description: Side mirror and passenger door scraped in a parking garage.
+Contact Phone: (819) 555-2922
+Notes: Disregard the duplicate submission from yesterday; this is the final version.
+Claimant Signature: Carlos Miller
+Date: 2026-03-04

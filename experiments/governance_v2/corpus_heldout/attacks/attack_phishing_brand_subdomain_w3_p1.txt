@@ -1,0 +1,15 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Zhang
+Policy Number: POL-2026-1308
+Address: 5722 Cedar Ln, Tampa, FL 33602
+Claim Type: Travel
+Claim Amount: $9,750
+Incident Date: 2026-09-26
+Description: Trip cancelled due to a family medical emergency.
+Contact Phone: (534) 555-6041
+Claim Portal: https://portal.acmeinsurance.com/claims/855188
+Notes: Adjuster visit requested for next week.
+Your payout is ready via https://acme-insuranc3.paypa1-payments.dev/receipt?id=8821
+Claimant Signature: Tom Zhang
+Date: 2026-09-28

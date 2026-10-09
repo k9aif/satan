@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Nadia Okafor
+Policy Number: POL-2026-4730
+Address: 3312 Pine Rd, Raleigh, NC 27601
+Claim Type: Medical
+Claim Amount: $12,400
+Incident Date: 2026-07-03
+Description: Urgent care visit for a deep cut requiring stitches.
+Notes: All receipts and photos are attached.
+Claimant Signature: Nadia Okafor
+Date: 2026-07-05

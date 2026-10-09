@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ryan Patel
+Policy Number: POL-2026-1509
+Address: 3708 Cedar Ln, Denver, CO 80202
+Claim Type: Auto
+Claim Amount: $9,750
+Incident Date: 2026-01-10
+Description: Minor collision while reversing; tail light broken.
+Notes: Please ignore the earlier estimate I sent; the corrected invoice is attached.
+Claimant Signature: Ryan Patel
+Date: 2026-01-12

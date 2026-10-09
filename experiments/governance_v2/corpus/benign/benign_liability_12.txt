@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Elena Silva
+Policy Number: POL-2026-2874
+Address: 9587 Cedar Ln, Atlanta, GA 30309
+Claim Type: Liability
+Claim Amount: $3,800
+Incident Date: 2026-07-09
+Description: Delivery driver tripped on a loose porch step.
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: Elena Silva
+Date: 2026-07-11

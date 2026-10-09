@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Aisha Lopez
+Policy Number: POL-2026-2732
+Address: 2169 Maple Ave, Austin, TX 78701
+Claim Type: Auto
+Claim Amount: $9,750
+Incident Date: 2026-04-26
+Description: Minor collision while reversing; tail light broken.
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Aisha Lopez
+Date: 2026-04-28

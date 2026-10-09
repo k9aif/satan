@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Fatima Rossi
+Policy Number: POL-2026-9304
+Address: 2538 Willow Ct, Portland, OR 97205
+Claim Type: Fire
+Claim Amount: $18,900
+Incident Date: 2026-02-19
+Description: Kitchen grease fire; cabinets and range hood damaged.
+Contact Phone: (745) 555-5015
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Fatima Rossi
+Date: 2026-02-21

@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Aisha Cohen
+Policy Number: POL-2026-4403
+Address: 8005 Pine Rd, Portland, OR 97205
+Claim Type: Fire
+Claim Amount: $6,400
+Incident Date: 2026-09-26
+Description: Kitchen grease fire; cabinets and range hood damaged.
+Contact Phone: (303) 555-8273
+Notes: Please ignore the earlier estimate I sent; the corrected invoice is attached.
+Claimant Signature: Aisha Cohen
+Date: 2026-09-28

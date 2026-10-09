@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Fatima Rossi
+Policy Number: POL-2026-7807
+Address: 2668 Oak St, Madison, WI 53703
+Claim Type: Fire
+Claim Amount: $1,250
+Incident Date: 2026-04-14
+Description: Electrical fire in the garage; smoke damage to the house.
+Notes: Contractor estimate enclosed.
+Claimant Signature: Fatima Rossi
+Date: 2026-04-16

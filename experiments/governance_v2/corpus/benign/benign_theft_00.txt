@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Liam Cohen
+Policy Number: POL-2026-4809
+Address: 1502 Birch Way, Columbus, OH 43215
+Claim Type: Theft
+Claim Amount: $26,000
+Incident Date: 2026-05-02
+Description: Bicycle stolen from the building's storage room.
+Notes: All receipts and photos are attached.
+Claimant Signature: Liam Cohen
+Date: 2026-05-04

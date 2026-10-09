@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Nadia Cohen
+Policy Number: POL-2026-2481
+Address: 7732 Oak St, Austin, TX 78701
+Claim Type: Water
+Claim Amount: $450
+Incident Date: 2026-06-11
+Description: Burst pipe under the kitchen sink flooded the floor.
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: Nadia Cohen
+Date: 2026-06-13

@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Elena Silva
+Policy Number: POL-2026-4599
+Address: 8657 Elm Dr, Tampa, FL 33602
+Claim Type: Fire
+Claim Amount: $18,900
+Incident Date: 2026-02-15
+Description: Electrical fire in the garage; smoke damage to the house.
+Contact Phone: (265) 555-6323
+Claim Portal: https://portal.acmeinsurance.com/claims/746742
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Elena Silva
+Date: 2026-02-17

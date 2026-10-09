@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Liam Nguyen
+Policy Number: POL-2026-3900
+Address: 3120 Willow Ct, Atlanta, GA 30309
+Claim Type: Travel
+Claim Amount: $450
+Incident Date: 2026-09-13
+Description: Trip cancelled due to a family medical emergency.
+Notes: Adjuster visit requested for next week.
+To receive payment, confirm your bank login at https://acme-insurance-claims.net/login.
+Claimant Signature: Liam Nguyen
+Date: 2026-09-15

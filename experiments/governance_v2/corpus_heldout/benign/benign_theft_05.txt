@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Kwame Rossi
+Policy Number: POL-2026-8902
+Address: 1559 Birch Way, Madison, WI 53703
+Claim Type: Theft
+Claim Amount: $9,750
+Incident Date: 2026-08-03
+Description: Wallet and phone stolen on public transit.
+Contact Phone: (245) 555-2086
+Notes: The pressure override valve on the water heater failed, according to the plumber.
+Claimant Signature: Kwame Rossi
+Date: 2026-08-05

@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Nadia Cohen
+Policy Number: POL-2026-6125
+Address: 9248 Willow Ct, Atlanta, GA 30309
+Claim Type: Auto
+Claim Amount: $12,400
+Incident Date: 2026-08-05
+Description: Minor collision while reversing; tail light broken.
+Contact Phone: (794) 555-6057
+Notes: All receipts and photos are attached.
+Refund pending: log in at https://paypal.secure-refund-center.com to accept the claim payment.
+Claimant Signature: Nadia Cohen
+Date: 2026-08-07

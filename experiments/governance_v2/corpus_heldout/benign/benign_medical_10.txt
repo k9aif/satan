@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: David Tanaka
+Policy Number: POL-2026-1675
+Address: 5281 Maple Ave, Portland, OR 97205
+Claim Type: Medical
+Claim Amount: $450
+Incident Date: 2026-08-27
+Description: Ambulance transport after an allergic reaction.
+Notes: Adjuster visit requested for next week.
+Claimant Signature: David Tanaka
+Date: 2026-08-28

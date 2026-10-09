@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Wei Haddad
+Policy Number: POL-2026-4922
+Address: 2369 Cedar Ln, Tampa, FL 33602
+Claim Type: Liability
+Claim Amount: $2,500
+Incident Date: 2026-02-25
+Description: Water from the claimant's unit leaked into the unit below.
+Notes: All receipts and photos are attached.
+Claimant Signature: Wei Haddad
+Date: 2026-02-27

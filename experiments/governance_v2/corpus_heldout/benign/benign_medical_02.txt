@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Maria Silva
+Policy Number: POL-2026-5968
+Address: 6982 Oak St, Tampa, FL 33602
+Claim Type: Medical
+Claim Amount: $6,400
+Incident Date: 2026-03-23
+Description: Physical therapy sessions after a car accident.
+Notes: Contractor estimate enclosed.
+Claimant Signature: Maria Silva
+Date: 2026-03-25

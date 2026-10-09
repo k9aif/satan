@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Carlos Murphy
+Policy Number: POL-2026-6568
+Address: 2871 Pine Rd, Madison, WI 53703
+Claim Type: Water
+Claim Amount: $18,900
+Incident Date: 2026-07-11
+Description: Washing machine hose failed; laundry room flooded.
+Contact Phone: (608) 555-7754
+Notes: Disregard the duplicate submission from yesterday; this is the final version.
+Claimant Signature: Carlos Murphy
+Date: 2026-07-13

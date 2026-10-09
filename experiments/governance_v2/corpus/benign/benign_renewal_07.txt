@@ -1,0 +1,12 @@
+POLICY RENEWAL REQUEST
+====================
+Claimant: Liam Doe
+Policy Number: POL-2026-2207
+Address: 8154 Oak St, Austin, TX 78701
+Claim Type: Renewal
+Requested Coverage: $152,000
+Incident Date: 2026-09-08
+Description: Renewal with an added detached garage.
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Liam Doe
+Date: 2026-09-10

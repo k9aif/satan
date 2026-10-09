@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Wei Brooks
+Policy Number: POL-2026-4872
+Address: 4681 Lakeview Blvd, Raleigh, NC 27601
+Claim Type: Medical
+Claim Amount: $1,250
+Incident Date: 2026-06-27
+Description: Urgent care visit for a deep cut requiring stitches.
+Notes: Contractor estimate enclosed.
+Claimant Signature: Wei Brooks
+Date: 2026-06-28

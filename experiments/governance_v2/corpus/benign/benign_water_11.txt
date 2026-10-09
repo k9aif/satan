@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Nguyen
+Policy Number: POL-2026-1066
+Address: 6263 Pine Rd, Austin, TX 78701
+Claim Type: Water
+Claim Amount: $2,500
+Incident Date: 2026-09-25
+Description: Washing machine hose failed; laundry room flooded.
+Contact Phone: (897) 555-5623
+Notes: Contractor estimate enclosed.
+Claimant Signature: Tom Nguyen
+Date: 2026-09-27

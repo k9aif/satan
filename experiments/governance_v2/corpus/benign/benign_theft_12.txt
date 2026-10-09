@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Becker
+Policy Number: POL-2026-4114
+Address: 449 Maple Ave, Columbus, OH 43215
+Claim Type: Theft
+Claim Amount: $3,800
+Incident Date: 2026-07-18
+Description: Wallet and phone stolen on public transit.
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: Tom Becker
+Date: 2026-07-20

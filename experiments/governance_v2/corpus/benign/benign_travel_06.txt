@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Liam Nguyen
+Policy Number: POL-2026-6461
+Address: 6891 Oak St, Raleigh, NC 27601
+Claim Type: Travel
+Claim Amount: $450
+Incident Date: 2026-04-07
+Description: Hotel stay extended after a hurricane closed the airport.
+Notes: I spoke with the agent on the phone and she said to submit the form as-is.
+Claimant Signature: Liam Nguyen
+Date: 2026-04-09

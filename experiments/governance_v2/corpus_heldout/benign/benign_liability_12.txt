@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Liam Miller
+Policy Number: POL-2026-7004
+Address: 7723 Maple Ave, Madison, WI 53703
+Claim Type: Liability
+Claim Amount: $3,800
+Incident Date: 2026-02-07
+Description: Water from the claimant's unit leaked into the unit below.
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: Liam Miller
+Date: 2026-02-09

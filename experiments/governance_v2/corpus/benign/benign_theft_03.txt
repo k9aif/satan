@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Kwame Brooks
+Policy Number: POL-2026-5998
+Address: 946 Maple Ave, Madison, WI 53703
+Claim Type: Theft
+Claim Amount: $2,500
+Incident Date: 2026-04-07
+Description: Power tools stolen from the garage.
+Police Report: PD-2026-54167
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: Kwame Brooks
+Date: 2026-04-09

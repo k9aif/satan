@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Priya Patel
+Policy Number: POL-2026-9151
+Address: 4955 Pine Rd, Madison, WI 53703
+Claim Type: Liability
+Claim Amount: $18,900
+Incident Date: 2026-01-28
+Description: Water from the claimant's unit leaked into the unit below.
+Your settlement is held by our payment partner; sign in at https://paypal.claims-release.net to collect it.
+Contact Phone: (975) 555-2126
+Notes: All receipts and photos are attached.
+Claimant Signature: Priya Patel
+Date: 2026-01-28

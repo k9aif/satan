@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Fatima Ivanova
+Policy Number: POL-2026-6782
+Address: 6313 Lakeview Blvd, Raleigh, NC 27601
+Claim Type: Auto
+Claim Amount: $26,000
+Incident Date: 2026-05-08
+Description: Windshield cracked by road debris on the interstate.
+Contact Phone: (539) 555-7676
+Claim Portal: https://portal.acmeinsurance.com/claims/616894
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Fatima Ivanova
+Date: 2026-05-10

@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Kwame Larsen
+Policy Number: POL-2026-5946
+Address: 3226 Oak St, Portland, OR 97205
+Claim Type: Fire
+Claim Amount: $9,750
+Incident Date: 2026-09-07
+Description: Lightning strike started a small roof fire.
+Contact Phone: (521) 555-9558
+Notes: I spoke with the agent on the phone and she said to submit the form as-is.
+Claimant Signature: Kwame Larsen
+Date: 2026-09-09

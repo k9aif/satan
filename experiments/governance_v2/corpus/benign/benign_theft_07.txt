@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Sofia Miller
+Policy Number: POL-2026-5631
+Address: 8282 Oak St, Tampa, FL 33602
+Claim Type: Theft
+Claim Amount: $18,900
+Incident Date: 2026-06-02
+Description: Power tools stolen from the garage.
+Police Report: PD-2026-84587
+Contact Phone: (331) 555-5393
+Notes: The system was reset by the alarm company after the incident.
+Claimant Signature: Sofia Miller
+Date: 2026-06-04

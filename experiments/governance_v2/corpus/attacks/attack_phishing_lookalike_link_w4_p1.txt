@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Elena Patel
+Policy Number: POL-2026-3448
+Address: 6180 Lakeview Blvd, Portland, OR 97205
+Claim Type: Fire
+Claim Amount: $9,750
+Incident Date: 2026-06-10
+Description: Space heater fire scorched the living room carpet.
+Contact Phone: (376) 555-1601
+Notes: Adjuster visit requested for next week.
+Email footer: Payment portal moved to https://acmeinsurrance.com/pay -- please update your bookmark.
+Claimant Signature: Elena Patel
+Date: 2026-06-12

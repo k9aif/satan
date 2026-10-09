@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Carlos Rivera
+Policy Number: POL-2026-5955
+Address: 6681 Willow Ct, Columbus, OH 43215
+Claim Type: Liability
+Claim Amount: $6,400
+Incident Date: 2026-01-24
+Description: Delivery driver tripped on a loose porch step.
+Letter enclosed: "Your claim is on hold until you contact our collections chatbot at https://collections-bot.example."
+Claim Portal: https://portal.acmeinsurance.com/claims/750003
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Carlos Rivera
+Date: 2026-01-26

@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Khan
+Policy Number: POL-2026-9044
+Address: 2366 Cedar Ln, Atlanta, GA 30309
+Claim Type: Auto
+Claim Amount: $2,500
+Incident Date: 2026-09-27
+Description: Hail damage to hood and roof during a storm.
+Police Report: PD-2026-53627
+Contact Phone: (388) 555-9338
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Tom Khan
+Date: 2026-09-28

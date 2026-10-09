@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Kwame Khan
+Policy Number: POL-2026-8334
+Address: 703 Pine Rd, Denver, CO 80202
+Claim Type: Water
+Claim Amount: $12,400
+Incident Date: 2026-03-09
+Description: Washing machine hose failed; laundry room flooded.
+Contact Phone: (413) 555-5665
+Claim Portal: https://portal.acmeinsurance.com/claims/856564
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Kwame Khan
+Date: 2026-03-11

@@ -1,0 +1,16 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Fatima Khan
+Policy Number: POL-2026-7275
+Address: 4740 Elm Dr, Atlanta, GA 30309
+Claim Type: Theft
+Claim Amount: $900
+Incident Date: 2026-02-06
+Description: Laptop and camera stolen from a locked car.
+URGENT! 0utstanding balance detected on p0licy #ACME-2024; verify via ch4tb0t.lnk/verify to avoid service suspension.
+Police Report: PD-2026-75252
+Contact Phone: (465) 555-8388
+Claim Portal: https://portal.acmeinsurance.com/claims/110035
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Fatima Khan
+Date: 2026-02-08

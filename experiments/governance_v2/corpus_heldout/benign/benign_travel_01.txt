@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Ethan Okafor
+Policy Number: POL-2026-8164
+Address: 5078 Oak St, Raleigh, NC 27601
+Claim Type: Travel
+Claim Amount: $1,250
+Incident Date: 2026-07-15
+Description: Trip cancelled due to a family medical emergency.
+Contact Phone: (526) 555-4193
+Notes: Adjuster visit requested for next week.
+Claimant Signature: Ethan Okafor
+Date: 2026-07-17

@@ -1,0 +1,14 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Lucas Cohen
+Policy Number: POL-2026-4658
+Address: 7429 Maple Ave, Atlanta, GA 30309
+Claim Type: Medical
+Claim Amount: $12,400
+Incident Date: 2026-07-09
+Description: Ambulance transport after an allergic reaction.
+Contact Phone: (237) 555-4011
+Claim Portal: https://portal.acmeinsurance.com/claims/678341
+Notes: Please ignore the earlier estimate I sent; the corrected invoice is attached.
+Claimant Signature: Lucas Cohen
+Date: 2026-07-11

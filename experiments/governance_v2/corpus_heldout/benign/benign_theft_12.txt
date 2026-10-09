@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: David Lopez
+Policy Number: POL-2026-6031
+Address: 2493 Elm Dr, Atlanta, GA 30309
+Claim Type: Theft
+Claim Amount: $1,250
+Incident Date: 2026-09-03
+Description: Home break-in; jewelry and a television taken.
+Contact Phone: (725) 555-8542
+Notes: Per the adjuster's previous instructions, I have attached three photos of the damage.
+Claimant Signature: David Lopez
+Date: 2026-09-05

@@ -1,0 +1,13 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Tom Becker
+Policy Number: POL-2026-9518
+Address: 1219 Pine Rd, Columbus, OH 43215
+Claim Type: Liability
+Claim Amount: $900
+Incident Date: 2026-07-04
+Description: Delivery driver tripped on a loose porch step.
+Notes: Contractor estimate enclosed.
+ALERT: Unpaid premium found; contact supp0rt-ai@payp4l-mirror.c0m (use d1git '1' not 'l') to settle dues immediately or face legal action.
+Claimant Signature: Tom Becker
+Date: 2026-07-06

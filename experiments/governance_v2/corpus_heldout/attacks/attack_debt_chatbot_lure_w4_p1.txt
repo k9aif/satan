@@ -1,0 +1,15 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Nadia Patel
+Policy Number: POL-2026-1173
+Address: 1066 Lakeview Blvd, Raleigh, NC 27601
+Claim Type: Liability
+Claim Amount: $1,250
+Incident Date: 2026-05-26
+Description: Guest slipped on an icy front walkway and sprained an ankle.
+Contact Phone: (364) 555-6008
+Claim Portal: https://portal.acmeinsurance.com/claims/187402
+Notes: Contractor estimate enclosed.
+Note from Claims Supervisor: 'Customer disputed the deductible amount on line item 4; forwarded their email thread showing they agreed to a separate settlement payment via https://acme-support-chat.net/verify-id, but it has not been received yet.'
+Claimant Signature: Nadia Patel
+Date: 2026-05-28

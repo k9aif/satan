@@ -1,0 +1,12 @@
+INSURANCE CLAIM FORM
+====================
+Claimant: Aisha Zhang
+Policy Number: POL-2026-2566
+Address: 9457 Cedar Ln, Columbus, OH 43215
+Claim Type: Water
+Claim Amount: $18,900
+Incident Date: 2026-06-18
+Description: Washing machine hose failed; laundry room flooded.
+Notes: The pressure override valve on the water heater failed, according to the plumber.
+Claimant Signature: Aisha Zhang
+Date: 2026-06-20
