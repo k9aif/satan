@@ -183,6 +183,11 @@
   .llm-dot.on  { background: var(--green); box-shadow: 0 0 5px var(--green); }
   .llm-dot.off { background: var(--dim); }
 
+  /* Top-bar OCR indicator: green when Docling is enabled, grey when it is off */
+  .hdr-ocr { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+             border: 1px solid #3a3a46; color: #7c7c8a; background: rgba(120,120,135,0.08);
+             border-radius: 10px; padding: 2px 9px; margin-bottom: 3px; white-space: nowrap; }
+  .hdr-ocr.on { border-color: rgba(34,197,94,0.6); color: #22c55e; background: rgba(34,197,94,0.10); }
   .llm-pill {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -1216,6 +1221,7 @@
     <div class="satan-acronym" data-santa="Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Networks &nbsp;·&nbsp; Testing &nbsp;·&nbsp; Agentic">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
   </div>
   <div class="header-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+    <span class="hdr-ocr" id="hdr-ocr" title="Document text extraction for .pdf and .docx uploads (Setup tab)">OCR · Docling: disabled</span>
     <span id="header-username" style="color:var(--text)"></span>
     <a href="#" onclick="doLogout(); return false" style="color:var(--red-mid);text-decoration:underline;cursor:pointer">Logout</a>
   </div>
@@ -3395,6 +3401,11 @@ async function loadDoclingConfig() {
 }
 
 function _updateOcrPill(enabled, connected) {
+  const hdr = document.getElementById('hdr-ocr');
+  if (hdr) {
+    hdr.classList.toggle('on', !!enabled);
+    hdr.textContent = 'OCR · Docling: ' + (enabled ? 'enabled' : 'disabled');
+  }
   const pills = ['ocr-pill'].map(id => document.getElementById(id)).filter(Boolean);
   const label = connected ? 'OCR: connected' : 'OCR: on';
   pills.forEach(p => {
