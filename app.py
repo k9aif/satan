@@ -1071,25 +1071,11 @@ def test_docling_connection():
         return {"connected": False, "url": url, "error": str(exc)}
 
 
-# ── Repent API ────────────────────────────────────────────────────────────────
-
-@app.get("/api/repent/state")
-def repent_state():
-    """Tell the UI whether we are currently in SATAN mode."""
-    from k9x_satan.repent import _is_repented
-    return {"repented": _is_repented()}
-
-@app.post("/api/repent")
-def repent(undo: bool = False):
-    """Run repent.py — rename SATAN → SATAN (or back). Reloading the page applies the change."""
-    from k9x_satan.repent import run as repent_run
-    try:
-        result = repent_run(undo=undo)
-    except OSError as exc:
-        log.error("[Satan] repent failed: undo=%s error=%s", undo, exc)
-        raise HTTPException(status_code=500, detail=f"repent failed: {exc}")
-    log.info("[Satan] repent called: undo=%s changes=%d", undo, result["changes"])
-    return result
+# ── Repent ────────────────────────────────────────────────────────────────────
+# REPENT (SATAN -> SANTA) is a per-visitor easter egg handled in the browser
+# (webui/index.html, sessionStorage). There is no server endpoint: the old
+# /api/repent rewrote webui/index.html on disk, which renamed the tool for every
+# visitor. repent.py remains a command-line tool for an operator.
 
 
 if __name__ == "__main__":

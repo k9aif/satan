@@ -11,6 +11,9 @@ and switches the header to green — because SANTA is friendly.
 The original SATAN included this script for system administrators who were
 uncomfortable with the name. K9X Satan includes it for the same reason.
 
+In the web UI, REPENT is per visitor and per session (browser only). This
+script is for an operator who wants to rename the whole instance on disk.
+
 Usage:
     python repent.py          # SATAN → SANTA (repent)
     python repent.py --undo   # SANTA → SATAN (relapse)
