@@ -1061,7 +1061,34 @@
       radial-gradient(ellipse at 50% 40%, rgba(90,10,10,0.35) 0%, rgba(10,8,10,0) 55%),
       radial-gradient(ellipse at 50% 100%, rgba(60,5,5,0.4) 0%, rgba(5,4,6,0) 60%),
       #050506;
+    overflow-y: auto;
   }
+  /* The hacker at work, faint behind everything. Every lock, warning and red X on his
+     screens is k9x Shield refusing him. */
+  #login-overlay::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: url("/static/login-bg.jpg") center / cover no-repeat;
+    opacity: .30; filter: saturate(1.1) contrast(1.05);
+  }
+  #login-overlay::after {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 30%, rgba(5,4,6,.15) 0%, rgba(5,4,6,.75) 75%);
+  }
+  #login-overlay .login-page { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto;
+    padding: 9vh 22px 40px; display: flex; flex-direction: column; align-items: center; }
+  #login-overlay .login-what { margin-top: 64px; width: 100%; }
+  #login-overlay .login-what h2 { text-align: center; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.3em;
+    text-transform: uppercase; color: #c41414; margin: 0 0 6px; }
+  #login-overlay .login-what .lede { text-align: center; color: var(--muted); font-size: 0.86rem; margin: 0 auto 24px; max-width: 640px; line-height: 1.6; }
+  #login-overlay .login-cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  #login-overlay .login-card { border: 1px solid #a01818; border-radius: 4px; background: rgba(10,6,8,0.78);
+    padding: 16px 18px; box-shadow: 0 0 18px rgba(139,0,0,0.12); text-align: left; }
+  #login-overlay .login-card .tag { font: 700 0.62rem var(--font); letter-spacing: 0.18em; color: #e04545; text-transform: uppercase; }
+  #login-overlay .login-card h3 { margin: 4px 0 6px; font-size: 0.98rem; color: #f1e5e5; font-weight: 700; }
+  #login-overlay .login-card p { margin: 0; color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+  #login-overlay .login-caption { margin-top: 10px; font-size: 0.7rem; font-style: italic; color: rgba(220,180,180,0.6); }
+  #login-overlay .login-foot { margin-top: 36px; font-size: 0.72rem; color: var(--dim); text-align: center; }
+  #login-overlay .login-foot a { color: #e04545; text-decoration: none; }
   #login-overlay .login-title {
     font-size: 2.6rem;
     font-weight: 300;
@@ -1103,7 +1130,8 @@
     box-shadow: 0 0 0 2px rgba(170,21,21,0.25);
   }
 </style>
-<div id="login-overlay" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center">
+<div id="login-overlay" style="position:fixed;inset:0;z-index:9999">
+ <div class="login-page">
   <div class="login-box">
     <div class="login-k9">K9X <span style="font-size:0.6rem;font-weight:700;color:var(--dim);vertical-align:super">(Beta)</span></div>
     <div class="login-title">SANTA</div>
@@ -1115,6 +1143,38 @@
     <div id="login-error" style="color:var(--red-glow);font-size:0.78rem;margin-top:10px;display:none"></div>
     <div style="font-size:0.7rem;color:var(--dim);margin-top:18px">No password required — leave blank for a random codename. Foul names get swapped automatically.</div>
   </div>
+
+  <div class="login-what">
+    <h2>What it does</h2>
+    <p class="lede">SANTA attacks a real pipeline built on the K9-AIF framework and records whether each attack is
+      stopped, and where. An attack that gets through is not a pass: it is a gap the framework then closes.</p>
+    <div class="login-cards">
+      <div class="login-card"><div class="tag">Attack</div><h3>16 attacks, one real pipeline</h3>
+        <p>Document prompt injection, PII exfiltration, tool-argument poisoning, shadow tools, memory poisoning,
+          search poisoning, request and payload floods, phishing links, agent impersonation, paraphrased override and more,
+          fired at a Router → Orchestrator → Squad → Agent pipeline built from K9-AIF building blocks.</p></div>
+      <div class="login-card"><div class="tag">Defend</div><h3>Two gates before any agent</h3>
+        <p>k9x Shield runs 8 checks at Router ingress and 9 at Orchestrator egress. A block at either gate ends the run:
+          a poisoned payload never reaches the squad, and a poisoned answer never leaves.</p></div>
+      <div class="login-card"><div class="tag">Find</div><h3>A finding is a gap, not a partial pass</h3>
+        <p>If an attack reaches the Squad or Agent layer, both gates missed it. Each finding becomes a new check,
+          and the attack is fired again until it is blocked.</p></div>
+      <div class="login-card"><div class="tag">Screen</div><h3>Patterns first, meaning second</h3>
+        <p>Granite Guardian adds a semantic screen for what patterns cannot see, such as paraphrased overrides and
+          agent impersonation. Compare governance mode fires every attack with and without it.</p></div>
+      <div class="login-card"><div class="tag">Harden</div><h3>Proven here, promoted to the framework</h3>
+        <p>Five checks were built and proven against these attacks, then promoted into K9-AIF itself. Every application
+          built on the framework inherits them with an upgrade.</p></div>
+      <div class="login-card"><div class="tag">Track</div><h3>Attacks from published research</h3>
+        <p>New attacks follow published threat research, such as Zscaler ThreatLabz's 2026 report (phishing links,
+          agent impersonation, paraphrased override). K9X Sentinel watches for new techniques every day.</p></div>
+    </div>
+    <div class="login-foot"><div class="login-caption">Behind this page: every lock, warning and red X on his screens is k9x Shield, saying no.</div>
+      <div style="margin-top:8px">Part of the K9X ecosystem, built on the
+      <a href="https://github.com/k9aif/k9-aif-framework" target="_blank" rel="noopener">K9-AIF framework</a> ·
+      <a href="https://k9x.ai" target="_blank" rel="noopener">k9x.ai</a></div></div>
+  </div>
+ </div>
 </div>
 
 <!-- ── HEADER ── -->
