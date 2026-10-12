@@ -1135,15 +1135,17 @@
     margin-bottom: 28px;
   }
   #login-overlay .login-box {
-    background: rgba(18,18,32,0.75);
-    border: 1px solid #3a1414;
-    box-shadow: 0 0 40px rgba(139,0,0,0.18), inset 0 0 60px rgba(0,0,0,0.4);
+    background: rgba(14,10,16,0.32);
+    border: 1px solid rgba(160,24,24,0.45);
+    box-shadow: 0 0 40px rgba(139,0,0,0.18), inset 0 0 60px rgba(0,0,0,0.15);
     border-radius: 10px;
     padding: 40px 44px;
     min-width: 340px;
     text-align: center;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(1.5px);
   }
+  /* See-through box: the field follows, the button stays solid. */
+  #login-overlay input#login-username { background: rgba(5,4,8,0.45) !important; }
   #login-overlay input#login-username:focus {
     outline: none;
     border-color: #aa1515 !important;
