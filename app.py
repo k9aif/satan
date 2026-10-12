@@ -270,6 +270,7 @@ def logout(request: Request, response: Response):
 # framework re-import per worker at pool startup) is negligible for
 # long-lived, pre-warmed workers reused across many fires.
 _POOL_SIZE = int(os.environ.get("SATAN_WORKER_POOL_SIZE", "2"))
+_MAX_UPLOAD_BYTES = int(os.environ.get("SATAN_MAX_UPLOAD_BYTES", str(2 * 1024 * 1024)))  # 2 MB
 _process_pool = ProcessPoolExecutor(
     max_workers=_POOL_SIZE,
     mp_context=multiprocessing.get_context("spawn"),
@@ -701,7 +702,14 @@ async def fire(
     username = _get_username(request)
 
     if file:
-        content = await file.read()
+        # Guardrail for the service itself (not for the attack): refuse oversized
+        # uploads before reading them into memory. Real attack documents are a few KB.
+        content = await file.read(_MAX_UPLOAD_BYTES + 1)
+        if len(content) > _MAX_UPLOAD_BYTES:
+            raise HTTPException(status_code=413,
+                                detail=f"File too large: the limit is {_MAX_UPLOAD_BYTES // 1024} KB.")
+        if not content.strip():
+            raise HTTPException(status_code=400, detail="The uploaded file is empty.")
         ext = os.path.splitext(file.filename or "")[1].lower()
 
         if ext in (".txt", ".md", ""):
