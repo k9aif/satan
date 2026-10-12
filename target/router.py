@@ -3,12 +3,13 @@
 """
 K9x Satan — DocumentRouter
 
-Extends BaseRouter. Applies the 8-check ingress Shield (RequestFrequencyCheck,
-InputSizeCheck, PromptInjectionCheck, FieldAnomalyCheck, MemoryPoisoningCheck,
-ToolArgumentCheck, ToolAuthorizationCheck, PIIRequestCheck) then, if the pattern
+Extends BaseRouter. Applies the 9-check ingress Shield (RequestFrequencyCheck,
+InputSizeCheck, PromptInjectionCheck, PaymentDiversionCheck, FieldAnomalyCheck,
+MemoryPoisoningCheck, ToolArgumentCheck, ToolAuthorizationCheck, PIIRequestCheck)
+then, if the pattern
 chain didn't already block, an optional semantic governance check (Guardian,
 if configured), then delegates to the registered DocumentOrchestrator. All
-eight pattern checks are framework OOB checks
+nine pattern checks are framework OOB checks
 (k9_aif_abb.k9_security.vulnerability.checks) except FieldAnomalyCheck, which
 stays Satan-local — its pattern set is tuned to this project's own
 insurance-claim test corpus and was deliberately not promoted into the
@@ -39,6 +40,7 @@ from k9_aif_abb.k9_security.vulnerability.checks.memory_poisoning_check import M
 from k9_aif_abb.k9_security.vulnerability.checks.request_frequency_check import RequestFrequencyCheck
 from k9_aif_abb.k9_security.vulnerability.checks.tool_authorization_check import ToolAuthorizationCheck
 from k9_aif_abb.k9_security.vulnerability.checks.pii_request_check import PIIRequestCheck
+from k9_aif_abb.k9_security.vulnerability.checks.payment_diversion_check import PaymentDiversionCheck
 from k9x_satan.target.field_anomaly_check import FieldAnomalyCheck
 from k9x_satan.target._check_config import security_check_config
 from k9x_satan.target.squad import _make_governance
@@ -70,6 +72,9 @@ class DocumentRouter(BaseRouter):
             .add(RequestFrequencyCheck(sec_cfg))
             .add(InputSizeCheck(self.config))
             .add(PromptInjectionCheck(self.config))
+            # Business-language steering (k9-aif 1.16.1): payment redirection +
+            # review bypass + concealment, any two block.
+            .add(PaymentDiversionCheck({}))
             .add(FieldAnomalyCheck(self.config))
             .add(MemoryPoisoningCheck(sec_cfg))
             # ToolArgumentCheck/ToolAuthorizationCheck inspect the tool_name /

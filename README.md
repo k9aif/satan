@@ -115,7 +115,7 @@ poisoning, vector/embedding attacks (no RAG in this target), misinformation/hall
 ```
 k9x_satan/
 ├── target/               ← the pipeline under test (components extending K9-AIF ABBs)
-│   ├── router.py              DocumentRouter — ingress Shield (8 checks) + optional Guardian
+│   ├── router.py              DocumentRouter — ingress Shield (9 checks) + optional Guardian
 │   ├── orchestrator.py        DocumentOrchestrator — egress Shield (8 checks; 2 duplicated from ingress)
 │   ├── squad.py               DocumentProcessingSquad + governance selection
 │   ├── agents.py               DocumentExtractionAgent, AuditAgent
