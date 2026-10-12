@@ -724,8 +724,9 @@ async def fire(
             if not _docling_config["enabled"]:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"{ext} files require Docling OCR — enable it in "
-                           f"Setup → Document Extraction before uploading this file type.",
+                    detail=f"{ext} files need Docling to extract their text, and Docling is off. "
+                           f"Save the document as Markdown (.md) and upload that: plain text goes straight "
+                           f"to the pipeline. Or enable Docling in Setup → Document Extraction.",
                 )
             from k9x_satan.target.extractor import DoclingExtractor
             extractor = DoclingExtractor(config={"docling": _docling_config})
