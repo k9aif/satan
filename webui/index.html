@@ -1077,14 +1077,25 @@
   #login-overlay .login-page { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto;
     padding: 7vh 22px 40px; display: flex; flex-direction: column; align-items: center; }
   /* Top: the image, clear, on the left; the login on the right. */
-  #login-overlay .login-hero { width: 100%; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
-    gap: 40px; align-items: center; }
-  #login-overlay .login-art img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid #5a1212;
-    box-shadow: 0 0 60px rgba(139,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.6); }
-  #login-overlay .login-art .login-caption { text-align: center; }
+  #login-overlay .login-hero { width: 100%; }
+  /* The image at the left edge of the window, large and frameless: masked so it dissolves
+     into the background, screen-blended so its red glow merges with the faint copy behind. */
+  #login-overlay .login-art { position: absolute; top: 0; left: 0; width: 66vw; z-index: 1; pointer-events: none; }
+  #login-overlay .login-art img { display: block; width: 100%; height: auto; mix-blend-mode: screen;
+    -webkit-mask-image: radial-gradient(ellipse 72% 70% at 40% 46%, #000 48%, rgba(0,0,0,.5) 70%, transparent 96%);
+            mask-image: radial-gradient(ellipse 72% 70% at 40% 46%, #000 48%, rgba(0,0,0,.5) 70%, transparent 96%); }
+  #login-overlay .login-art .login-caption { position: absolute; left: 0; right: 18%; bottom: 7%; text-align: center; }
+  #login-overlay .login-page { z-index: 2; }
+  #login-overlay .login-hero { display: flex; justify-content: flex-end; align-items: center;
+    min-height: calc(66vw * 784 / 1168 * 0.9 - 7vh); }
+  #login-overlay .login-hero .login-box { width: 440px; }
+  @media (max-width: 900px) {
+    #login-overlay .login-art { position: relative; width: 100%; }
+    #login-overlay .login-hero { min-height: 0; justify-content: center; }
+    #login-overlay .login-hero .login-box { width: 100%; }
+  }
   #login-overlay .login-hero .login-box { min-width: 0; }
   #login-overlay .login-hero .login-tagline { letter-spacing: 0.07em; font-size: 0.68rem; white-space: nowrap; }
-  @media (max-width: 900px) { #login-overlay .login-hero { grid-template-columns: 1fr; gap: 24px; } }
   #login-overlay .login-what { margin-top: 64px; width: 100%; }
   #login-overlay .login-what h2 { text-align: center; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.3em;
     text-transform: uppercase; color: #c41414; margin: 0 0 6px; }
@@ -1140,12 +1151,12 @@
   }
 </style>
 <div id="login-overlay" style="position:fixed;inset:0;z-index:9999">
- <div class="login-page">
-  <div class="login-hero">
   <div class="login-art">
     <img src="/static/login-bg.jpg" alt="A hooded hacker at his screens; every lock, warning and red X on them is k9x Shield blocking him">
     <div class="login-caption">Every lock, warning and red X on his screens is k9x Shield, saying no.</div>
   </div>
+ <div class="login-page">
+  <div class="login-hero">
   <div class="login-box">
     <div class="login-k9">K9X <span style="font-size:0.6rem;font-weight:700;color:var(--dim);vertical-align:super">(Beta)</span></div>
     <div class="login-title">SATAN</div>
