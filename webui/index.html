@@ -188,6 +188,18 @@
              border: 1px solid #3a3a46; color: #7c7c8a; background: rgba(120,120,135,0.08);
              border-radius: 10px; padding: 2px 9px; margin-bottom: 3px; white-space: nowrap; }
   .hdr-ocr.on { border-color: rgba(34,197,94,0.6); color: #22c55e; background: rgba(34,197,94,0.10); }
+  .hdr-status { display: flex; gap: 8px; align-items: center; margin-bottom: 3px; }
+  .hdr-status .hdr-ocr { margin-bottom: 0; }
+  /* Granite Guardian switch: per visitor, sent with each fire */
+  .hdr-guardian { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; font-size: 0.62rem; font-weight: 700;
+                  letter-spacing: 0.06em; text-transform: uppercase; color: #7c7c8a; border: 1px solid #3a3a46;
+                  border-radius: 10px; padding: 2px 9px 2px 4px; background: rgba(120,120,135,0.08); white-space: nowrap; }
+  .hdr-guardian input { display: none; }
+  .hdr-guardian .sw { width: 24px; height: 13px; border-radius: 7px; background: #3a3a46; position: relative; transition: background .15s; }
+  .hdr-guardian .knob { position: absolute; top: 2px; left: 2px; width: 9px; height: 9px; border-radius: 50%; background: #9a9aa8; transition: left .15s, background .15s; }
+  .hdr-guardian.on { color: #22c55e; border-color: rgba(34,197,94,0.6); background: rgba(34,197,94,0.10); }
+  .hdr-guardian.on .sw { background: rgba(34,197,94,0.45); }
+  .hdr-guardian.on .knob { left: 13px; background: #22c55e; }
   .llm-pill {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -1221,7 +1233,14 @@
     <div class="satan-acronym" data-santa="Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Networks &nbsp;·&nbsp; Testing &nbsp;·&nbsp; Agentic">Security &nbsp;·&nbsp; Analysis &nbsp;·&nbsp; Tool &nbsp;for&nbsp; Agentic &nbsp;·&nbsp; Networks</div>
   </div>
   <div class="header-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-    <span class="hdr-ocr" id="hdr-ocr" title="Document text extraction for .pdf and .docx uploads (Setup tab)">OCR · Docling: disabled</span>
+    <div class="hdr-status">
+      <label class="hdr-guardian" title="Off: k9x Shield's pattern checks only (milliseconds). On: Granite Guardian also screens meaning, at the Router and around every agent (about a minute per fire). Applies to your fires only.">
+        <input type="checkbox" id="guardian-toggle" onchange="setGuardian(this.checked)">
+        <span class="sw"><span class="knob"></span></span>
+        <span>Granite Guardian: <b id="guardian-state">OFF</b></span>
+      </label>
+      <span class="hdr-ocr" id="hdr-ocr" title="Document text extraction for .pdf and .docx uploads (Setup tab)">OCR · Docling: disabled</span>
+    </div>
     <span id="header-username" style="color:var(--text)"></span>
     <a href="#" onclick="doLogout(); return false" style="color:var(--red-mid);text-decoration:underline;cursor:pointer">Logout</a>
   </div>
@@ -2534,6 +2553,7 @@ async function fireAttack() {
   }
 
   const fd = new FormData();
+  fd.append('governance', guardianOn() ? 'guardian' : 'noop');
   const isBinaryUpload = _selectedFile && /\.(pdf|docx)$/i.test(_selectedFile.name || '');
   if (_selectedFile) {
     fd.append('file', _selectedFile);
@@ -2544,7 +2564,7 @@ async function fireAttack() {
     );
   } else {
     fd.append('corpus_key', _selectedCorpus);
-    _showWorking('Working… firing payload.');
+    _showWorking(guardianOn() ? 'Working… Granite Guardian is screening (about a minute).' : 'Working… firing payload.');
   }
 
   const controller = new AbortController();
@@ -3399,6 +3419,22 @@ async function loadDoclingConfig() {
     _updateOcrPill(cfg.enabled, cfg.connected);
   } catch {}
 }
+
+// ── Granite Guardian switch (per visitor; sent with each fire, never changes the server) ──
+const GUARDIAN_KEY = 'k9x_satan_guardian';
+function guardianOn() { try { return localStorage.getItem(GUARDIAN_KEY) === '1'; } catch { return false; } }
+function setGuardian(on) {
+  try { on ? localStorage.setItem(GUARDIAN_KEY, '1') : localStorage.removeItem(GUARDIAN_KEY); } catch {}
+  paintGuardian();
+}
+function paintGuardian() {
+  const on = guardianOn();
+  const box = document.getElementById('guardian-toggle');
+  if (box) { box.checked = on; box.closest('.hdr-guardian').classList.toggle('on', on); }
+  const st = document.getElementById('guardian-state');
+  if (st) st.textContent = on ? 'ON' : 'OFF';
+}
+paintGuardian();
 
 function _updateOcrPill(enabled, connected) {
   const hdr = document.getElementById('hdr-ocr');

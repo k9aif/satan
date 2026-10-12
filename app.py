@@ -691,6 +691,7 @@ async def fire(
     request: Request,
     corpus_key: Optional[str] = Form(default=None),
     file:        Optional[UploadFile] = File(default=None),
+    governance:  Optional[str] = Form(default=None),
 ):
     """
     Fire an attack at the target pipeline.
@@ -752,7 +753,12 @@ async def fire(
 
     from k9x_satan.target.pipeline import load_config
     cfg = load_config()
-    cfg.setdefault("governance", {})["provider"] = _governance_config["provider"]
+    # The visitor's Granite Guardian switch: this one request only, never the server's
+    # setting (the live instance stays locked; other visitors are unaffected).
+    if governance not in (None, "", "noop", "guardian"):
+        raise HTTPException(status_code=400, detail="governance must be noop or guardian")
+    governance_provider = governance or _governance_config["provider"]
+    cfg.setdefault("governance", {})["provider"] = governance_provider
     cfg.setdefault("docling", {}).update(_docling_config)
     cfg = _apply_llm_overrides(cfg)
 
@@ -762,7 +768,7 @@ async def fire(
     result["document_size"]       = len(document_text)
     result["document_text"]       = document_text
     result["is_evil"]             = CORPUS[corpus_key]["evil"] if corpus_key and corpus_key in CORPUS else True
-    result["governance_provider"] = _governance_config["provider"]
+    result["governance_provider"] = governance_provider
     result["docling_enabled"]     = _docling_config["enabled"]
     result["username"]            = username
     result["timestamp"]           = time.time()

@@ -55,10 +55,10 @@ case "$cmd" in
     # .env (OLLAMA_BASE_URL etc.) as written; the explicit -e flags below take precedence over it.
     ENV_ARGS=()
     [ -f "$PROJECT_DIR/.env" ] && ENV_ARGS=(--env-file "$PROJECT_DIR/.env") || echo "Note: no .env -- Ollama defaults to localhost, which inside the container is the container itself."
-    # Governance: Granite Guardian on by default (semantic screen after Shield's pattern
-    # checks, at the Router and around every agent); SATAN_GOVERNANCE in .env overrides.
+    # Governance default: Shield's pattern checks only (milliseconds). Visitors switch
+    # Granite Guardian on per fire in the top bar; SATAN_GOVERNANCE in .env overrides.
     GOVERNANCE="$( { grep -E '^SATAN_GOVERNANCE=' "$PROJECT_DIR/.env" 2>/dev/null || true; } | tail -1 | cut -d= -f2- )"
-    GOVERNANCE="${GOVERNANCE:-guardian}"
+    GOVERNANCE="${GOVERNANCE:-noop}"
     sudo podman run -d --name "$CONTAINER" \
       --restart=always \
       --memory=16g --cpus=8 \
@@ -76,7 +76,8 @@ case "$cmd" in
     echo "  Web UI:  http://127.0.0.1:6660/  (localhost-only — reached via"
     echo "           the Cloudflare Tunnel at satan.k9x.ai, not the LAN IP)"
     echo "  Health:  http://127.0.0.1:6660/api/health"
-    echo "  Governance: $GOVERNANCE (Guardian needs: ollama pull granite4.1-guardian:8b)"
+    echo "  Governance default: $GOVERNANCE (top-bar switch turns Granite Guardian on per fire;"
+    echo "  it needs: ollama pull granite4.1-guardian:8b)"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     ;;
 
