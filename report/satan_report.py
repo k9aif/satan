@@ -12,9 +12,12 @@ if _ROOT not in sys.path:
 
 from k9_aif_abb.k9_security.attacks.base_attack import AttackResult, AttackOutcome, PenetrationDepth
 
+# FLAGGED only ever comes from attacks/_fire.py: the target was unreachable or
+# answered inconclusively (auth, wrong path, 5xx). It is not a containment
+# result, so it is neither a ✓ nor counted as contained.
 OUTCOME_ICON = {
     AttackOutcome.BLOCKED: "✓",
-    AttackOutcome.FLAGGED: "✓",
+    AttackOutcome.FLAGGED: "?",
     AttackOutcome.PASSED:  "✗",
 }
 
@@ -53,15 +56,25 @@ def print_report(results: List[AttackResult]) -> None:
         print(f"{r.attack_name:<35} {r.outcome.value:<10} {depth_label:<25} {icon}")
         if r.finding:
             print(f"  FINDING: {r.finding}")
+        if r.outcome == AttackOutcome.FLAGGED and r.notes:
+            print(f"  INCONCLUSIVE: {r.notes}")
+        elif r.notes and "Not sent to this target" in r.notes:
+            print(f"  NOTE: {r.notes[r.notes.index('Not sent to this target'):]}")
 
     print("─" * 78)
-    blocked  = sum(1 for r in results if r.shield_held)
-    findings = sum(1 for r in results if not r.shield_held)
-    print(f"\n{blocked}/{len(results)} attacks contained  |  {findings} finding(s)")
-    if findings == 0:
-        print("Shield held on all attack surfaces.")
+    blocked      = sum(1 for r in results if r.outcome == AttackOutcome.BLOCKED)
+    findings     = sum(1 for r in results if r.outcome == AttackOutcome.PASSED)
+    inconclusive = sum(1 for r in results if r.outcome == AttackOutcome.FLAGGED)
+    summary = f"\n{blocked}/{len(results)} attacks contained  |  {findings} finding(s)"
+    if inconclusive:
+        summary += f"  |  {inconclusive} inconclusive"
+    print(summary)
+    if findings:
+        print("ACTION REQUIRED: review findings above and harden the application's controls.")
+    elif inconclusive:
+        print("NOT VERIFIED: some attacks got no usable answer; check the target profile and re-run.")
     else:
-        print("ACTION REQUIRED: review findings above and harden K9X Shield.")
+        print("Shield held on all attack surfaces.")
     print()
 
 

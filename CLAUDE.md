@@ -51,7 +51,10 @@ k9x_satan/
 │   ├── guardian_governance.py  GuardianGovernance(BaseGovernance) — IBM Granite Guardian, fail-closed by default
 │   └── pipeline.py         wiring: load config → extractor.enrich() → router.route()
 ├── attacks/            ← BaseAttack subclasses (the red team) — 16 implemented (threatlabz_2026_attacks.py: phishing_link, agent_impersonation, paraphrased_override)
-│   └── _fire.py             shared POST-to-/api/attack/fire helper (FLAGGED on connection error, never fake BLOCKED)
+│   ├── _fire.py             shared fire() helper: sends through a TargetProfile (FLAGGED on error or unreadable answer, never fake BLOCKED)
+│   └── _target.py           TargetProfile: renders the request from a YAML profile, applies the one-sided outcome rules
+├── targets/            ← target profiles: satan_sample.yaml (default target = the sample app), example_chat_app.yaml
+├── docs/target-profiles.md ← design: point Satan at any running application (phases 1-4)
 ├── corpus/             ← malicious document / payload samples
 ├── fake_search/        ← lightweight server returning poisoned search results (port 9999)
 ├── runner/             ← attack_registry.py + satan_runner.py — CLI harness (--compare-governance mode)
@@ -146,6 +149,8 @@ python -m k9x_satan.runner.satan_runner --target http://localhost:6660 --suite f
 
 Shares the `k9-aif-framework/.venv` virtualenv — `run.sh` will error out if that venv doesn't exist yet. Attacks POST JSON to `/api/attack/fire` (distinct from the webui's multipart `/api/fire`) — both call the same `run_pipeline()`.
 
+**Target profiles (decoupling).** The attacking side (`attacks/`, `runner/`, `report/`) knows only a `TargetProfile` (`attacks/_target.py`, design in `docs/target-profiles.md`). The sample application is the default profile `targets/satan_sample.yaml`, going through the same adapter as any outside application; `--target <url>` is that profile at a URL, `--profile <yaml>` is any running application. Keep it that way: never import `target/` from the attacking side (only `runner/benign_runner.py` does, on purpose), and never special-case the sample in `_fire.py`. Outcome rules are one-sided: `blocked_when` match → BLOCKED, plain 2xx → finding, anything else → FLAGGED (inconclusive). FLAGGED is never counted as contained in the report. Tests: `pytest k9x_satan/tests` from `k9x-ecosystem/`.
+
 ## Architecture tab & diagrams
 
 `webui/index.html` → Architecture tab is the primary documentation surface for *why* the framework holds — it walks the Zscaler ThreatLabz four-vector mapping, the Phase 0–3 check execution sequence, and the ABB/Satan-local class hierarchy image.
@@ -161,7 +166,7 @@ Shares the `k9-aif-framework/.venv` virtualenv — `run.sh` will error out if th
 ## Working in this repo — conventions to preserve
 
 - Every new Shield check is a `BaseVulnerabilityCheck` subclass added to the ingress or egress `VulnerabilityChain` in `target/router.py` / `target/orchestrator.py` — never inline conditionals in the Router/Orchestrator.
-- Every new attack is a `BaseAttack` subclass registered in `runner/attack_registry.py`, fired via `attacks/_fire.py`'s `fire()` helper — never a one-off script, never a raw `requests.post()` that could let a connection error get misreported as BLOCKED.
+- Every new attack is a `BaseAttack` subclass registered in `runner/attack_registry.py`, fired via `attacks/_fire.py`'s `fire()` helper with the target passed through unchanged — never a one-off script, never a raw `requests.post()` that could let a connection error get misreported as BLOCKED, and never a payload field the target can only receive from Satan's own sample (map it in the profile instead).
 - Keep the Router/Orchestrator/Squad/Agent decoupling from the main framework CLAUDE.md: Router only knows Orchestrators, Orchestrator only knows Squads, Squad only knows Agents.
 - `NoopGovernance` is the dev-mode default (passthrough). `GuardianGovernance` and `ShieldGovernance` are opt-in via Setup tab / `config.yaml` `governance.provider: guardian|shield`. Guardian requires `ollama pull granite4.1-guardian:8b`.
 - Any governance backend that can BLOCK must set `payload["_guardian_blocked"] = True` (or raise `PermissionError`, normalized to that flag by `agents.py`'s `_pre()`) — `execute()` checks this flag and short-circuits before the LLM call. A governance hook that only annotates the payload without either mechanism is decorative, not enforced — this was a real bug here (see git history) and is easy to reintroduce in a new agent.

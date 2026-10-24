@@ -1,0 +1,37 @@
+# Example: a chat-style application built on K9-AIF (or anything else that speaks HTTP).
+#
+# Copy, edit, and run:
+#   export TARGET_TOKEN=...
+#   python -m k9x_satan.runner.satan_runner --profile targets/my_app.yaml
+#
+# Only attack systems you own or have written permission to test.
+
+name: ABC Corp claims assistant
+authorized: false                        # set to true once you are authorized to test this system
+base_url: https://claims.example.internal
+headers:
+  Authorization: "Bearer ${TARGET_TOKEN}"   # read from the environment, never stored here
+timeout: 60
+
+request:
+  method: POST
+  path: /api/chat
+  format: json                           # json | multipart
+  body:
+    message: "{{attack_text}}"
+    session_id: "{{session_id}}"
+  # For a document-upload endpoint instead:
+  #   path: /api/upload
+  #   format: multipart
+  #   file_field: document               # receives {{attack_text}} as a file named {{filename}}
+  #   body: { session_id: "{{session_id}}" }
+
+response:
+  blocked_when:                          # any rule matching means BLOCKED
+    - status_code: [403, 422, 429]
+    - json: { path: blocked, equals: true }
+    # - body_contains: ["request was blocked"]
+  depth:                                 # optional: router | orchestrator | agent
+    header: X-K9-Blocked-At
+  blocked_by:                            # optional: which control stopped it
+    json: detail.check

@@ -129,7 +129,11 @@ k9x_satan/
 │   ├── _check_config.py        Flattens config.yaml's security:/cache: blocks into the
 │   │                           scoped config shape framework OOB checks expect
 │   └── extractor.py            DoclingExtractor — pre-Shield field extraction
-├── attacks/               ← BaseAttack subclasses (the red team) — 13 implemented
+├── attacks/               ← BaseAttack subclasses (the red team) — 16 implemented
+│   ├── _fire.py               sends every attack through a target profile
+│   └── _target.py             TargetProfile: request shaping + outcome rules
+├── targets/               ← target profiles: satan_sample.yaml (default), example_chat_app.yaml
+├── docs/target-profiles.md ← design: attacking your own running application
 ├── corpus/                ← malicious document and payload samples
 ├── fake_search/           ← lightweight server returning poisoned search results
 ├── runner/                ← sends attacks through a real K9-AIF pipeline
@@ -143,9 +147,44 @@ k9x_satan/
 
 ```bash
 ./run.sh                                                                 # dashboard on :6660
-python -m k9x_satan.runner.satan_runner --target http://localhost:6660 --suite full
+python -m k9x_satan.runner.satan_runner --suite full                     # the sample application on :6660
 python -m k9x_satan.runner.satan_runner --target http://localhost:6660 --suite full --compare-governance
 ```
+
+### Attacking your own application
+
+Satan attacks any running application a **target profile** describes: where to send each
+attack, how to shape the request, and how to read the answer. The sample application is just
+the default profile (`targets/satan_sample.yaml`). Copy `targets/example_chat_app.yaml`, point
+it at your application's endpoint in a non-production environment, and run:
+
+```bash
+export TARGET_TOKEN=...                   # any ${VAR} in the profile comes from the environment
+python -m k9x_satan.runner.satan_runner --profile targets/my_app.yaml --suite full
+```
+
+```yaml
+name: ABC Corp claims assistant
+authorized: true                          # you own this system or have written permission to test it
+base_url: https://claims.example.internal
+headers: { Authorization: "Bearer ${TARGET_TOKEN}" }
+request:
+  path: /api/chat
+  format: json                            # json | multipart (file upload)
+  body: { message: "{{attack_text}}", session_id: "{{session_id}}" }
+response:
+  blocked_when:                           # any rule matching means BLOCKED
+    - status_code: [403, 422, 429]
+    - json: { path: blocked, equals: true }
+  depth: { header: X-K9-Blocked-At }      # optional: how far the attack got
+```
+
+Every payload is malicious, so the rules are one-sided: a matching `blocked_when` rule is
+**BLOCKED**, an ordinary 2xx answer is a **finding**, and anything else (401, 404, 5xx,
+unreachable) is **inconclusive**, never counted as contained. When the profile does not send a
+field an attack relies on (for example `tool_name` to a chat endpoint), the report says that
+control was not tested. Exit code: 1 on any finding, 2 if some results were inconclusive, 0
+otherwise. Full design and phases: [docs/target-profiles.md](docs/target-profiles.md).
 
 ### Output
 
@@ -174,8 +213,9 @@ K9x Satan — Attack Report
 ## Adding a New Attack
 
 1. Create `attacks/my_attack.py` extending `BaseAttack` (`k9_aif_abb.k9_security.attacks.base_attack`)
-2. Fire via the shared `attacks/_fire.py` helper — it POSTs to `/api/attack/fire` and
-   correctly reports connection failures as `FLAGGED` (inconclusive), never a fabricated `BLOCKED`
+2. Fire via the shared `attacks/_fire.py` helper and pass the target through unchanged — it
+   sends through the target profile and reports connection failures and unreadable answers as
+   `FLAGGED` (inconclusive), never a fabricated `BLOCKED`
 3. Add malicious payload to `corpus/` if document-based
 4. Register in `runner/attack_registry.py`
 5. Run: `python -m k9x_satan.runner.satan_runner --attack my_attack --target http://localhost:6660`

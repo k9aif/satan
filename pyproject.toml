@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "k9x-satan"
-version = "0.4.1"
+version = "0.5.0"
 description = "K9X Satan — adversarial red-team harness for K9-AIF. Fires structured attacks at a live K9-AIF pipeline and proves K9X Shield containment."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -52,6 +52,8 @@ k9x_satan = [
     "webui/*.html",
     "corpus/*",
     "config/*.yaml",
+    "targets/*.yaml",
+    "docs/*.md",
     "diagrams/*.puml",
     "diagrams/*.png",
     "diagrams/*.sh",

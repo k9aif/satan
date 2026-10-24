@@ -9,19 +9,28 @@ attack: BaseAttack._classify_outcome()'s default falls back to BLOCKED for any
 unrecognized response status, which would misreport a connection failure as
 "Shield held." Every attack in this package routes through fire() so a genuine
 network/HTTP error is reported as FLAGGED (inconclusive) instead.
+
+The target is a TargetProfile (attacks/_target.py): the attack classes pass it
+through unchanged, so all of them can attack any running application the
+profile describes. A plain URL string means Satan's own sample application at
+that URL (targets/satan_sample.yaml), which keeps `--target <url>` working.
 """
 
-from typing import Any, Dict, Optional, Tuple
-
-import requests
+from typing import Any, Dict, Optional, Tuple, Union
 
 from k9_aif_abb.k9_security.attacks.base_attack import (
     AttackResult, AttackOutcome, AttackSurface, PenetrationDepth,
 )
+from k9x_satan.attacks._target import TargetProfile
+
+
+def as_target(target: Union[str, TargetProfile]) -> TargetProfile:
+    """A profile as-is; a URL string → the sample application's profile at that URL."""
+    return target if isinstance(target, TargetProfile) else TargetProfile.sample(base_url=target)
 
 
 def fire(
-    target_url: str,
+    target: Union[str, TargetProfile],
     payload: Dict[str, Any],
     attack_name: str,
     surface: AttackSurface,
@@ -29,35 +38,33 @@ def fire(
     governance_mode: Optional[str] = None,
 ) -> Tuple[Optional[Dict[str, Any]], Optional[AttackResult]]:
     """
-    POST payload to {target_url}/api/attack/fire.
+    Send payload to the target the profile describes and normalize its answer.
 
     governance_mode, when set ("noop" | "guardian" | "shield"), overrides the
     server's currently configured governance provider for this one request
     only — lets a caller (satan_runner.py --compare-governance) fire the same
     attack in "deterministic checks only" vs "deterministic + Guardian" mode
-    without mutating global server state between calls.
+    without mutating global server state between calls. Only sent to targets
+    whose profile sets supports_governance_override (the sample application).
 
     Returns (response_dict, None) on success, or (None, AttackResult) with
-    outcome=FLAGGED if the request itself failed — a connection error is never
-    silently reported as BLOCKED.
+    outcome=FLAGGED if the request failed or the answer was inconclusive
+    (auth, wrong path, 5xx) — never silently reported as BLOCKED. `timeout` is
+    kept for callers; the profile's own timeout applies.
     """
-    body = dict(payload)
-    if governance_mode:
-        body["_governance_override"] = governance_mode
-
+    profile = as_target(target)
     try:
-        resp = requests.post(f"{target_url}/api/attack/fire", json=body, timeout=timeout)
-        resp.raise_for_status()
-        return resp.json(), None
-    except Exception as exc:
+        resp = profile.send(payload, governance_mode=governance_mode)
+        return profile.interpret(resp), None
+    except Exception as exc:  # TargetInconclusive, connection errors, timeouts
         return None, AttackResult(
             attack_name       = attack_name,
             surface           = surface,
             outcome           = AttackOutcome.FLAGGED,
             penetration_depth = PenetrationDepth.UNKNOWN,
             payload_sent      = payload,
-            response_received = {"error": str(exc)},
-            notes             = f"Target unreachable ({exc}) — not a verified containment result",
+            response_received = {"error": str(exc), "target": profile.name},
+            notes             = f"Inconclusive against {profile.name}: {exc} — not a verified containment result",
         )
 
 

@@ -1,0 +1,26 @@
+# K9X SATAN sample application: the default target.
+#
+# The same target-profile format any running application uses (docs/target-profiles.md).
+# The sample's /api/attack/fire takes the attack payload unchanged and reports where the
+# pipeline stopped it, so the body is the whole payload and depth comes back in the answer.
+# Copy this file to describe your own application.
+
+name: K9X SATAN sample application
+authorized: true                         # Satan's own pipeline, running locally
+base_url: http://localhost:6660          # overridden by --target <url>
+timeout: 30
+
+request:
+  method: POST
+  path: /api/attack/fire
+  format: json
+  body: "{{payload}}"
+
+response:
+  blocked_when:
+    - json: { path: status, equals: blocked }
+  depth:
+    json: penetration_depth
+  blocked_by:
+    json: blocked_by
+  supports_governance_override: true     # honours _governance_override (--compare-governance)
