@@ -35,7 +35,7 @@ def _compose_docling_url() -> str:
 
     Accepts either:
       DOCLING_URL=http://host:5001          (full URL — used as-is)
-      DOCLING_URL=192.168.1.98 + DOCLING_PORT=5001  (host + port — composed)
+      DOCLING_URL=<docling-host> + DOCLING_PORT=5001  (host + port — composed)
     """
     raw = os.environ.get("DOCLING_URL", "")
     if raw.startswith("http"):
