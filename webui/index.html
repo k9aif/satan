@@ -997,6 +997,7 @@
   .doc-list { margin: 8px 0 4px 20px; padding: 0; }
   .doc-list li { font-size: 0.88rem; color: var(--muted); line-height: 1.9; list-style: disc; }
   .doc-list li::marker { color: var(--red-mid); }
+  ol.doc-list li { list-style: decimal; }
 
   /* ── README TAB (marked.js-rendered markdown) ── */
   .readme-body { line-height: 1.7; color: var(--muted); }
@@ -2262,6 +2263,34 @@ k9x-satan --bg     # or run it in the background</pre>
           fires every attack twice — deterministic-only, then deterministic + Guardian — and reports which findings
           Guardian closed. A regression (Guardian making a previously-contained attack pass) is flagged as a bug, not a result.
         </div>
+      </div>
+
+      <div class="card">
+        <div class="doc-h4">Attack Your Own Application</div>
+        <p class="doc-p" style="margin-top:8px">This site attacks Satan's own sample application. To test an application you built on K9-AIF (or anything else that speaks HTTP), run Satan yourself and point it at your application with a <strong style="color:var(--text)">target profile</strong>: a small YAML file that says where to send each attack, how to shape the request, and how to read the answer. The sample application here is just the default profile; your application is another one.</p>
+        <ol class="doc-list">
+          <li>Install: <code>pip install k9x-satan</code></li>
+          <li>Copy <code>targets/example_chat_app.yaml</code> and point it at your application's endpoint in a <strong style="color:var(--text)">non-production</strong> environment.</li>
+          <li>Run: <code>python -m k9x_satan.runner.satan_runner --profile my_app.yaml --suite full</code></li>
+        </ol>
+<pre style="margin-top:10px;font-size:0.76rem;line-height:1.6;overflow-x:auto;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px">name: ABC Corp claims assistant
+authorized: true                     # you own this system or may test it
+base_url: https://claims.example.internal
+headers: { Authorization: "Bearer ${TARGET_TOKEN}" }   # from the environment
+request:
+  path: /api/chat
+  format: json                       # json | multipart (file upload)
+  body: { message: "{{attack_text}}", session_id: "{{session_id}}" }
+response:
+  blocked_when:                      # any rule matching means BLOCKED
+    - status_code: [403, 422, 429]
+    - json: { path: blocked, equals: true }
+  depth: { header: X-K9-Blocked-At } # optional: how far the attack got</pre>
+        <p class="doc-p" style="margin-top:10px">Every attack is malicious, so the rules are one-sided: a matching <code>blocked_when</code> rule is <strong style="color:var(--text)">BLOCKED</strong>, an ordinary answer is a <strong style="color:var(--text)">finding</strong>, and anything else (401, 404, 5xx, unreachable) is <strong style="color:var(--text)">inconclusive</strong>, never counted as contained. If your profile doesn't send a field an attack relies on, such as a tool name to a chat endpoint, the report says that control was not tested.</p>
+        <div style="margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--red-mid) 6%,transparent);border-left:3px solid var(--red-mid);font-size:0.78rem;color:var(--muted);line-height:1.7">
+          <strong style="color:var(--text)">Why not from this page?</strong> A public page that fires attacks at any address you type would be an attack tool against other people's servers. Pointing Satan at your application stays on your own machine until the hosted version has proof of ownership and a job queue. Only attack systems you own or have written permission to test.
+        </div>
+        <p class="doc-p" style="margin-top:10px">Full format and roadmap: <a href="https://github.com/k9aif/satan/blob/main/docs/target-profiles.md" target="_blank" rel="noopener" style="color:var(--red-mid)">docs/target-profiles.md</a>.</p>
       </div>
 
       <div class="card">
