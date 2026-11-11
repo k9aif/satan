@@ -109,8 +109,19 @@ class DocumentOrchestrator(BaseOrchestrator):
             agents_reached = ["DocumentExtractionAgent", "AuditAgent"]
             squad_output   = squad_results.get("DocumentProcessingSquad", {})
         except Exception as exc:
+            # A failed squad is a recorded error, never "completed": before this fix the error dict
+            # went on to the egress chain, which passed it, and the run was reported as completed
+            # (counted as an attack that got through).
             log.error("[DocumentOrchestrator] squad failed: %s", exc)
-            squad_output = {"status": "squad_error", "error": str(exc)}
+            return {
+                "status":            "error",
+                "error":             f"{type(exc).__name__}: {str(exc)[:300]}",
+                "penetration_depth": "agent",
+                "squad_reached":     True,
+                "agents_reached":    agents_reached,
+                "shield_held":       False,
+                "egress_checks":     [],
+            }
 
         # An agent may have short-circuited itself via governance (Guardian/
         # ShieldGovernance pre_process BLOCK) before ever calling the LLM.

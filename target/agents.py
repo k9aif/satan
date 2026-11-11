@@ -8,7 +8,7 @@ Concrete agent classes extending BaseAgent with:
   - governance.pre_process()    sanitise/validate input before LLM
   - llm_invoke()                actual LLM call (falls back gracefully if unavailable)
   - governance.post_process()   validate/redact output after LLM
-  - publish_event()             audit trail
+  - notify_monitor()            audit trail (monitor + log)
 
 LLM calls will fail gracefully if no inference config is wired — Satan's
 primary test is the Shield chain, not inference quality.
@@ -79,7 +79,7 @@ class DocumentExtractionAgent(BaseAgent):
         if payload.get("_guardian_blocked"):
             finding = payload.get("_guardian_finding", "blocked by governance pre_process")
             log.warning("[DocumentExtractionAgent] BLOCKED by governance — %s", finding)
-            self.publish_event({
+            self.notify_monitor({
                 "type":            "DocumentExtractionBlockedByGovernance",
                 "agent":           self.layer,
                 "guardian_finding": finding,
@@ -130,7 +130,7 @@ class DocumentExtractionAgent(BaseAgent):
         result = _post(self, result)
 
         # ── 4. audit trail ────────────────────────────────────────────────────
-        self.publish_event({
+        self.notify_monitor({
             "type":       "DocumentExtractionCompleted",
             "agent":      self.layer,
             "char_count": len(text),
@@ -159,7 +159,7 @@ class AuditAgent(BaseAgent):
         if payload.get("_guardian_blocked"):
             finding = payload.get("_guardian_finding", "blocked by governance pre_process")
             log.warning("[AuditAgent] BLOCKED by governance — %s", finding)
-            self.publish_event({
+            self.notify_monitor({
                 "type":             "AuditBlockedByGovernance",
                 "agent":            self.layer,
                 "guardian_finding": finding,
@@ -216,7 +216,7 @@ class AuditAgent(BaseAgent):
         result = _post(self, result)
 
         # ── 4. audit trail ────────────────────────────────────────────────────
-        self.publish_event({
+        self.notify_monitor({
             "type":         "AuditCompleted",
             "agent":        self.layer,
             "audit_status": audit_status,
