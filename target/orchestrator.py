@@ -108,6 +108,23 @@ class DocumentOrchestrator(BaseOrchestrator):
             squad_results = self.execute_squads([self._squad], payload)
             agents_reached = ["DocumentExtractionAgent", "AuditAgent"]
             squad_output   = squad_results.get("DocumentProcessingSquad", {})
+        except PermissionError as exc:
+            # A governance block raised inside an agent (Shield or Granite Guardian at the agent's ingress or
+            # egress): containment at the agent, reported as blocked. Before 1.0.4 this went to the generic
+            # handler below, became a "squad_error" dict, passed the egress chain and was reported as
+            # "completed" -- a blocked benign document counted as passed and a blocked attack as missed.
+            log.warning("[DocumentOrchestrator] BLOCKED by governance in an agent — %s", exc)
+            return {
+                "status":            "blocked",
+                "blocked_at":        "agent",
+                "blocked_by":        "GovernanceBlock",
+                "check_message":     str(exc)[:300],
+                "penetration_depth": "agent",
+                "squad_reached":     True,
+                "agents_reached":    agents_reached,
+                "shield_held":       True,
+                "egress_checks":     [],
+            }
         except Exception as exc:
             # A failed squad is a recorded error, never "completed": before this fix the error dict
             # went on to the egress chain, which passed it, and the run was reported as completed
